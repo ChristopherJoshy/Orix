@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/Data-MongoDB%20%2B%20Redis-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB and Redis" />
     <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-80ED99?style=for-the-badge" alt="MIT License" /></a>
   </p>
-  <img src="https://raw.githubusercontent.com/ChristopherJoshy/orix/main/frontend/assets/Orix_Logo.png" width="180" alt="Orix logo" />
+  <img src="https://raw.githubusercontent.com/ChristopherJoshy/Orix/main/frontend/assets/Orix_Logo.png" width="180" alt="Orix logo" />
 </div>
 
 ## 🚗 What it does
@@ -50,7 +50,7 @@ flowchart LR
 Backend:
 
 ```bash
-git clone https://github.com/ChristopherJoshy/orix.git
+git clone https://github.com/ChristopherJoshy/Orix.git
 cd orix/backend
 python -m venv .venv
 # Windows: .venv\Scripts\Activate.ps1
