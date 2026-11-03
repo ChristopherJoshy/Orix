@@ -138,7 +138,15 @@ export default function Layout({ admin = false }: { admin?: boolean }) {
       <a className="skip-link" href="#main">
         Skip to content
       </a>
+      <button
+        className="desktop-nav-edge"
+        aria-label="Open navigation"
+        aria-controls="workspace-navigation"
+        aria-expanded={menu}
+        onClick={() => setMenu(true)}
+      />
       <aside
+        id="workspace-navigation"
         ref={sidebarRef}
         role={menu ? "dialog" : undefined}
         aria-modal={menu || undefined}
@@ -241,7 +249,9 @@ export default function Layout({ admin = false }: { admin?: boolean }) {
         <header className="workspace-header">
           <div>
             <button
-              className="icon-button mobile-only"
+              className="icon-button nav-toggle"
+              aria-controls="workspace-navigation"
+              aria-expanded={menu}
               aria-label="Open navigation"
               onClick={() => setMenu(true)}
             >

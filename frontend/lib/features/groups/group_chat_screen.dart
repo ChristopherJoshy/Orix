@@ -56,8 +56,9 @@ class _GroupChatScreenState extends State<GroupChatScreen>
       if (!_visible) return;
       _pollTicks++;
       if (!context.read<GroupProvider>().isRealtimeConnected ||
-          _pollTicks.isEven)
+          _pollTicks.isEven) {
         _loadMessages();
+      }
     });
   }
 
@@ -93,8 +94,9 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     final text = _messageController.text.trim();
     if (text.isEmpty ||
         provider.isSendingMessage ||
-        provider.currentGroup?.canChat != true)
+        provider.currentGroup?.canChat != true) {
       return;
+    }
     if (text.runes.length > 1000) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -112,9 +114,8 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     );
 
     if (success && mounted) {
-      // Scroll to bottom after sending
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (_scrollController.hasClients) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _scrollController.hasClients) {
           _scrollController.animateTo(
             _scrollController.position.maxScrollExtent,
             duration: const Duration(milliseconds: 200),
@@ -138,7 +139,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
               !_scrollController.hasClients ||
               _scrollController.position.extentAfter < 100;
           _lastMessageId = latest;
-          if (follow)
+          if (follow) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted && _scrollController.hasClients) {
                 _scrollController.jumpTo(
@@ -146,6 +147,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
                 );
               }
             });
+          }
         }
         final isSending = groupProvider.isSendingMessage;
         final canChat =
@@ -340,7 +342,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
             Expanded(
               child: TextField(
                 controller: _messageController,
-                enabled: canChat && !isSending,
+                enabled: canChat,
                 maxLength: 1000,
                 decoration: InputDecoration(
                   labelText: canChat

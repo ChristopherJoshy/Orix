@@ -8,7 +8,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/scheduler.dart' show SchedulerPhase;
 
@@ -213,8 +212,9 @@ class RideGroup {
         !allConfirmed ||
         departureStart == null ||
         now.isBefore(departureStart!) ||
-        (departureEnd != null && !now.isBefore(departureEnd!)))
+        (departureEnd != null && !now.isBefore(departureEnd!))) {
       return false;
+    }
     if (isLift) return me?.isDriver == true && me?.isHere == true;
     return members.every((member) => member.isHere);
   }
@@ -533,8 +533,9 @@ class GroupProvider extends ChangeNotifier {
       await fetchActiveGroups();
       return _currentSession(session);
     } catch (_) {
-      if (_currentSession(session))
+      if (_currentSession(session)) {
         _error = 'Could not confirm this action. Refresh and try again.';
+      }
       return false;
     } finally {
       if (_currentSession(session)) {
@@ -578,8 +579,9 @@ class GroupProvider extends ChangeNotifier {
       if (!_currentSession(session) || chat != _chatVersion) return;
       if (!response.success || response.data == null) {
         _chatError = response.error;
-        if (response.statusCode == 403 || response.statusCode == 404)
+        if (response.statusCode == 403 || response.statusCode == 404) {
           _messages = [];
+        }
         return;
       }
       final incoming = response.data!
@@ -600,12 +602,14 @@ class GroupProvider extends ChangeNotifier {
         ),
       ], keepHistory: before != null || _hasOlderMessages);
       if (before != null) _hasOlderMessages = true;
-      if (before != null || !_hasOlderMessages)
+      if (before != null || !_hasOlderMessages) {
         _olderCursor = response.nextCursor;
+      }
       _chatError = null;
     } catch (_) {
-      if (_currentSession(session) && chat == _chatVersion)
+      if (_currentSession(session) && chat == _chatVersion) {
         _chatError = 'Could not refresh messages.';
+      }
     } finally {
       if (_currentSession(session) && chat == _chatVersion) {
         _chatReadBusy = false;
@@ -618,8 +622,9 @@ class GroupProvider extends ChangeNotifier {
     final confirmed = <String, ChatMessage>{};
     if (keepHistory) {
       for (final message in _messages) {
-        if (!message.isPending && !message.failed)
+        if (!message.isPending && !message.failed) {
           confirmed[message.messageId] = message;
+        }
       }
     }
     for (final message in incoming) {
@@ -741,8 +746,9 @@ class GroupProvider extends ChangeNotifier {
       _chatError =
           response.error ?? 'Message was not confirmed. Retry to check it.';
     } catch (_) {
-      if (_currentSession(session) && chat == _chatVersion)
+      if (_currentSession(session) && chat == _chatVersion) {
         _chatError = 'Message was not confirmed. Retry to check it.';
+      }
     } finally {
       if (_currentSession(session) && chat == _chatVersion) {
         _isSendingMessage = false;
@@ -762,26 +768,20 @@ class GroupProvider extends ChangeNotifier {
   void _onChat(Map<String, dynamic> data) => addMessageFromWebSocket(data);
   void _onConnection(Map<String, dynamic> data) {
     _notify();
-    if (data['connected'] == true) _scheduleResync(resetChat: true);
+    if (data['connected'] == true) _scheduleResync();
   }
 
   void _onGroupEvent(Map<String, dynamic> data) {
-    if (data['type'] == 'group_cancelled' && data['group_id'] == _chatGroupId)
+    if (data['type'] == 'group_cancelled' && data['group_id'] == _chatGroupId) {
       _resetChat(_chatGroupId);
+    }
     _scheduleResync();
   }
 
-  void _scheduleResync({bool resetChat = false}) {
+  void _scheduleResync() {
     if (_userId == null || _disposed) return;
-    if (resetChat && _chatGroupId != null) {
-      // Preserve unacknowledged IDs/drafts across reconnect so a retry cannot
-      // turn a lost acknowledgement into a second message.
-      _messages = _messages
-          .where((message) => message.isPending || message.failed)
-          .toList();
-      _olderCursor = null;
-      _hasOlderMessages = false;
-    }
+    // A reconnect is a refresh, not an account/group change. Keep readable
+    // history and pending IDs while the authorized snapshot catches up.
     _resyncTimer?.cancel();
     _resyncTimer = Timer(const Duration(milliseconds: 150), () {
       if (_disposed || _userId == null) return;

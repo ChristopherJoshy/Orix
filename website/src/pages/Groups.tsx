@@ -1,3 +1,9 @@
+import {
+  mergeMessages,
+  isChatMessage,
+  type ChatMessage as Message,
+} from "../lib/chat";
+import { refreshEvent } from "../lib/realtime";
 import { friendlyError } from "../lib/errors";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -31,13 +37,6 @@ interface Group {
   mode: string;
   members: Member[];
   all_confirmed: boolean;
-}
-interface Message {
-  message_id: string;
-  content: string;
-  is_mine: boolean;
-  user_display_name?: string;
-  created_at: string;
 }
 const occupation = (value?: string) =>
   value === "student"
@@ -136,12 +135,17 @@ export function GroupDetail() {
   const [chatCursor, setChatCursor] = useState<string | null>(null);
   const [chatError, setChatError] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
-  const pages = useRef(1);
+  const readBusy = useRef(false);
+  const readAgain = useRef(false);
+  const olderBusy = useRef(false);
+  const historyOpened = useRef(false);
+  const [sending, setSending] = useState(false);
+  const sendBusy = useRef(false);
+  const acknowledged = useRef(new Set<string>());
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState("");
   const [reject, setReject] = useState(false);
-  const retry = useRef<{ text: string; id: string } | null>(null);
   const messageLog = useRef<HTMLDivElement>(null);
   const composer = useRef<HTMLTextAreaElement>(null);
   const followMessages = useRef(true);
@@ -158,67 +162,210 @@ export function GroupDetail() {
   }, [draft]);
   const load = useCallback(async () => {
     if (!id) return;
-    const request = ++version.current;
-    const results = await Promise.allSettled([
-      apiRequest<Group>(`/groups/${encodeURIComponent(id)}`),
-      (async () => {
-        let cursor: string | null = null;
-        let combined: Message[] = [];
-        for (let page = 0; page < pages.current; page++) {
-          if (
-            owner !== useSession.getState().account?.user_id ||
-            request !== version.current
-          )
-            throw new Error("Account changed");
-          const result: { data: Message[]; nextCursor: string | null } =
-            await apiRequestPage<Message[]>(
-              `/groups/${encodeURIComponent(id)}/chat?limit=50${cursor ? `&before=${encodeURIComponent(cursor)}` : ""}`,
-            );
-          combined = [...result.data, ...combined];
-          cursor = result.nextCursor;
-          if (!cursor) break;
-        }
-        return {
-          messages: [
-            ...new Map(
-              combined.map((message) => [message.message_id, message]),
-            ).values(),
-          ],
-          cursor,
-        };
-      })(),
-    ]);
-    if (
-      request !== version.current ||
-      owner !== useSession.getState().account?.user_id
-    )
+    if (readBusy.current) {
+      readAgain.current = true;
       return;
-    if (results[0].status === "fulfilled") {
-      setGroup(results[0].value);
-      setError("");
-    } else setError("The group could not be refreshed.");
-    if (results[1].status === "fulfilled") {
-      setMessages(results[1].value.messages);
-      setChatCursor(results[1].value.cursor);
-      setChatError("");
-    } else setChatError("The conversation could not be refreshed. Try again.");
-    setChatLoading(false);
+    }
+    readBusy.current = true;
+    const request = version.current;
+    const valid = () =>
+      request === version.current &&
+      owner === useSession.getState().account?.user_id;
+    try {
+      // A slow group read must not delay the conversation snapshot.
+      await Promise.all([
+        apiRequest<Group>(`/groups/${encodeURIComponent(id)}`)
+          .then((value) => {
+            if (valid()) {
+              setGroup(value);
+              setError("");
+            }
+          })
+          .catch(() => {
+            if (valid()) setError("The group could not be refreshed.");
+          }),
+        apiRequestPage<Message[]>(
+          `/groups/${encodeURIComponent(id)}/chat?limit=50`,
+        )
+          .then((result) => {
+            if (!valid()) return;
+            setMessages((previous) => mergeMessages(previous, result.data));
+            // Keep the earliest cursor once older history has been opened.
+            if (!historyOpened.current) setChatCursor(result.nextCursor);
+            setChatError("");
+          })
+          .catch(() => {
+            if (valid())
+              setChatError(
+                "The conversation could not be refreshed. Try again.",
+              );
+          }),
+      ]);
+    } finally {
+      if (valid()) {
+        readBusy.current = false;
+        if (!olderBusy.current) setChatLoading(false);
+        if (readAgain.current) {
+          readAgain.current = false;
+          void load();
+        }
+      }
+    }
   }, [id, owner]);
-  useRealtimeRefresh(load);
+  const loadOlder = async () => {
+    if (!id || !chatCursor || olderBusy.current) return;
+    const request = version.current;
+    olderBusy.current = true;
+    historyOpened.current = true;
+    setChatLoading(true);
+    const log = messageLog.current;
+    const height = log?.scrollHeight ?? 0;
+    const top = log?.scrollTop ?? 0;
+    try {
+      const result = await apiRequestPage<Message[]>(
+        `/groups/${encodeURIComponent(id)}/chat?limit=50&before=${encodeURIComponent(chatCursor)}`,
+      );
+      if (
+        request !== version.current ||
+        owner !== useSession.getState().account?.user_id
+      )
+        return;
+      setMessages((previous) => mergeMessages(previous, result.data));
+      setChatCursor(result.nextCursor);
+      setChatError("");
+      requestAnimationFrame(() => {
+        if (request === version.current && log)
+          log.scrollTop = top + log.scrollHeight - height;
+      });
+    } catch {
+      if (request === version.current)
+        setChatError("Older messages couldn't load. Try again.");
+    } finally {
+      if (request === version.current) {
+        olderBusy.current = false;
+        setChatLoading(false);
+      }
+    }
+  };
   useEffect(() => {
+    version.current++;
+    readBusy.current = false;
+    readAgain.current = false;
+    olderBusy.current = false;
+    historyOpened.current = false;
+    sendBusy.current = false;
+    acknowledged.current.clear();
+    setSending(false);
     setGroup(null);
     setMessages([]);
     setChatCursor(null);
     setChatError("");
-    setChatLoading(false);
-    pages.current = 1;
+    setChatLoading(true);
     setDraft("");
-    retry.current = null;
+    followMessages.current = true;
     void load();
+    const onUpdate = (event: Event) => {
+      const detail = (event as CustomEvent).detail;
+      if (owner !== useSession.getState().account?.user_id) return;
+      if (detail?.type === "new_chat_message") {
+        if (detail.group_id !== id) return;
+        if (isChatMessage(detail.message)) {
+          if (detail.message.is_mine && detail.message.client_message_id)
+            acknowledged.current.add(detail.message.client_message_id);
+          setMessages((previous) => mergeMessages(previous, [detail.message]));
+        } else void load();
+        return;
+      }
+      if (!detail?.group_id || detail.group_id === id) void load();
+    };
+    const recover = () => {
+      if (!document.hidden) void load();
+    };
+    window.addEventListener(refreshEvent, onUpdate);
+    document.addEventListener("visibilitychange", recover);
+    const timer = window.setInterval(recover, 30000);
     return () => {
       version.current++;
+      window.clearInterval(timer);
+      window.removeEventListener(refreshEvent, onUpdate);
+      document.removeEventListener("visibilitychange", recover);
     };
-  }, [load]);
+  }, [load, id, owner]);
+  async function sendMessage(
+    text: string,
+    clientId: string = crypto.randomUUID(),
+  ) {
+    if (!text || sendBusy.current || !id) return;
+    sendBusy.current = true;
+    setSending(true);
+    setChatError("");
+    const request = version.current;
+    const localId = `local-${clientId}`;
+    setMessages((previous) =>
+      mergeMessages(
+        previous.filter((m) => m.message_id !== localId),
+        [
+          {
+            message_id: localId,
+            client_message_id: clientId,
+            content: text,
+            created_at: new Date().toISOString(),
+            is_mine: true,
+            pending: true,
+          },
+        ],
+      ),
+    );
+    followMessages.current = true;
+    setDraft((previous) => (previous.trim() === text ? "" : previous));
+    composer.current?.focus();
+    try {
+      const saved = await apiRequest<Message>(
+        `/groups/${encodeURIComponent(id)}/chat`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            content: text,
+            client_message_id: clientId,
+          }),
+        },
+      );
+      if (
+        request !== version.current ||
+        owner !== useSession.getState().account?.user_id
+      )
+        return;
+      setMessages((previous) =>
+        mergeMessages(
+          previous.filter((m) => m.message_id !== localId),
+          [saved],
+        ),
+      );
+    } catch (problem) {
+      if (
+        request === version.current &&
+        owner === useSession.getState().account?.user_id &&
+        !acknowledged.current.has(clientId)
+      ) {
+        setChatError(friendlyError(problem));
+        setMessages((previous) =>
+          previous.map((m) =>
+            m.message_id === localId
+              ? { ...m, pending: false, failed: true }
+              : m,
+          ),
+        );
+      }
+    } finally {
+      if (
+        request === version.current &&
+        owner === useSession.getState().account?.user_id
+      ) {
+        sendBusy.current = false;
+        setSending(false);
+      }
+    }
+  }
   async function action(name: string) {
     if (!id || busy) return;
     setBusy(true);
@@ -401,11 +548,7 @@ export function GroupDetail() {
           <Button
             variant="secondary"
             disabled={chatLoading}
-            onClick={() => {
-              pages.current++;
-              setChatLoading(true);
-              void load();
-            }}
+            onClick={() => void loadOlder()}
           >
             {chatLoading ? "Loading…" : "Load older messages"}
           </Button>
@@ -422,7 +565,9 @@ export function GroupDetail() {
               log.scrollHeight - log.scrollTop - log.clientHeight < 80;
           }}
         >
-          {messages.length === 0 ? (
+          {messages.length === 0 && chatLoading ? (
+            <PixelStatus state="loading" label="Loading conversation…" />
+          ) : messages.length === 0 ? (
             <div className="group-chat-empty">
               <MessageSquare size={28} strokeWidth={1.5} aria-hidden="true" />
               <p>A good journey starts with hello.</p>
@@ -444,6 +589,25 @@ export function GroupDetail() {
                     : message.user_display_name || "Travel partner"}
                 </small>
                 <p>{message.content}</p>
+                {message.pending && <small role="status">Sending…</small>}
+                {message.failed && (
+                  <>
+                    <small>Not confirmed.</small>
+                    <Button
+                      variant="secondary"
+                      disabled={sending || !canChat}
+                      onClick={() => {
+                        if (message.client_message_id)
+                          void sendMessage(
+                            message.content,
+                            message.client_message_id,
+                          );
+                      }}
+                    >
+                      Retry message
+                    </Button>
+                  </>
+                )}
                 <time dateTime={message.created_at}>
                   {new Date(message.created_at).toLocaleTimeString([], {
                     hour: "2-digit",
@@ -457,34 +621,9 @@ export function GroupDetail() {
         {canChat && (
           <form
             className="group-chat-composer"
-            onSubmit={async (event) => {
+            onSubmit={(event) => {
               event.preventDefault();
-              const text = draft.trim();
-              if (!text || busy || !id) return;
-              setBusy(true);
-              setError("");
-              if (retry.current?.text !== text)
-                retry.current = { text, id: crypto.randomUUID() };
-              try {
-                await apiRequest(`/groups/${encodeURIComponent(id)}/chat`, {
-                  method: "POST",
-                  body: JSON.stringify({
-                    content: text,
-                    client_message_id: retry.current.id,
-                  }),
-                });
-                if (owner !== useSession.getState().account?.user_id) return;
-                setDraft("");
-                retry.current = null;
-                followMessages.current = true;
-                await load();
-              } catch (problem) {
-                if (owner === useSession.getState().account?.user_id)
-                  setError(friendlyError(problem));
-              } finally {
-                if (owner === useSession.getState().account?.user_id)
-                  setBusy(false);
-              }
+              void sendMessage(draft.trim());
             }}
           >
             <label className="group-chat-input">
@@ -496,7 +635,6 @@ export function GroupDetail() {
                 placeholder="Write a message…"
                 aria-describedby="group-chat-keyboard"
                 required
-                disabled={busy}
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
                 onKeyDown={(event) => {
@@ -506,7 +644,7 @@ export function GroupDetail() {
                     !event.nativeEvent.isComposing
                   ) {
                     event.preventDefault();
-                    if (!busy && draft.trim())
+                    if (!sending && draft.trim())
                       event.currentTarget.form?.requestSubmit();
                   }
                 }}
@@ -514,8 +652,8 @@ export function GroupDetail() {
             </label>
             <Button
               className="group-chat-send"
-              aria-label={busy ? "Sending message" : "Send message"}
-              disabled={busy || !draft.trim()}
+              aria-label={sending ? "Sending message" : "Send message"}
+              disabled={sending || !draft.trim()}
             >
               <ArrowUp size={20} aria-hidden="true" />
             </Button>

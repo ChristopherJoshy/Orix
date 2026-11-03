@@ -948,3 +948,21 @@ Focused Flutter analysis rerun: no issues found.
 The authenticated APK upload now uses its five-minute handler deadline. Focused
 Go auth/upload tests passed and the VPS backend is active after deployment. A
 real APK upload is still needed to confirm the complete publication flow.
+
+2026-11-03 — Chat responsiveness fixes in website and Flutter. Web now merges
+server-authorized socket messages directly, shows explicitly pending outgoing
+bubbles, reconciles server acknowledgements without duplicates and retries failed
+messages with the same client ID. Sending no longer waits for a group/history
+reload; initial group/message reads publish independently. Refreshes read one
+latest page, older history loads separately with scroll anchoring, and overlapping
+refreshes coalesce. Draft typing stays enabled during sends on both platforms.
+Flutter reconnects retain visible history/cursors; removed delayed send scrolling.
+Desktop navigation now reveals from the left edge with a short slide, makes room
+for page text, and retains a menu button, focus handling and reduced motion.
+Checks: website build; four isolated chat test groups (ack/echo, stale snapshots,
+failed drafts/own IDs, malformed payloads); Flutter analysis of provider/screen
+(no issues after existing lint cleanup). agent-browser isolated CSS harness:
+sidebar hidden/revealed/hidden, body starts at sidebar right edge (256px) when
+open at 1440px, no horizontal overflow. This is not authenticated UI verification.
+Real two-account chat, socket delivery latency, backend and device flows remain
+unverified; no production fixtures or auth bypass used. Not deployed in this turn.

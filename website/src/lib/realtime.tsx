@@ -1,11 +1,13 @@
 import { useEffect } from "react";
 import { apiOrigin, firebaseAuth, useSession, verifyAccount } from "./session";
 export const refreshEvent = "orix:refresh";
-function refresh(type: string) {
-  window.dispatchEvent(new CustomEvent(refreshEvent, { detail: { type } }));
+function refresh(type: string, payload: Record<string, unknown> = {}) {
+  window.dispatchEvent(
+    new CustomEvent(refreshEvent, { detail: { ...payload, type } }),
+  );
 }
 
-/** Authenticated invalidations trigger authorized REST reads; no private data is cached here. */
+/** Forward authenticated server messages and invalidations without caching private data. */
 export function RealtimeBridge() {
   const account = useSession((s) => s.account);
   useEffect(() => {
@@ -58,7 +60,7 @@ export function RealtimeBridge() {
           try {
             const value = JSON.parse(event.data);
             if (typeof value.type === "string" && value.type !== "pong") {
-              refresh(value.type);
+              refresh(value.type, value);
               if (value.type === "profile_update")
                 void verifyAccount().catch(() => {});
             }

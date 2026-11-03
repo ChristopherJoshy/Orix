@@ -6576,3 +6576,69 @@ html[data-motion="off"] .pixel-state {
 
 /* Keep navigation available while the next route downloads. */
 .page-loading { min-height: 240px; display: grid; place-items: center; }
+
+/* Desktop navigation makes room for workspace text when revealed.
+   The edge target reveals it with a pointer; the header button serves keyboard/touch. */
+.desktop-nav-edge { display: none; }
+@media (min-width: 701px) {
+  .workspace > .workspace-body { margin-left: 0; width: 100%; }
+  .workspace > .sidebar {
+    width: 256px;
+    max-width: calc(100vw - 48px);
+    z-index: 60;
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 180ms ease-out, visibility 180ms;
+    overflow-x: hidden;
+  }
+  .desktop-nav-edge {
+    display: block;
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 18px;
+    z-index: 59;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+  .desktop-nav-edge::after {
+    content: "";
+    position: absolute;
+    top: 45%;
+    left: 3px;
+    width: 3px;
+    height: 32px;
+    background: #aaa;
+  }
+  .desktop-nav-edge:hover + .sidebar,
+  .workspace > .sidebar:hover,
+  .workspace > .sidebar:focus-within,
+  .workspace > .sidebar.open {
+    transform: translateX(0);
+    visibility: visible;
+    transition-delay: 0s;
+  }
+  .workspace > .sidebar .mobile-only { display: inline-flex; }
+  .workspace > .menu-shade {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 58;
+    background: #0003;
+    border: 0;
+  }
+  .sidebar-create, .sidebar-link { max-width: 100%; min-width: 0; }
+  .sidebar-link > span { min-width: 0; overflow-wrap: anywhere; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace > .sidebar { transition: none; }
+}
+html[data-motion="off"] .workspace > .sidebar { transition: none; }
+
+
+@media (min-width: 701px) {
+  .workspace:has(.desktop-nav-edge:hover, .sidebar:hover, .sidebar:focus-within, .sidebar.open) > .workspace-body {
+    margin-left: 256px;
+    width: calc(100% - 256px);
+  }
+}

@@ -7,7 +7,8 @@
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test:errors": "tsc --ignoreConfig --noEmit false --outDir /tmp/orix-web-tests --target ES2022 --module ES2022 --skipLibCheck src/lib/errors.ts && node tests/errors.test.mjs"
+    "test:errors": "tsc --ignoreConfig --noEmit false --outDir /tmp/orix-web-tests --target ES2022 --module ES2022 --skipLibCheck src/lib/errors.ts && node tests/errors.test.mjs",
+    "test:chat": "tsc --ignoreConfig --outDir /tmp/orix-chat-tests --target ES2022 --module ES2022 --skipLibCheck src/lib/chat.ts && node tests/chat.test.mjs"
   },
   "dependencies": {
     "@fontsource/manrope": "5.3.0",

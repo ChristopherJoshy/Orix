@@ -1318,3 +1318,26 @@ The authentication middleware passed its ten-second context into the entire
 upload; the APK route now uses the original request context after authentication
 and its own bounded upload deadline. Focused Go auth/upload tests passed. The
 VPS backend was rebuilt and restarted; real APK publication remains unverified.
+
+## 2026-11-03 — Remove chat refresh bottlenecks; reveal desktop navigation
+
+Web chat previously reloaded every opened history page and group details after
+sending or receiving a socket invalidation. It now consumes authorized socket
+message bodies, merges by persisted/client IDs, displays pending/failure states,
+and inserts the send response without waiting for another read. Older history
+loads one cursor page independently and preserves scroll position. Refreshes
+coalesce and keep new arrivals/history; account/group changes discard state.
+Failed sends retain their message and use the same ID on explicit retry. Both
+composers permit typing during sends. Flutter reconnect no longer clears readable
+history; send scrolling uses a mounted-checked frame callback instead of a delay.
+
+Desktop sidebar hides/reveals at the left edge, with a short slide, content space
+reserved while open, keyboard/touch menu button and reduced-motion support.
+
+Executed: website build and four chat regression test groups passed; focused
+Flutter analysis initially reported twelve existing style infos, corrected, then
+passed without issues. agent-browser isolated CSS harness confirmed desktop
+hidden/reveal/hide and content alignment at 256px without horizontal overflow.
+This harness does not validate the signed-in application. No backend code changes,
+production fixtures, authenticated/device chat QA or latency benchmarks. Owner's
+accessible-screen limitation and broader verification hold remain in effect.
