@@ -4,16 +4,10 @@ import type { InboxPage } from "./pages/Inbox";
 import { ConnectionStatus } from "./components/ConnectionStatus";
 import { RealtimeBridge } from "./lib/realtime";
 import { AndroidDownload } from "./components/AndroidDownload";
-import { Component, lazy, Suspense, useEffect, useState } from "react";
+import { Component, lazy, Suspense, useEffect } from "react";
 import type { ErrorInfo, ReactNode } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
-import {
-  LazyMotion,
-  domAnimation,
-  MotionConfig,
-  m,
-  AnimatePresence,
-} from "motion/react";
+import { LazyMotion, domAnimation, MotionConfig } from "motion/react";
 import { Toaster, toast } from "sonner";
 import { useStore } from "./lib/store";
 import { initializeSession, useSession } from "./lib/session";
@@ -102,43 +96,6 @@ function Loading() {
       <PixelMark className="loading-brand" />
       <PixelStatus state="loading" label="Loading" />
     </div>
-  );
-}
-function Splash() {
-  const [show, setShow] = useState(
-    () => !sessionStorage.getItem("orix-welcome"),
-  );
-  useEffect(() => {
-    if (!show) return;
-    const timer = setTimeout(() => {
-      sessionStorage.setItem("orix-welcome", "1");
-      setShow(false);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [show]);
-  return (
-    <AnimatePresence>
-      {show && (
-        <m.div
-          className="splash splash-loader"
-          role="status"
-          aria-label="Opening ORIX"
-          initial={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.22 }}
-        >
-          <PixelMark className="loading-brand" />
-          <img
-            className="splash-art"
-            src="/art/orix-intro.png"
-            alt=""
-            width="224"
-            height="80"
-          />
-          <PixelStatus state="loading" />
-        </m.div>
-      )}
-    </AnimatePresence>
   );
 }
 // Tab titles follow local unread state; the favicon always retains the ORIX brand mark.
@@ -257,7 +214,6 @@ export default function App() {
         >
           <BrowserRouter>
             <PageIdentity />
-            <Splash />
             <Suspense fallback={<Loading />}>
               <Routes>
                 <Route path="/" element={<Landing />} />

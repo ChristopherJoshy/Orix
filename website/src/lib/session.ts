@@ -157,24 +157,57 @@ export function initializeSession() {
       error: "Google sign-in did not finish. Please try again.",
     });
   });
-  const stop = onAuthStateChanged(firebaseAuth, async (user) => {
-    const current = ++revision;
-    useSession.setState({ account: null, loading: !!user, error: null });
-    try {
-      const { reconcileWebPushOwner } = await import("./webPush");
-      await reconcileWebPushOwner(user?.uid ?? null);
-      if (current !== revision) return;
-      if (!user) return;
-      await verifyAccount();
-    } catch (error) {
-      if (current === revision)
-        useSession.setState({
-          account: null,
-          loading: false,
-          error: friendlyError(error),
-        });
-    }
-  });
+  const stop = onAuthStateChanged(
+    firebaseAuth,
+    async (user) => {
+      const current = ++revision;
+      const watchdog = window.setTimeout(() => {
+        if (current === revision)
+          useSession.setState({
+            loading: false,
+            error: "Checking your account took too long. Please try again.",
+          });
+      }, 30000);
+      useSession.setState({ account: null, loading: !!user, error: null });
+      try {
+        const { reconcileWebPushOwner } = await import("./webPush");
+        // Bound browser subscription cleanup so a stalled browser API shows recovery.
+        await Promise.race([
+          reconcileWebPushOwner(user?.uid ?? null),
+          new Promise<never>((_, reject) =>
+            setTimeout(
+              () =>
+                reject(
+                  new PublicError(
+                    "Browser notifications could not reconnect. Refresh the page to try again.",
+                  ),
+                ),
+              8000,
+            ),
+          ),
+        ]);
+        if (current !== revision) return;
+        if (!user) return;
+        await verifyAccount();
+      } catch (error) {
+        if (current === revision)
+          useSession.setState({
+            account: null,
+            loading: false,
+            error: friendlyError(error),
+          });
+      } finally {
+        window.clearTimeout(watchdog);
+      }
+    },
+    () => {
+      useSession.setState({
+        account: null,
+        loading: false,
+        error: "Your sign-in could not be restored. Please sign in again.",
+      });
+    },
+  );
   return () => {
     revision++;
     stop();

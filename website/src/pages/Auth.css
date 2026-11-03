@@ -65,6 +65,8 @@
   margin: 0 0 28px;
 }
 .login-illustrated .google-signin {
+  background: #242424;
+  color: #fff;
   min-height: 56px;
 }
 .login-illustrated .login-content .login-consent {

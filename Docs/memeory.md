@@ -930,3 +930,16 @@ upgrades, but end-to-end authenticated realtime delivery remains unverified.
 backend now logs only the failed publication stage and distinguishes invalid
 APK responses from service errors. The backend was redeployed; a fresh real
 upload attempt is needed to identify and resolve the remaining cause.
+
+2026-11-03 — Owner requested UX review, then scoped browser checks to accessible
+screens. Removed artificial web splash and page-entry fades; workspace navigation
+survives lazy route loading. Added bounded auth waiting and account Retry. Flutter
+login reports actual backend authentication status and bounds token retrieval.
+Tightened monochrome landing hero/CTA and corrected recurring-lift copy.
+Browser: 40 public route/viewport combinations at 320–1440px, no horizontal
+overflow; login/home axe zero violations (home decorative-arrow check incomplete).
+Website build and three error-copy checks passed. Flutter analysis initially found
+three existing brace infos; corrected before rerun. Private screens/device login
+remain unverified; blank-login report not reproduced. Details: Docs/ux-review.md.
+
+Focused Flutter analysis rerun: no issues found.

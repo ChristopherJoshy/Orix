@@ -3,8 +3,8 @@ import { useResource } from "../lib/resource";
 import type { InboxPage } from "../pages/Inbox";
 import { useSession, signOutAccount } from "../lib/session";
 import { NavLink, Link, Navigate, Outlet, useLocation } from "react-router-dom";
-import { useEffect, useState, useRef } from "react";
-import { m } from "motion/react";
+import { Suspense, useEffect, useState, useRef } from "react";
+import { PixelStatus } from "./PixelStatus";
 import {
   Home,
   Compass,
@@ -27,7 +27,6 @@ import {
   X,
   LogOut,
 } from "lucide-react";
-import { useStore } from "../lib/store";
 import { PixelMark } from "./PixelArt";
 import { ContactPhoto } from "./EmailPersonPicker";
 import { CurrentCity } from "./CurrentCity";
@@ -51,7 +50,6 @@ const adminNav = [
   { to: "/admin/audit", label: "Activity log", icon: ScrollText },
 ];
 export default function Layout({ admin = false }: { admin?: boolean }) {
-  const motion = useStore((s) => s.motion);
   const { account, loading } = useSession();
   const { data: inbox } = useResource<InboxPage>(
     "/notifications?limit=1&unread_only=true",
@@ -121,6 +119,7 @@ export default function Layout({ admin = false }: { admin?: boolean }) {
     return (
       <main className="loading-screen" aria-label="Verifying account">
         <Logo />
+        <PixelStatus state="loading" label="Checking your account…" />
       </main>
     );
   if (!account)
@@ -279,14 +278,15 @@ export default function Layout({ admin = false }: { admin?: boolean }) {
           id="main"
           className={`workspace-main${location.pathname === "/app" ? " workspace-dashboard" : ""}`}
         >
-          <m.div
-            key={location.pathname}
-            initial={motion ? { opacity: 0, y: 8 } : false}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: motion ? 0.22 : 0 }}
+          <Suspense
+            fallback={
+              <div role="status" className="page-loading">
+                <PixelStatus state="loading" label="Opening page…" />
+              </div>
+            }
           >
             <Outlet />
-          </m.div>
+          </Suspense>
         </main>
         <footer className="workspace-footer">
           <span>

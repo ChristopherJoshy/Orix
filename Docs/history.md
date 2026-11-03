@@ -1297,3 +1297,18 @@ no authenticated message delivery test was performed.
 separated archive validation failures from service errors. Go build passed and
 the backend service was restarted. The reported upload failure requires another
 real attempt to identify its stage; no production test APK was uploaded.
+
+## 2026-11-03 — Accessible-screen UX and login recovery
+
+Removed forced web splash and entry fades; kept workspace navigation while routes
+load. Added bounded auth waits and Retry. Flutter login returns actual backend
+authentication status. Tightened landing hero/action copy, corrected recurring-lift
+claim and flattened login button fill, preserving grayscale pixel art/logo.
+agent-browser: 40 public route/viewport checks with no horizontal overflow.
+Login/home axe: no violations; home has one incomplete decorative-arrow check.
+Website build and three error-copy tests passed. Focused Flutter analysis initially
+found three existing brace infos, corrected before rerun. Owner limited review to
+accessible screens; authenticated/device and production speed remain unverified.
+See Docs/ux-review.md.
+
+Focused Flutter analysis rerun: no issues found.

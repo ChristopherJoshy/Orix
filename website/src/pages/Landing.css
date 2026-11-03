@@ -34,7 +34,7 @@
   opacity: 0.65;
 }
 .orix-home .home-header {
-  height: 112px;
+  height: 88px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -57,7 +57,7 @@
   grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
   gap: 24px;
   align-items: center;
-  padding: 40px 0 64px;
+  padding: 24px 0 48px;
 }
 .orix-home .home-intro {
   display: flex;
@@ -73,7 +73,7 @@
   box-shadow: 6px -6px #b8b8b8;
 }
 .orix-home .home-hero h1 {
-  font-size: clamp(3.5rem, 1.5rem + 4.8vw, 6.25rem);
+  font-size: clamp(3rem, 1.5rem + 3.8vw, 5rem);
   line-height: 1.04;
 }
 .orix-home .home-lede {
@@ -118,7 +118,7 @@
 .orix-home .home-hero-art {
   margin: 0;
   justify-self: center;
-  width: min(100%, 500px);
+  width: min(100%, 380px);
   position: relative;
 }
 .orix-home .home-hero-art img {

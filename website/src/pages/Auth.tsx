@@ -8,6 +8,7 @@ import { PixelStatus } from "../components/PixelStatus";
 import { OrixTour } from "../components/OrixTour";
 import {
   apiRequest,
+  firebaseAuth,
   signInGoogle,
   useSession,
   verifyAccount,
@@ -77,10 +78,32 @@ export function Login() {
               }
             }}
           >
-            {busy ? "Connecting to Google…" : "Continue with Google"}
+            {busy
+              ? "Connecting to Google…"
+              : loading
+                ? "Checking your account…"
+                : "Continue with Google"}
           </Button>
           {(error || sessionError) && (
             <p role="alert">{error || sessionError}</p>
+          )}
+          {sessionError && firebaseAuth.currentUser && (
+            <Button
+              disabled={busy}
+              onClick={async () => {
+                setBusy(true);
+                setError("");
+                try {
+                  await verifyAccount();
+                } catch (problem) {
+                  setError(friendlyError(problem));
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              Retry account check
+            </Button>
           )}
           <p className="login-consent">
             By continuing, you agree to our <Link to="/terms">terms</Link> and{" "}

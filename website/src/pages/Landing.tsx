@@ -45,8 +45,8 @@ const questions = [
     "You can reject the group and search again. The people you rejected are excluded from matching for that journey. You can also block a person or report a concern privately.",
   ],
   [
-    "Can I offer a lift regularly?",
-    "Yes. Register your starting point, destination, departure time and available seats. You can manage your lift availability in the app.",
+    "Can I offer a lift?",
+    "Offer a seat for a specific journey with your route, departure time and available seats. Recurring lift availability is not available yet.",
   ],
 ];
 
@@ -67,7 +67,8 @@ export default function Landing() {
         <section className="home-hero home-width" aria-labelledby="home-title">
           <div className="home-hero-copy">
             <p className="home-intro">
-              <span aria-hidden="true" /> A familiar route. A new face.
+              <span aria-hidden="true" /> Shared autos, travel partners and
+              lifts
             </p>
             <h1 id="home-title">
               Your route.
@@ -82,13 +83,12 @@ export default function Landing() {
             </p>
             <div className="home-actions">
               <Link className="home-button" to="/login">
-                Find your people <PixelArrow />
+                Plan a journey <PixelArrow />
               </Link>
               <a className="home-text-link" href="#how-it-works">
                 How it works <span aria-hidden="true">↓</span>
               </a>
             </div>
-            <p className="home-hero-note">A little company goes a long way.</p>
           </div>
           <figure className="home-hero-art">
             <img
@@ -225,7 +225,7 @@ export default function Landing() {
           <p>Same direction?</p>
           <h2>Let’s go together.</h2>
           <Link className="home-button" to="/login">
-            Find your people <PixelArrow />
+            Plan a journey <PixelArrow />
           </Link>
         </section>
       </main>

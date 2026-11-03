@@ -240,7 +240,9 @@ class AuthProvider extends ChangeNotifier {
   Future<void> _verifyWithBackend() async {
     final identity = _authService.currentUser?.uid;
     try {
-      final token = await _authService.getIdToken();
+      final token = await _authService.getIdToken().timeout(
+        const Duration(seconds: 20),
+      );
       if (token == null) {
         _isAuthenticated = false;
         _hasNetworkError = false;
@@ -311,7 +313,7 @@ class AuthProvider extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
-    return true;
+    return _isAuthenticated;
   }
 
   Future<bool> signInInternal(String email, String password) async {
@@ -407,8 +409,9 @@ class AuthProvider extends ChangeNotifier {
 
   bool _deletionInProgress = false;
   Future<String?> requestAccountDeletion({String? emulatorPassword}) async {
-    if (_deletionInProgress)
+    if (_deletionInProgress) {
       return 'A deletion request is already in progress.';
+    }
     _deletionInProgress = true;
     try {
       return await _requestAccountDeletion(emulatorPassword: emulatorPassword);
@@ -429,10 +432,12 @@ class AuthProvider extends ChangeNotifier {
     final response = await _apiService.delete<Map<String, dynamic>>(
       '/users/me',
     );
-    if (_apiService.authIdentity != identity)
+    if (_apiService.authIdentity != identity) {
       return 'The signed-in account changed. Please try again.';
-    if (!response.success)
+    }
+    if (!response.success) {
       return response.error ?? 'Could not confirm the deletion request.';
+    }
     await _authService.signOut();
     _isAuthenticated = false;
     _backendUser = null;

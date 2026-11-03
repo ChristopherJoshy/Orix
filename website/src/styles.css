@@ -6573,3 +6573,6 @@ html[data-motion="off"] .pixel-state {
 .sidebar { overflow-x: hidden; }
 .release-success { border: 1px solid #222; padding: 1rem; margin: 1rem 0; background: #fff; }
 .release-success .button { margin-top: .5rem; }
+
+/* Keep navigation available while the next route downloads. */
+.page-loading { min-height: 240px; display: grid; place-items: center; }
