@@ -92,7 +92,9 @@ export default function Landing() {
           </div>
           <figure className="home-hero-art">
             <img
-              src="/art/orix-street-corner.png"
+              src="/art/orix-street-corner.webp"
+              srcSet="/art/orix-street-corner-480-alpha.webp 480w, /art/orix-street-corner-768-alpha.webp 768w, /art/orix-street-corner-1122-alpha.webp 1122w"
+              sizes="(min-width: 1600px) 540px, (max-width: 760px) min(86vw, 380px), 380px"
               width="1122"
               height="1402"
               fetchPriority="high"

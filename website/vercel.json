@@ -3,8 +3,24 @@
   "framework": "vite",
   "rewrites": [
     {
-      "source": "/((?!api(?:/|$)|assets(?:/|$)).*)",
-      "destination": "/index.html"
+      "source": "/app/:path*",
+      "destination": "/spa"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/spa"
+    },
+    {
+      "source": "/login",
+      "destination": "/spa"
+    },
+    {
+      "source": "/onboarding",
+      "destination": "/spa"
+    },
+    {
+      "source": "/status/:path*",
+      "destination": "/spa"
     }
   ],
   "headers": [
@@ -65,6 +81,67 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
+    },
+    {
+      "source": "/login",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
+      "source": "/status/:path*",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
+      "source": "/spa",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
+      "source": "/api/:path*",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    }
+  ],
+  "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.orixrideshare.tech"
+        }
+      ],
+      "destination": "https://orixrideshare.tech/",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.orixrideshare.tech"
+        }
+      ],
+      "destination": "https://orixrideshare.tech/:path*",
+      "permanent": true
     }
   ]
 }

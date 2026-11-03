@@ -1097,3 +1097,45 @@ rejected. Publication is pending explicit owner approval after automatic review
 rejected reading the running service environment as an unintended credential
 source. No credentials were read or copied. Public download remained 2.1.1 at
 this checkpoint. Full hashes/fingerprints and verification: Docs/release-2.1.2.md.
+
+2026-11-03 — Web-only SEO phase: owner cancelled Play signup/publication due to
+cost and requested maximum discoverability without design changes. Applied the
+SEO audit and React performance skills plus official Google/Bing research. Added
+build-time rendering of the existing six public components, route-specific titles,
+descriptions/canonicals/social tags, factual JSON-LD, complete sitemap, private
+noindex shell and genuine 404 routing. Lossless WebP art saves ~38–39%, with decoded
+RGBA equality; original layouts, fonts, artwork and visible copy remain. Added
+Google's public verification tag and explicit post-deploy IndexNow notification.
+Build and focused SEO checks pass. Root website-only Vercel upload list checked
+for private configuration. Initial source-root and missing-preview-config failures
+were resolved; isolated preview dpl_HZGFGpYUnME2a3qGEh9qgLDKqMmE is READY using only
+existing public client config. Production staging was earlier auto-review rejected
+after the failed preview; no action ran then. Preview HTTP checks, production and
+Search Console/IndexNow completion pending. See Docs/seo-audit.md. No paid signup,
+auth bypass, production fixtures or broader held QA.
+
+SEO follow-through: Google ownership verified and sitemap successfully processed
+with six discovered pages. IndexNow accepted six URLs (202). Google inspection
+reported www as its selected duplicate canonical, so a permanent www-to-apex
+redirect was added. Public startup retains real prerendered content while its
+route module loads. The owner caught a black-background regression in responsive
+image exports: RGB conversion had dropped PNG transparency. All six variants
+were regenerated preserving RGBA/alpha exactly and given `-alpha` URLs to bypass
+cached opaque files. Added alpha regression assertions; build and focused SEO
+checks pass, local Chrome visual confirmation passed. Live fix and final crawl
+request verification pending. Broader account/backend QA hold remains.
+
+Final SEO/fix checkpoint (23:08 IST): production
+ dpl_CnfpAeTDRsB4GFJUsEJsaQq5Kf6p is READY at orixrideshare.tech. Live checks pass:
+six public pages, six private shells, canonical redirect/404/sitemap and 22 assets.
+All six live responsive image bytes match the corrected RGBA exports; Chrome loads
+the `-alpha` image and screenshot corner pixels are the light page background.
+Explicit www root plus wildcard rules now return 308 for /, /about and /login.
+IndexNow accepted six final URLs (200). Google live test says available/indexable;
+manual indexing request failed at Google/reCAPTCHA connection, not accepted. No
+CAPTCHA bypass. Sitemap already processed with six discovered pages. Actual Google
+index/canonical/ranking changes need a later check. Final mobile lab score: SEO,
+accessibility, best practices 100 each; performance 72, FCP 3.2s, LCP 5.2s, TBT 0,
+CLS 0. Mobile performance remains an open optimization; do not claim maximum
+performance or generic-query rankings. Full report: Docs/seo-audit.md. Play release
+remains cancelled. No broader held account/backend/device QA was resumed.

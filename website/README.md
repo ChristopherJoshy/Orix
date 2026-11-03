@@ -24,3 +24,18 @@ The production API origin must use HTTPS and be reachable from browsers. The
 admin proxy uses the same API origin and a separately configured server-only
 secret. Vercel's Git integration deploys the production branch from this folder.
 The project uses `main` as its production branch.
+
+## Public search pages
+
+`npm run build` renders the existing public components to six HTML pages with
+route-specific metadata and generates their canonical sitemap. Real public
+Firebase/API web configuration is required in each build environment; private
+service credentials must never use `VITE_` names. Private routes use a separate
+noindex SPA shell; unknown routes serve the existing not-found design with HTTP
+404. `npm run test:seo` checks the generated artifacts.
+
+After verifying the matching production deployment, run `npm run seo:notify` to
+notify IndexNow of the public URLs. This verifies the live public ownership file
+first. Submission does not guarantee indexing or ranking. Google ownership and
+sitemap submissions are managed in Search Console. See the [SEO audit](../Docs/seo-audit.md)
+for research, actual execution evidence and remaining limits.

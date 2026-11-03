@@ -4,6 +4,9 @@
 
 **Your route. Good company.**
 
+[Use ORIX Ride Share on the web](https://orixrideshare.tech/) ·
+[How ride sharing works](https://orixrideshare.tech/about)
+
 ORIX helps people going the same way coordinate shared autos, travel companions
 and lift offers. Choose your route, departure window and preferences; ORIX finds
 compatible people. Review your group, agree on a pickup, and decide whether to go.
@@ -28,7 +31,7 @@ Configure each service from its example environment file. Run the Go API with
 inside `website/`; use Flutter tooling from `frontend/`. Keep credentials in
 ignored local files or a deployment secret manager.
 
-Recurring offers are connected in both clients. Some integration and deployment
+Recurring lift availability is not implemented yet. Some integration and deployment
 flows still need verification; [current progress](Docs/integration-progress.md)
 records their status. See [environment setup](Docs/environment-setup.md) and
 [contributor instructions](AGENTS.md) for details.

@@ -24,8 +24,36 @@ window.addEventListener("vite:preloadError", (event) => {
   }
 });
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+async function mount() {
+  const path = window.location.pathname;
+  let page;
+  try {
+    // Keep the real prerendered content visible until its interactive component
+    // is ready, instead of replacing an already painted page with a lazy spinner.
+    if (path === "/") {
+      const { default: Landing } = await import("./pages/Landing");
+      page = <Landing />;
+    } else if (path === "/download") {
+      const { default: DownloadAndroid } =
+        await import("./pages/DownloadAndroid");
+      page = <DownloadAndroid />;
+    } else if (
+      ["/about", "/privacy", "/terms", "/account-deletion"].includes(path)
+    ) {
+      const { PublicInfo } = await import("./pages/Public");
+      page = <PublicInfo page={path.slice(1)} />;
+    }
+  } catch {
+    // Let the existing lazy-route error boundary show its authored recovery UI.
+    // The existing preload-error listener also retries a stale deployment once.
+  }
+  createRoot(document.getElementById("root")!).render(
+    <StrictMode>
+      <App
+        initialPublicPage={page}
+        initialPublicPath={page ? path : undefined}
+      />
+    </StrictMode>,
+  );
+}
+void mount();

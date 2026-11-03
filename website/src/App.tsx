@@ -14,6 +14,7 @@ import { initializeSession, useSession } from "./lib/session";
 import { Button } from "./components/ui";
 import { PixelMark } from "./components/PixelArt";
 import { PixelStatus, LifecycleFeedback } from "./components/PixelStatus";
+import { publicPages, updatePageMetadata } from "./lib/seo";
 const Groups = lazy(() =>
   import("./pages/Groups").then((module) => ({ default: module.Groups })),
 );
@@ -115,7 +116,10 @@ function PageIdentity() {
       "/app/messages": "Your conversations",
       "/admin": "Control room",
     };
-    const title = `${names[location.pathname] || location.pathname.split("/").at(-1)?.replaceAll("-", " ") || "Your journey"} · ORIX`;
+    updatePageMetadata(location.pathname);
+    const title =
+      publicPages[location.pathname]?.title ??
+      `${names[location.pathname] || location.pathname.split("/").at(-1)?.replaceAll("-", " ") || "Your journey"} · ORIX`;
     const onVisibility = () => {
       document.title =
         document.hidden && unread && location.pathname.startsWith("/app")
@@ -196,7 +200,10 @@ function WebPushLifecycle() {
   }, [account?.user_id, account?.onboarding_completed]);
   return null;
 }
-export default function App() {
+export default function App({
+  initialPublicPage,
+  initialPublicPath,
+}: { initialPublicPage?: ReactNode; initialPublicPath?: string } = {}) {
   useEffect(() => initializeSession(), []);
   const motion = useStore((s) => s.motion);
   useEffect(() => {
@@ -217,8 +224,22 @@ export default function App() {
             <PageIdentity />
             <Suspense fallback={<Loading />}>
               <Routes>
-                <Route path="/" element={<Landing />} />
-                <Route path="/download" element={<DownloadAndroid />} />
+                <Route
+                  path="/"
+                  element={
+                    initialPublicPath === "/" ? initialPublicPage : <Landing />
+                  }
+                />
+                <Route
+                  path="/download"
+                  element={
+                    initialPublicPath === "/download" ? (
+                      initialPublicPage
+                    ) : (
+                      <DownloadAndroid />
+                    )
+                  }
+                />
                 <Route path="/login" element={<Login />} />
                 <Route path="/onboarding" element={<Onboarding />} />
                 {["about", "privacy", "terms", "account-deletion"].map(
@@ -226,7 +247,13 @@ export default function App() {
                     <Route
                       key={page}
                       path={`/${page}`}
-                      element={<PublicInfo page={page} />}
+                      element={
+                        initialPublicPath === `/${page}` ? (
+                          initialPublicPage
+                        ) : (
+                          <PublicInfo page={page} />
+                        )
+                      }
                     />
                   ),
                 )}

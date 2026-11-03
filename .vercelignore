@@ -1,0 +1,11 @@
+# The Vercel project root is website/. Never upload backend/app secrets or builds.
+/*
+!website
+website/node_modules/
+website/dist/
+website/.vercel/
+website/.env*
+!website/.env.example
+website/*.tsbuildinfo
+website/playwright-report/
+website/test-results/

@@ -1471,3 +1471,42 @@ rejected. Publication is pending explicit owner approval after automatic review
 rejected reading the running service environment as an unintended credential
 source. No credentials were read or copied. Public download remained 2.1.1 at
 this checkpoint. Full hashes/fingerprints and verification: Docs/release-2.1.2.md.
+
+2026-11-03 — Implemented web-only technical SEO under the owner's no-design-change
+constraint; Play publication was explicitly cancelled by the owner due to cost.
+Actual public route prerendering, six unique title/description/canonical/social
+sets, factual JSON-LD, generated sitemap, noindex private shells, real 404 routing
+and route module preloads. Existing PNG art gained lossless WebP derivatives;
+all three decoded RGBA comparisons pass, saving ~38–39%. Website production build
+and focused `test:seo` pass; diff whitespace check passes. Added Google public
+verification tag and a live-verifying explicit IndexNow command. No live rankings
+or traffic results claimed. Vercel preview first failed due to source root, then
+missing Firebase preview config; website-only upload allowlist was checked and
+isolated preview dpl_HZGFGpYUnME2a3qGEh9qgLDKqMmE built READY with only existing
+public client config. Production staging was auto-review rejected after the failed
+preview and did not run. Remaining actual verification/publication results follow.
+Detailed evidence/research and limits: Docs/seo-audit.md. No broader held QA.
+
+2026-11-03 — Owner reported a black rectangle behind the hero during the SEO
+performance pass. The responsive export script had converted transparent PNGs to
+RGB, dropping alpha. Regenerated all six hero/About responsive variants as RGBA
+WebP with byte-for-byte alpha-plane checks against the resized originals; changed
+the URLs with an `-alpha` suffix to avoid cached opaque versions. Added WebP alpha
+flag assertions to `test:seo`. Build and focused checks pass. Connected Chrome
+visually confirms the local hero blends into the existing page background. No
+layout/CSS, typography or illustration composition changed. Deployment and live
+verification results follow.
+
+2026-11-03 — Transparency repair published and verified live. Six actual image
+files match local alpha-verified bytes; Chrome loads the corrected `-alpha` hero,
+and screenshot corner pixels match the light canvas. Current production
+ dpl_CnfpAeTDRsB4GFJUsEJsaQq5Kf6p is READY on the main domain. Final focused live
+HTTP checks pass for six public pages, six private shells, XML/robots/key, real404,
+clean redirect and 22 assets. Added explicit www root rule after wildcard-only
+checks found root still200; /, /about and /login now308 to matching apex paths.
+Google ownership verified, sitemap processed successfully with six pages, live
+inspection says available/indexable. Manual indexing request failed at Google’s
+reCAPTCHA service connection; no bypass or accepted-request claim. Final IndexNow
+accepted six URLs (200). Final mobile Lighthouse: SEO/accessibility/best practices
+100 each, performance72; FCP3.2s/LCP5.2s/TBT0ms/CLS0. No actual index inclusion or
+query ranking claimed. See Docs/seo-audit.md for evidence and remaining limits.
