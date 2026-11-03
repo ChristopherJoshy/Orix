@@ -3,7 +3,7 @@
 /// Handles version checking and update notifications.
 library;
 
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -43,13 +43,16 @@ class AppVersionInfo {
   }
 
   String get storeUrl {
-    if (Platform.isAndroid) {
-      return playStoreUrl ??
-          'https://play.google.com/store/apps/details?id=com.orix.app';
-    } else if (Platform.isIOS) {
-      return appStoreUrl ?? 'https://apps.apple.com/app/orix';
+    final ios = defaultTargetPlatform == TargetPlatform.iOS;
+    final uri = Uri.tryParse((ios ? appStoreUrl : playStoreUrl) ?? '');
+    if (uri == null ||
+        uri.scheme != 'https' ||
+        uri.userInfo.isNotEmpty ||
+        uri.hasPort ||
+        uri.host != (ios ? 'apps.apple.com' : 'play.google.com')) {
+      return '';
     }
-    return playStoreUrl ?? '';
+    return uri.toString();
   }
 }
 

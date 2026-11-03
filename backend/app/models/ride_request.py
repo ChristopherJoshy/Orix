@@ -70,6 +70,8 @@ class RideRequest(BaseModel):
     - matched_at: When match was found
     """
 
+    pickup_place_id: Optional[str] = Field(None, max_length=600)
+    drop_place_id: Optional[str] = Field(None, max_length=600)
     request_id: str = Field(..., description="Unique request ID")
     user_id: str = Field(..., description="User who created the request")
     pickup: GeoPoint = Field(..., description="Pickup location")
@@ -96,6 +98,8 @@ class RideRequest(BaseModel):
 
 
 class RideRequestCreate(BaseModel):
+    pickup_place_id: Optional[str] = Field(None, max_length=600)
+    drop_place_id: Optional[str] = Field(None, max_length=600)
     """Data required to create a new ride request."""
 
     pickup_lat: float = Field(..., ge=-90, le=90)

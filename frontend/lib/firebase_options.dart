@@ -1,63 +1,30 @@
-/// Firebase configuration options
-///
-/// Generated from google-services.json
-library;
-
+/// Public Firebase client identifiers supplied by the project owner.
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
-/// Default Firebase options for the current platform.
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
-    if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
-    }
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.android:
-        return android;
-      case TargetPlatform.iOS:
-        return ios;
-      case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
-      case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
-      case TargetPlatform.linux:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for linux - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
-      default:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions are not supported for this platform.',
-        );
-    }
+    if (kIsWeb) return web;
+    if (defaultTargetPlatform == TargetPlatform.android) return android;
+    throw UnsupportedError('Firebase is configured for Android and web only.');
   }
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyD22jDQNuc1x2H5STsy7T1QBppwCDAvec8',
-    appId: '1:459947531477:android:37b98572f0e81874fe165c',
-    messagingSenderId: '459947531477',
-    projectId: 'orix-test-ca094',
-    storageBucket: 'orix-test-ca094.firebasestorage.app',
+  static const android = FirebaseOptions(
+    apiKey: "AIzaSyAyvwB8r_vapTOFQWGdFxu0yCMCQ9BWvrk",
+    appId: "1:130898233956:android:8ad780cf27bd24a1b52d71",
+    messagingSenderId: "130898233956",
+    projectId: "orixrideshare",
+    storageBucket: "orixrideshare.firebasestorage.app",
   );
 
-  // Placeholder for iOS - configure when adding iOS support
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'YOUR_IOS_API_KEY',
-    appId: 'YOUR_IOS_APP_ID',
-    messagingSenderId: '459947531477',
-    projectId: 'orix-test-ca094',
-    storageBucket: 'orix-test-ca094.firebasestorage.app',
-    iosBundleId: 'com.example.orix',
+  static const web = FirebaseOptions(
+    apiKey: "AIzaSyDMu49MmVbSJvFo7phY4WIWw7NP60Y50rs",
+    authDomain: "orixrideshare.firebaseapp.com",
+    projectId: "orixrideshare",
+    storageBucket: "orixrideshare.firebasestorage.app",
+    messagingSenderId: "130898233956",
+    appId: "1:130898233956:web:f90d66ca77df002ab52d71",
+    measurementId: "G-8VM3CWPH8D",
   );
 }

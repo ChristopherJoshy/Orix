@@ -3,13 +3,16 @@
 /// In-app notification center.
 library;
 
+import 'package:orix/core/widgets/pixel_ui.dart';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../core/providers/notification_provider.dart';
-import '../../core/theme/app_theme.dart';
-import '../../core/utils/time_utils.dart';
-import '../../core/widgets/custom_alert_dialog.dart';
+import 'package:orix/core/providers/notification_provider.dart';
+import 'package:orix/core/theme/app_theme.dart';
+import 'package:orix/core/utils/time_utils.dart';
+import 'package:orix/core/widgets/custom_alert_dialog.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -25,7 +28,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadNotifications();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadNotifications();
+    });
   }
 
   Future<void> _loadNotifications() async {
@@ -62,177 +67,186 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<NotificationProvider>(
-      builder: (context, notificationProvider, _) {
-        final notifications = notificationProvider.notifications;
-        final isLoading = notificationProvider.isLoading;
-        final hasUnread = notificationProvider.hasUnread;
-
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Notifications'),
-            actions: [
-              if (notifications.isNotEmpty)
-                IconButton(
-                  icon: _isClearing
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.delete_outline),
-                  tooltip: 'Clear all',
-                  onPressed: _isClearing ? null : _clearAll,
-                ),
-              if (hasUnread)
-                TextButton(
-                  onPressed: _isMarkingAll ? null : _markAllRead,
-                  child: _isMarkingAll
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Mark all read'),
-                ),
-            ],
+    final provider = context.watch<NotificationProvider>();
+    final notifications = provider.notifications;
+    return OrixPage(
+      title: 'Notifications',
+      description: provider.isLoading
+          ? 'Loading your updates…'
+          : '${provider.unreadCount} unread',
+      actions: [
+        IconButton(
+          tooltip: 'Refresh notifications',
+          onPressed: provider.isLoading ? null : _loadNotifications,
+          icon: const Icon(Icons.refresh),
+        ),
+        PopupMenuButton<String>(
+          tooltip: 'Inbox actions',
+          enabled:
+              notifications.isNotEmpty &&
+              !provider.isMutating &&
+              !_isClearing &&
+              !_isMarkingAll,
+          onSelected: (action) {
+            if (action == 'read')
+              _markAllRead();
+            else
+              _clearAll();
+          },
+          itemBuilder: (_) => [
+            if (provider.hasUnread)
+              const PopupMenuItem(value: 'read', child: Text('Mark all read')),
+            if (notifications.isNotEmpty)
+              const PopupMenuItem(value: 'clear', child: Text('Clear inbox')),
+          ],
+        ),
+      ],
+      children: [
+        if (provider.error != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: Text(provider.error!),
           ),
-          body: isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : notifications.isEmpty
-              ? _buildEmpty()
-              : _buildList(notifications),
-        );
-      },
+        if (provider.isLoading || _isClearing || _isMarkingAll)
+          const PixelLoader(),
+        if (notifications.isEmpty &&
+            !provider.isLoading &&
+            provider.error == null)
+          const PixelSection(
+            child: Column(
+              children: [
+                OrixLogo(symbolOnly: true, width: 36),
+                SizedBox(height: 20),
+                Text('You’re up to date.'),
+              ],
+            ),
+          )
+        else
+          for (final notification in notifications)
+            _buildNotificationCard(notification),
+        if (provider.hasMore)
+          TextButton(
+            onPressed: provider.isLoading || provider.isMutating
+                ? null
+                : () => provider.fetchNotifications(loadMore: true),
+            child: const Text('Earlier notifications'),
+          ),
+      ],
     );
   }
 
-  Widget _buildEmpty() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.notifications_off_outlined,
-            size: 64,
-            color: AppColors.textTertiary.withAlphaValue(0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No notifications',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(color: AppColors.textSecondary),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildList(List<AppNotification> notifications) {
-    return RefreshIndicator(
-      onRefresh: _loadNotifications,
-      child: ListView.separated(
-        padding: const EdgeInsets.all(12),
-        itemCount: notifications.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 8),
-        itemBuilder: (context, index) =>
-            _buildNotificationCard(notifications[index]),
-      ),
-    );
+  Future<void> _open(AppNotification notification) async {
+    final provider = context.read<NotificationProvider>();
+    if (provider.isMutating) return;
+    final account = provider.accountId;
+    if (!notification.isRead) await provider.markAsRead(notification.id);
+    if (!mounted || !provider.isForUser(account)) return;
+    if (notification.type == 'group_rejected' ||
+        notification.data?['type'] == 'group_rejected') {
+      context.push('/ride/matching');
+      return;
+    }
+    final group = notification.data?['group_id'];
+    final ticket = notification.data?['ticket_id'];
+    final report = notification.data?['report_id'];
+    if (report is String && report.isNotEmpty) {
+      await context.push(
+        '/profile/support/reports/${Uri.encodeComponent(report)}',
+      );
+      return;
+    }
+    if (group is String && group.isNotEmpty) {
+      final chat = const {
+        'new_chat_message',
+        'chat_message',
+        'new_message',
+      }.contains(notification.type);
+      context.push(
+        '/groups/${Uri.encodeComponent(group)}${chat ? '/chat' : ''}',
+      );
+    } else if (ticket is String && ticket.isNotEmpty) {
+      context.push('/profile/support/tickets/${Uri.encodeComponent(ticket)}');
+    }
   }
 
   Widget _buildNotificationCard(AppNotification notification) {
-    final isUnread = !notification.isRead;
-    final type = notification.type;
-
-    IconData icon;
-    Color color;
-
-    switch (type) {
-      case 'match':
-        icon = Icons.people;
-        color = AppColors.success;
-        break;
-      case 'group':
-        icon = Icons.check_circle;
-        color = AppColors.primary;
-        break;
-      case 'reminder':
-        icon = Icons.alarm;
-        color = AppColors.warning;
-        break;
-      default:
-        icon = Icons.info;
-        color = AppColors.textSecondary;
-    }
-
+    final scene = switch (notification.type) {
+      'match_found' || 'match' => PixelScene.found,
+      'group_cancelled' || 'ride_cancelled' => PixelScene.cancelled,
+      'ride_completed' || 'group_finish' => PixelScene.completed,
+      _ => null,
+    };
     return Card(
-      color: isUnread ? AppColors.primary.withAlphaValue(0.05) : null,
       child: InkWell(
-        onTap: () {
-          if (isUnread) {
-            context.read<NotificationProvider>().markAsRead(notification.id);
-          }
-        },
-        borderRadius: BorderRadius.circular(16),
+        onTap: context.watch<NotificationProvider>().isMutating
+            ? null
+            : () => _open(notification),
         child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: color.withAlphaValue(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (scene != null)
+                    SizedBox(
+                      width: 64,
+                      height: 40,
+                      child: PixelAnimation(
+                        scene: scene,
+                        size: 64,
+                        label: notification.type.replaceAll('_', ' '),
+                      ),
+                    )
+                  else
+                    const OrixLogo(symbolOnly: true, width: 28),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Text(
-                            notification.title,
-                            style: Theme.of(context).textTheme.titleSmall
-                                ?.copyWith(
-                                  fontWeight: isUnread
-                                      ? FontWeight.w600
-                                      : FontWeight.w500,
-                                ),
-                          ),
-                        ),
-                        if (isUnread)
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: AppColors.primary,
-                              shape: BoxShape.circle,
+                        if (!notification.isRead)
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 6),
+                            child: Text(
+                              'Unread',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
+                        Text(
+                          notification.title,
+                          style: TextStyle(
+                            fontWeight: notification.isRead
+                                ? FontWeight.w500
+                                : FontWeight.w600,
+                            fontSize: 15,
+                            height: 1.5,
+                          ),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      notification.body,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      TimeUtils.formatRelative(notification.createdAt),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: AppColors.textTertiary,
-                      ),
-                    ),
-                  ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                notification.body,
+                style: const TextStyle(
+                  fontSize: 14,
+                  height: 1.6,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                TimeUtils.formatRelative(notification.createdAt),
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
                 ),
               ),
             ],

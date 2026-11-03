@@ -1,3 +1,4 @@
+from app.routers.reports import ReportReply, get_report_moderator
 """
 Admin Router
 
@@ -570,3 +571,16 @@ async def get_recent_logs(
         )
         for log in logs
     ]
+
+
+@router.get('/reports/{report_id}')
+async def report_conversation(report_id: str, admin: User = Depends(get_report_moderator)):
+    from app.routers.reports import conversation
+    return await conversation(report_id, admin, admin=True)
+
+
+
+@router.post('/reports/{report_id}/messages')
+async def reply_to_report(report_id: str, reply: ReportReply, admin: User = Depends(get_report_moderator)):
+    from app.routers.reports import conversation
+    return await conversation(report_id, admin, admin=True, reply=reply)

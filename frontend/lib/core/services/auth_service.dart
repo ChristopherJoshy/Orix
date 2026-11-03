@@ -5,10 +5,12 @@ library;
 
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import '../config/api_config.dart';
 
-import 'domain_config_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:firebase_core/firebase_core.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 /// Result of authentication
 class AuthResult {
@@ -28,8 +30,9 @@ class AuthResult {
 
 /// Authentication service using google_sign_in v7 API
 class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  DomainConfigService? _domainConfigService;
+  final FirebaseAuth _auth = InternalTestConfig.enabled
+      ? FirebaseAuth.instanceFor(app: Firebase.app('orix-internal'))
+      : FirebaseAuth.instance;
 
   bool _initialized = false;
   StreamSubscription<GoogleSignInAuthenticationEvent>? _authEventSubscription;
@@ -59,13 +62,19 @@ class AuthService {
   /// Initialize Google Sign-In (must be called once at app startup)
   Future<void> initialize() async {
     if (_initialized) return;
+    if (InternalTestConfig.enabled) {
+      _initialized = true;
+      _initCompleter.complete();
+      return;
+    }
 
     try {
-      // Server client ID from google-services.json (web client type 3)
-      const serverClientId =
-          '459947531477-pj2b20unfl7mpbdvkheg7g469tgt7i87.apps.googleusercontent.com';
-
-      await GoogleSignIn.instance.initialize(serverClientId: serverClientId);
+      // Android may derive this from google-services.json. Other builds can
+      // supply their own public OAuth web client ID at build time.
+      const serverClientId = String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID');
+      await GoogleSignIn.instance.initialize(
+        serverClientId: serverClientId.isEmpty ? null : serverClientId,
+      );
       _initialized = true;
 
       // Listen for authentication events
@@ -104,25 +113,15 @@ class AuthService {
     await _initCompleter.future;
   }
 
-  /// Set domain config service for dynamic domain validation
-  void setDomainConfigService(DomainConfigService service) {
-    _domainConfigService = service;
-  }
-
-  /// Check if email domain is allowed using DomainConfigService
-  bool _isEmailDomainAllowed(String email) {
-    if (_domainConfigService != null) {
-      return _domainConfigService!.isEmailDomainAllowed(email);
-    }
-    // Fallback to hardcoded domain if service not available
-    const fallbackDomain = 'sjcetpalai.ac.in';
-    final domain = email.split('@').last.toLowerCase();
-    return domain == fallbackDomain || domain.endsWith('.$fallbackDomain');
-  }
-
   /// Sign in with Google (v7 API)
   Future<AuthResult> signInWithGoogle() async {
     try {
+      if (kIsWeb && !InternalTestConfig.enabled) {
+        final result = await _auth.signInWithPopup(GoogleAuthProvider());
+        return result.user == null
+            ? AuthResult.failure('Failed to sign in to Firebase')
+            : AuthResult.success(result.user!);
+      }
       await _ensureInitialized();
 
       // Check if authenticate is supported on this platform
@@ -136,17 +135,6 @@ class AuthService {
       // Trigger the Google Sign-In flow
       final GoogleSignInAccount googleUser = await GoogleSignIn.instance
           .authenticate();
-
-      // Validate email domain before proceeding
-      final email = googleUser.email;
-      if (!_isEmailDomainAllowed(email)) {
-        // Sign out the Google account since domain is not allowed
-        await GoogleSignIn.instance.signOut();
-        return AuthResult.failure(
-          'Please use your college email',
-          code: 'invalid_domain',
-        );
-      }
 
       // Get authentication tokens (v7 uses authentication getter)
       final String? idToken = googleUser.authentication.idToken;
@@ -188,6 +176,25 @@ class AuthService {
     }
   }
 
+  Future<AuthResult> signInInternal(String email, String password) async {
+    if (!InternalTestConfig.enabled) {
+      return AuthResult.failure('Internal login is unavailable');
+    }
+    try {
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      final user = credential.user;
+      if (user == null) return AuthResult.failure('Account sign-in failed');
+      return AuthResult.success(user);
+    } on FirebaseAuthException {
+      return AuthResult.failure(
+        'Check the test account credentials and emulator',
+      );
+    }
+  }
+
   /// Verify phone number using Firebase Auth
   Future<void> verifyPhoneNumber({
     required String phoneNumber,
@@ -209,15 +216,55 @@ class AuthService {
   /// Sign out from both Firebase and Google
   Future<void> signOut() async {
     await _auth.signOut();
-    if (_initialized) {
+    if (_initialized && !InternalTestConfig.enabled) {
       await GoogleSignIn.instance.signOut();
+    }
+  }
+
+  /// Reauthenticate the existing Firebase user before a sensitive API action.
+  Future<bool> reauthenticateGoogle({String? emulatorPassword}) async {
+    final user = currentUser;
+    if (user == null) return false;
+    try {
+      if (InternalTestConfig.enabled) {
+        final email = user.email;
+        if (email == null ||
+            emulatorPassword == null ||
+            emulatorPassword.isEmpty)
+          return false;
+        await user.reauthenticateWithCredential(
+          EmailAuthProvider.credential(
+            email: email,
+            password: emulatorPassword,
+          ),
+        );
+        await user.getIdToken(true);
+        return currentUser?.uid == user.uid;
+      }
+      if (kIsWeb) {
+        await user.reauthenticateWithPopup(GoogleAuthProvider());
+        await user.getIdToken(true);
+        return currentUser?.uid == user.uid;
+      }
+      await _ensureInitialized();
+      if (!GoogleSignIn.instance.supportsAuthenticate()) return false;
+      final account = await GoogleSignIn.instance.authenticate();
+      final token = account.authentication.idToken;
+      if (token == null || currentUser?.uid != user.uid) return false;
+      await user.reauthenticateWithCredential(
+        GoogleAuthProvider.credential(idToken: token),
+      );
+      await user.getIdToken(true);
+      return currentUser?.uid == user.uid;
+    } catch (_) {
+      return false;
     }
   }
 
   /// Disconnect - revokes access and signs out
   Future<void> disconnect() async {
     await _auth.signOut();
-    if (_initialized) {
+    if (_initialized && !InternalTestConfig.enabled) {
       await GoogleSignIn.instance.disconnect();
     }
   }
@@ -226,7 +273,7 @@ class AuthService {
   Future<bool> deleteAccount() async {
     try {
       await currentUser?.delete();
-      if (_initialized) {
+      if (_initialized && !InternalTestConfig.enabled) {
         await GoogleSignIn.instance.disconnect();
       }
       return true;

@@ -1,0 +1,3471 @@
+{
+  "date": "2026-11-03",
+  "scope": "website frontend only",
+  "desktop": {
+    "viewport": [
+      1440,
+      1000
+    ],
+    "routes": [
+      {
+        "path": "/",
+        "heading": "Your way.Our journey.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/login",
+        "heading": "Good to see you.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/onboarding",
+        "heading": "A little introduction.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": []
+      },
+      {
+        "path": "/about",
+        "heading": "A little company. A better way.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/privacy",
+        "heading": "Your journey. Your privacy.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/terms",
+        "heading": "Good company starts with care.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/account-deletion",
+        "heading": "Your account. Your decision.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app",
+        "heading": "Hey, Alex. Going somewhere?",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/explore",
+        "heading": "Someone\u2019s going your way.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "aria-prohibited-attr",
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/create",
+        "heading": "Where to, together?",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/rides",
+        "heading": "Your little journeys.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/rides/OX-1042",
+        "heading": "Kakkanad to Edappally",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/history",
+        "heading": "The roads you\u2019ve shared.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/messages",
+        "heading": "A little hello.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/notifications",
+        "heading": "You\u2019re in the loop.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/profile",
+        "heading": "A little about you.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/settings",
+        "heading": "Make it feel like you.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/safety",
+        "heading": "Your comfort. Your call.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/support",
+        "heading": "A little help along the way.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/support/TK-208",
+        "heading": "Help with a pickup point",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/rider",
+        "heading": "An empty seat. A little kindness.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/onboarding",
+        "heading": "A little introduction.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin",
+        "heading": "A city worth caring for.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/users",
+        "heading": "The people behind the pixels.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": []
+      },
+      {
+        "path": "/admin/rides",
+        "heading": "Every route has a story.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": []
+      },
+      {
+        "path": "/admin/reports",
+        "heading": "Listen first. Act with care.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/support",
+        "heading": "A little help, a real difference.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": []
+      },
+      {
+        "path": "/admin/support/TK-208",
+        "heading": "Help with a pickup point",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/operations",
+        "heading": "Keep the little things moving.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/audit",
+        "heading": "Care leaves a clear trail.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/maintenance",
+        "heading": "A little pause. A better journey.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/offline",
+        "heading": "A little off the grid.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/suspended",
+        "heading": "Let\u2019s take a little pause.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/banned",
+        "heading": "A moment to make things right.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/update",
+        "heading": "A little newer. A little better.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/not-a-page",
+        "heading": "A little detour.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      }
+    ]
+  },
+  "mobile": {
+    "viewport": [
+      390,
+      844
+    ],
+    "routes": [
+      {
+        "path": "/",
+        "heading": "Your way.Our journey.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/login",
+        "heading": "Good to see you.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/onboarding",
+        "heading": "A little introduction.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": []
+      },
+      {
+        "path": "/about",
+        "heading": "A little company. A better way.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/privacy",
+        "heading": "Your journey. Your privacy.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/terms",
+        "heading": "Good company starts with care.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/account-deletion",
+        "heading": "Your account. Your decision.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app",
+        "heading": "Hey, Alex. Going somewhere?",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/explore",
+        "heading": "Someone\u2019s going your way.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "aria-prohibited-attr",
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/create",
+        "heading": "Where to, together?",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/rides",
+        "heading": "Your little journeys.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/rides/OX-1042",
+        "heading": "Kakkanad to Edappally",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/history",
+        "heading": "The roads you\u2019ve shared.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/messages",
+        "heading": "A little hello.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/notifications",
+        "heading": "You\u2019re in the loop.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/profile",
+        "heading": "A little about you.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/settings",
+        "heading": "Make it feel like you.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/safety",
+        "heading": "Your comfort. Your call.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/support",
+        "heading": "A little help along the way.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/support/TK-208",
+        "heading": "Help with a pickup point",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/rider",
+        "heading": "An empty seat. A little kindness.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/onboarding",
+        "heading": "A little introduction.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": []
+      },
+      {
+        "path": "/admin",
+        "heading": "A city worth caring for.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/users",
+        "heading": "The people behind the pixels.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/rides",
+        "heading": "Every route has a story.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/reports",
+        "heading": "Listen first. Act with care.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/support",
+        "heading": "A little help, a real difference.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": []
+      },
+      {
+        "path": "/admin/support/TK-208",
+        "heading": "Help with a pickup point",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/operations",
+        "heading": "Keep the little things moving.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/audit",
+        "heading": "Care leaves a clear trail.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/maintenance",
+        "heading": "A little pause. A better journey.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/offline",
+        "heading": "A little off the grid.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/suspended",
+        "heading": "Let\u2019s take a little pause.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/banned",
+        "heading": "A moment to make things right.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/update",
+        "heading": "A little newer. A little better.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/not-a-page",
+        "heading": "A little detour.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      }
+    ]
+  },
+  "narrow": {
+    "viewport": [
+      320,
+      740
+    ],
+    "routes": [
+      {
+        "route": "/",
+        "h1": "Your way.Our journey.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/login",
+        "h1": "Good to see you.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/onboarding",
+        "h1": "A little introduction.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/about",
+        "h1": "A little company. A better way.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/privacy",
+        "h1": "Your journey. Your privacy.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/terms",
+        "h1": "Good company starts with care.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/account-deletion",
+        "h1": "Your account. Your decision.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/app",
+        "h1": "Hey, Alex. Going somewhere?",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/app/explore",
+        "h1": "Someone\u2019s going your way.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/app/create",
+        "h1": "Where to, together?",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/app/rides",
+        "h1": "Your little journeys.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/app/rides/OX-1042",
+        "h1": "Kakkanad to Edappally",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/app/history",
+        "h1": "The roads you\u2019ve shared.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/app/messages",
+        "h1": "A little hello.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/app/notifications",
+        "h1": "You\u2019re in the loop.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/app/profile",
+        "h1": "A little about you.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/app/settings",
+        "h1": "Make it feel like you.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/app/safety",
+        "h1": "Your comfort. Your call.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/app/support",
+        "h1": "A little help along the way.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/app/support/TK-208",
+        "h1": "Help with a pickup point",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/app/rider",
+        "h1": "An empty seat. A little kindness.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/app/onboarding",
+        "h1": "A little introduction.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/admin",
+        "h1": "A city worth caring for.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/admin/users",
+        "h1": "The people behind the pixels.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/admin/rides",
+        "h1": "Every route has a story.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/admin/reports",
+        "h1": "Listen first. Act with care.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/admin/support",
+        "h1": "A little help, a real difference.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/admin/support/TK-208",
+        "h1": "Help with a pickup point",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/admin/operations",
+        "h1": "Keep the little things moving.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/admin/audit",
+        "h1": "Care leaves a clear trail.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/status/maintenance",
+        "h1": "A little pause. A better journey.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/status/offline",
+        "h1": "A little off the grid.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/status/suspended",
+        "h1": "Let\u2019s take a little pause.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/status/banned",
+        "h1": "A moment to make things right.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/status/update",
+        "h1": "A little newer. A little better.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      },
+      {
+        "route": "/not-a-page",
+        "h1": "A little detour.",
+        "overflow": false,
+        "scroll": 320,
+        "width": 320
+      }
+    ]
+  },
+  "production_smoke": {
+    "origin": "http://127.0.0.1:4173",
+    "landing_and_workspace": true,
+    "favicon_changed": true,
+    "ttfb_ms": 1.3,
+    "fcp_ms": 40,
+    "lcp_ms": 388,
+    "cls_rounded": 0.01,
+    "inp": null,
+    "limit": "Single localhost Chromium observation, not field data or a device benchmark.",
+    "sign_out_and_admin_redirect": true,
+    "unconnected_sign_in_disclosed": true
+  },
+  "notes": [
+    "Later targeted checks verified active mobile action white-on-dark contrast and text-spacing heading reflow.",
+    "Gradient/canvas contrast and some modal focus-guard checks remain incomplete; zero automated violations is not full accessibility certification.",
+    "No real backend or Flutter application verification performed."
+  ],
+  "started": "2026-11-02",
+  "production_desktop": {
+    "viewport": [
+      1440,
+      1000
+    ],
+    "routes": [
+      {
+        "path": "/",
+        "heading": "Your way.Our journey.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/login",
+        "heading": "Good to see you.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/onboarding",
+        "heading": "A little introduction.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": []
+      },
+      {
+        "path": "/about",
+        "heading": "A little company. A better way.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/privacy",
+        "heading": "Your journey. Your privacy.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/terms",
+        "heading": "Good company starts with care.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/account-deletion",
+        "heading": "Your account. Your decision.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app",
+        "heading": "Hey, Alex. Going somewhere?",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/explore",
+        "heading": "Someone\u2019s going your way.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "aria-prohibited-attr",
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/create",
+        "heading": "Where to, together?",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/rides",
+        "heading": "Your little journeys.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/rides/OX-1042",
+        "heading": "Kakkanad to Edappally",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/history",
+        "heading": "The roads you\u2019ve shared.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/messages",
+        "heading": "A little hello.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/notifications",
+        "heading": "You\u2019re in the loop.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/profile",
+        "heading": "A little about you.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/settings",
+        "heading": "Make it feel like you.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/safety",
+        "heading": "Your comfort. Your call.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/support",
+        "heading": "A little help along the way.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/support/TK-208",
+        "heading": "Help with a pickup point",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/rider",
+        "heading": "An empty seat. A little kindness.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/onboarding",
+        "heading": "A little introduction.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin",
+        "heading": "A city worth caring for.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/users",
+        "heading": "The people behind the pixels.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": []
+      },
+      {
+        "path": "/admin/rides",
+        "heading": "Every route has a story.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": []
+      },
+      {
+        "path": "/admin/reports",
+        "heading": "Listen first. Act with care.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/support",
+        "heading": "A little help, a real difference.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": []
+      },
+      {
+        "path": "/admin/support/TK-208",
+        "heading": "Help with a pickup point",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/operations",
+        "heading": "Keep the little things moving.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/audit",
+        "heading": "Care leaves a clear trail.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/maintenance",
+        "heading": "A little pause. A better journey.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/offline",
+        "heading": "A little off the grid.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/suspended",
+        "heading": "Let\u2019s take a little pause.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/banned",
+        "heading": "A moment to make things right.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/update",
+        "heading": "A little newer. A little better.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/not-a-page",
+        "heading": "A little detour.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      }
+    ]
+  },
+  "production_mobile": {
+    "viewport": [
+      390,
+      844
+    ],
+    "routes": [
+      {
+        "path": "/",
+        "heading": "Your way.Our journey.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/login",
+        "heading": "Good to see you.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/onboarding",
+        "heading": "A little introduction.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": []
+      },
+      {
+        "path": "/about",
+        "heading": "A little company. A better way.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/privacy",
+        "heading": "Your journey. Your privacy.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/terms",
+        "heading": "Good company starts with care.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/account-deletion",
+        "heading": "Your account. Your decision.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app",
+        "heading": "Hey, Alex. Going somewhere?",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/explore",
+        "heading": "Someone\u2019s going your way.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "aria-prohibited-attr",
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/create",
+        "heading": "Where to, together?",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/rides",
+        "heading": "Your little journeys.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/rides/OX-1042",
+        "heading": "Kakkanad to Edappally",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/history",
+        "heading": "The roads you\u2019ve shared.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/messages",
+        "heading": "A little hello.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/notifications",
+        "heading": "You\u2019re in the loop.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/profile",
+        "heading": "A little about you.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/settings",
+        "heading": "Make it feel like you.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/safety",
+        "heading": "Your comfort. Your call.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/support",
+        "heading": "A little help along the way.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/support/TK-208",
+        "heading": "Help with a pickup point",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/rider",
+        "heading": "An empty seat. A little kindness.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/app/onboarding",
+        "heading": "A little introduction.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": []
+      },
+      {
+        "path": "/admin",
+        "heading": "A city worth caring for.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/users",
+        "heading": "The people behind the pixels.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/rides",
+        "heading": "Every route has a story.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/reports",
+        "heading": "Listen first. Act with care.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/support",
+        "heading": "A little help, a real difference.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": []
+      },
+      {
+        "path": "/admin/support/TK-208",
+        "heading": "Help with a pickup point",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/operations",
+        "heading": "Keep the little things moving.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/admin/audit",
+        "heading": "Care leaves a clear trail.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/maintenance",
+        "heading": "A little pause. A better journey.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/offline",
+        "heading": "A little off the grid.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/suspended",
+        "heading": "Let\u2019s take a little pause.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/banned",
+        "heading": "A moment to make things right.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/status/update",
+        "heading": "A little newer. A little better.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "path": "/not-a-page",
+        "heading": "A little detour.",
+        "overflow": false,
+        "axe_violations": 0,
+        "incomplete_rules": [
+          "color-contrast"
+        ]
+      }
+    ]
+  },
+  "initial_source_sha256": {
+    "website/.gitignore": "4e3413905fb1f558a6b1f888fd52202795127278972782c507ebdf13f4249a90",
+    "website/index.html": "be814bd3bb21afbeab9d77f3bb25cb860b71c6bb851e3eb3746f078c830de6cc",
+    "website/package-lock.json": "17d1029573623a2d90bd13dcead232df705814dde7b3d7953e077a7a7697c094",
+    "website/package.json": "ac104887f42f4b7cfbfe32bbe9d204c8deac0d2c520b500d6ddef22318d701b8",
+    "website/public/favicon.svg": "35ffea9a1ecdf4fa62f997ec62b47e89c9f0b530e530c7cb26a758351821ba57",
+    "website/src/App.tsx": "e6ee77d4fe0d86cd08d7116a89e7f88a11729bbd3dc34c82fb19a291a77cebb2",
+    "website/src/components/Layout.tsx": "2ef53e02ac4884d9a6d4b74fbe9626433f5e06b41a23ee4600e6915829b4bbbc",
+    "website/src/components/Modal.tsx": "ea4da586afc73805f0799fda03ea744b1ca5a0577039e2f9c95ce12c99739f95",
+    "website/src/components/PixelArt.tsx": "cdf3115c91fe601d96930ce74ee94056e2d69447e20bd658433e98c8a4fb5e66",
+    "website/src/components/ui.tsx": "3fa4ad20465d07e97b789d4d8965320799a13fba4aa3e4e2d3a2d4950c2be7e7",
+    "website/src/lib/data.ts": "b995f87698f71a46449bc56de17bf6ba42bdd469537044479e5e3a945644f66b",
+    "website/src/lib/store.ts": "cf34aab6fe689b5d8d1f9002ff79bd9e591d508076d93bded968e9529fdf7ac9",
+    "website/src/lib/types.ts": "ab8d3e9eda52b44d23cd1a4f2d5bab1e37baaac917c00360e8b4ba34938d81d2",
+    "website/src/main.tsx": "2c43f211151463451ab1ecc3ac79fb079cc3f418c7ae2a8ef497c63d9dcfad8d",
+    "website/src/pages/Admin.tsx": "10e19ab0e1bcc562ebca8b3fb819a72878d449b6dc51dcc52bfbdbd2f6c74cf5",
+    "website/src/pages/Auth.tsx": "6bdd8ea0e70822125eb563447f205452b2bdc45be6c1fe355b1096b34b822cd2",
+    "website/src/pages/Community.tsx": "23c5dee1a56cb87793889f4121a67383a3de90061de3491e4178ede258aa8723",
+    "website/src/pages/Journeys.tsx": "69e62619fad18107c256cbff8aa9f264460bf6cc206eddb71c88bb4c7c391ca4",
+    "website/src/pages/Landing.tsx": "de1f2a0e0d0ba043810a5e94cf2e2e95096a1192fc8985e7865d05699b207d05",
+    "website/src/pages/Public.tsx": "907ff615b52e8bf40f89738facd883b1694ee4dfd5a73e75df98ab6878d95aea",
+    "website/src/styles.css": "553fd943e552dd5b77f3d56c95c8dfe1c919844267db692e7017848ccafb5119",
+    "website/src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
+    "website/tsconfig.json": "d894fbdf97cf36ea96e4c2b636fa716829c0bbe4056a587476a7ee1048eb6692",
+    "website/vite.config.ts": "37986e40006cb90f3bc677fc6520abe29a4b1c5691652727ef2b40ed688d155a"
+  },
+  "hero_revision": {
+    "date": "2026-11-03",
+    "scope": "Landing composition, hero artwork, standalone unused logo SVG. Prior full-route suites above describe the initial build.",
+    "build": "npm run build passed",
+    "format": "Prettier check passed",
+    "viewports": [
+      [
+        2044,
+        1167
+      ],
+      [
+        1440,
+        900
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        320,
+        740
+      ]
+    ],
+    "automated_a11y": "Zero reported violations at inspected desktop and mobile landing sizes; gradient contrast checks remain incomplete.",
+    "motion": "Offscreen scene paused; global pause disabled road animation; restored enabled state.",
+    "logo": "Docs/assets/orix-logo-reference.svg; outlined paths; no image/font links; not referenced by the site.",
+    "source_sha256": {
+      "website/src/components/HeroJourney.tsx": "c94aea6ebb61661b9f5d5e933743979cccaeee7c8bfdf05621864f54936be103",
+      "website/src/pages/Landing.tsx": "612b4cd7d45d0e235a6246d0c60a10ce23b3af284d3dc0edeb8d76c44a9b6246",
+      "website/src/styles.css": "65ae24435560081a4601115439f5a1c26965879fcded17e3820bcc203c713b76",
+      "Docs/assets/orix-logo-reference.svg": "caf5c0758308962aa1eed8661d897f94f4e0204024f133cf88d3a5722efd4a48"
+    }
+  },
+  "favicon_revision": {
+    "date": "2026-11-03",
+    "change": "Supplied ORIX symbol replaces static and timed autorickshaw favicons; tab titles remain dynamic.",
+    "build": "passed",
+    "source_sha256": {
+      "website/public/favicon.svg": "116e4925bc91e890af357f67c5ecb43dcfd4ac97d2ef2d7c348939b9f84a7ffa",
+      "website/index.html": "cb0699523201f199dd0905ed0764aee9ec966b682612f914937aae588b15ee6b",
+      "website/src/App.tsx": "73ae99ca9d54e4f91a7267361ded977416158d8c407e9a99696e237846096f77"
+    }
+  },
+  "minimal_hero_revision": {
+    "date": "2026-11-03",
+    "scope": "Frontend visual review only. Full route sweep preceded final hero/chat refinements; affected routes rechecked afterward.",
+    "route_layouts": [
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/",
+        "h1": "Who\u2019s goingyour way?",
+        "overflow": false,
+        "error": false,
+        "url": "/"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/login",
+        "h1": "A little hello.",
+        "overflow": false,
+        "error": false,
+        "url": "/login"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/onboarding",
+        "h1": "A little introduction.",
+        "overflow": false,
+        "error": false,
+        "url": "/onboarding"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/about",
+        "h1": "A little company. A better way.",
+        "overflow": false,
+        "error": false,
+        "url": "/about"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/privacy",
+        "h1": "Your journey. Your privacy.",
+        "overflow": false,
+        "error": false,
+        "url": "/privacy"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/terms",
+        "h1": "Good company starts with care.",
+        "overflow": false,
+        "error": false,
+        "url": "/terms"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/account-deletion",
+        "h1": "Your account. Your decision.",
+        "overflow": false,
+        "error": false,
+        "url": "/account-deletion"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/app",
+        "h1": "Hey, Alex. Where to?",
+        "overflow": false,
+        "error": false,
+        "url": "/app"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/app/explore",
+        "h1": "Your route. Your pool.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/explore"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/app/create",
+        "h1": "Where to, together?",
+        "overflow": false,
+        "error": false,
+        "url": "/app/create"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/app/rides",
+        "h1": "Your little journeys.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/rides"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/app/rides/OX-1042",
+        "h1": "Kakkanad to Edappally",
+        "overflow": false,
+        "error": false,
+        "url": "/app/rides/OX-1042"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/app/history",
+        "h1": "The roads you\u2019ve shared.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/history"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/app/messages",
+        "h1": "A little hello.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/messages"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/app/notifications",
+        "h1": "You\u2019re in the loop.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/notifications"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/app/profile",
+        "h1": "A little about you.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/profile"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/app/settings",
+        "h1": "Make it feel like you.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/settings"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/app/safety",
+        "h1": "Your comfort. Your call.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/safety"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/app/support",
+        "h1": "A little help along the way.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/support"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/app/support/TK-208",
+        "h1": "Help with a pickup point",
+        "overflow": false,
+        "error": false,
+        "url": "/app/support/TK-208"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/app/rider",
+        "h1": "A seat to share?",
+        "overflow": false,
+        "error": false,
+        "url": "/app/rider"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/app/onboarding",
+        "h1": "A little introduction.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/onboarding"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/admin",
+        "h1": "A city worth caring for.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/admin/users",
+        "h1": "The people behind the pixels.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/users"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/admin/rides",
+        "h1": "Every route has a story.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/rides"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/admin/reports",
+        "h1": "Listen first. Act with care.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/reports"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/admin/support",
+        "h1": "A little help, a real difference.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/support"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/admin/support/TK-208",
+        "h1": "Help with a pickup point",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/support/TK-208"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/admin/operations",
+        "h1": "Keep the little things moving.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/operations"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/admin/audit",
+        "h1": "Care leaves a clear trail.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/audit"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/status/maintenance",
+        "h1": "A little pause. A better journey.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/maintenance"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/status/offline",
+        "h1": "A little off the grid.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/offline"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/status/suspended",
+        "h1": "Let\u2019s take a little pause.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/suspended"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/status/banned",
+        "h1": "A moment to make things right.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/banned"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/status/update",
+        "h1": "A little newer. A little better.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/update"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/not-a-page",
+        "h1": "A little detour.",
+        "overflow": false,
+        "error": false,
+        "url": "/not-a-page"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/",
+        "h1": "Who\u2019s goingyour way?",
+        "overflow": false,
+        "error": false,
+        "url": "/"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/login",
+        "h1": "A little hello.",
+        "overflow": false,
+        "error": false,
+        "url": "/login"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/onboarding",
+        "h1": "A little introduction.",
+        "overflow": false,
+        "error": false,
+        "url": "/onboarding"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/about",
+        "h1": "A little company. A better way.",
+        "overflow": false,
+        "error": false,
+        "url": "/about"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/privacy",
+        "h1": "Your journey. Your privacy.",
+        "overflow": false,
+        "error": false,
+        "url": "/privacy"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/terms",
+        "h1": "Good company starts with care.",
+        "overflow": false,
+        "error": false,
+        "url": "/terms"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/account-deletion",
+        "h1": "Your account. Your decision.",
+        "overflow": false,
+        "error": false,
+        "url": "/account-deletion"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/app",
+        "h1": "Hey, Alex. Where to?",
+        "overflow": false,
+        "error": false,
+        "url": "/app"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/app/explore",
+        "h1": "Your route. Your pool.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/explore"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/app/create",
+        "h1": "Where to, together?",
+        "overflow": false,
+        "error": false,
+        "url": "/app/create"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/app/rides",
+        "h1": "Your little journeys.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/rides"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/app/rides/OX-1042",
+        "h1": "Kakkanad to Edappally",
+        "overflow": false,
+        "error": false,
+        "url": "/app/rides/OX-1042"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/app/history",
+        "h1": "The roads you\u2019ve shared.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/history"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/app/messages",
+        "h1": "A little hello.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/messages"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/app/notifications",
+        "h1": "You\u2019re in the loop.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/notifications"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/app/profile",
+        "h1": "A little about you.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/profile"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/app/settings",
+        "h1": "Make it feel like you.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/settings"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/app/safety",
+        "h1": "Your comfort. Your call.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/safety"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/app/support",
+        "h1": "A little help along the way.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/support"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/app/support/TK-208",
+        "h1": "Help with a pickup point",
+        "overflow": false,
+        "error": false,
+        "url": "/app/support/TK-208"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/app/rider",
+        "h1": "A seat to share?",
+        "overflow": false,
+        "error": false,
+        "url": "/app/rider"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/app/onboarding",
+        "h1": "A little introduction.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/onboarding"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/admin",
+        "h1": "A city worth caring for.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/admin/users",
+        "h1": "The people behind the pixels.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/users"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/admin/rides",
+        "h1": "Every route has a story.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/rides"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/admin/reports",
+        "h1": "Listen first. Act with care.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/reports"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/admin/support",
+        "h1": "A little help, a real difference.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/support"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/admin/support/TK-208",
+        "h1": "Help with a pickup point",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/support/TK-208"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/admin/operations",
+        "h1": "Keep the little things moving.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/operations"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/admin/audit",
+        "h1": "Care leaves a clear trail.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/audit"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/status/maintenance",
+        "h1": "A little pause. A better journey.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/maintenance"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/status/offline",
+        "h1": "A little off the grid.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/offline"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/status/suspended",
+        "h1": "Let\u2019s take a little pause.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/suspended"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/status/banned",
+        "h1": "A moment to make things right.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/banned"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/status/update",
+        "h1": "A little newer. A little better.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/update"
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/not-a-page",
+        "h1": "A little detour.",
+        "overflow": false,
+        "error": false,
+        "url": "/not-a-page"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/",
+        "h1": "Who\u2019s goingyour way?",
+        "overflow": false,
+        "error": false,
+        "url": "/"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/login",
+        "h1": "A little hello.",
+        "overflow": false,
+        "error": false,
+        "url": "/login"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/onboarding",
+        "h1": "A little introduction.",
+        "overflow": false,
+        "error": false,
+        "url": "/onboarding"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/about",
+        "h1": "A little company. A better way.",
+        "overflow": false,
+        "error": false,
+        "url": "/about"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/privacy",
+        "h1": "Your journey. Your privacy.",
+        "overflow": false,
+        "error": false,
+        "url": "/privacy"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/terms",
+        "h1": "Good company starts with care.",
+        "overflow": false,
+        "error": false,
+        "url": "/terms"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/account-deletion",
+        "h1": "Your account. Your decision.",
+        "overflow": false,
+        "error": false,
+        "url": "/account-deletion"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/app",
+        "h1": "Hey, Alex. Where to?",
+        "overflow": false,
+        "error": false,
+        "url": "/app"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/app/explore",
+        "h1": "Your route. Your pool.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/explore"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/app/create",
+        "h1": "Where to, together?",
+        "overflow": false,
+        "error": false,
+        "url": "/app/create"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/app/rides",
+        "h1": "Your little journeys.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/rides"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/app/rides/OX-1042",
+        "h1": "Kakkanad to Edappally",
+        "overflow": false,
+        "error": false,
+        "url": "/app/rides/OX-1042"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/app/history",
+        "h1": "The roads you\u2019ve shared.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/history"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/app/messages",
+        "h1": "A little hello.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/messages"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/app/notifications",
+        "h1": "You\u2019re in the loop.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/notifications"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/app/profile",
+        "h1": "A little about you.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/profile"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/app/settings",
+        "h1": "Make it feel like you.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/settings"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/app/safety",
+        "h1": "Your comfort. Your call.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/safety"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/app/support",
+        "h1": "A little help along the way.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/support"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/app/support/TK-208",
+        "h1": "Help with a pickup point",
+        "overflow": false,
+        "error": false,
+        "url": "/app/support/TK-208"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/app/rider",
+        "h1": "A seat to share?",
+        "overflow": false,
+        "error": false,
+        "url": "/app/rider"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/app/onboarding",
+        "h1": "A little introduction.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/onboarding"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/admin",
+        "h1": "A city worth caring for.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/admin/users",
+        "h1": "The people behind the pixels.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/users"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/admin/rides",
+        "h1": "Every route has a story.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/rides"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/admin/reports",
+        "h1": "Listen first. Act with care.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/reports"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/admin/support",
+        "h1": "A little help, a real difference.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/support"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/admin/support/TK-208",
+        "h1": "Help with a pickup point",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/support/TK-208"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/admin/operations",
+        "h1": "Keep the little things moving.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/operations"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/admin/audit",
+        "h1": "Care leaves a clear trail.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/audit"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/status/maintenance",
+        "h1": "A little pause. A better journey.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/maintenance"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/status/offline",
+        "h1": "A little off the grid.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/offline"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/status/suspended",
+        "h1": "Let\u2019s take a little pause.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/suspended"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/status/banned",
+        "h1": "A moment to make things right.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/banned"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/status/update",
+        "h1": "A little newer. A little better.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/update"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/not-a-page",
+        "h1": "A little detour.",
+        "overflow": false,
+        "error": false,
+        "url": "/not-a-page"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/",
+        "h1": "Who\u2019s goingyour way?",
+        "overflow": false,
+        "error": false,
+        "url": "/"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/login",
+        "h1": "A little hello.",
+        "overflow": false,
+        "error": false,
+        "url": "/login"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/onboarding",
+        "h1": "A little introduction.",
+        "overflow": false,
+        "error": false,
+        "url": "/onboarding"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/about",
+        "h1": "A little company. A better way.",
+        "overflow": false,
+        "error": false,
+        "url": "/about"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/privacy",
+        "h1": "Your journey. Your privacy.",
+        "overflow": false,
+        "error": false,
+        "url": "/privacy"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/terms",
+        "h1": "Good company starts with care.",
+        "overflow": false,
+        "error": false,
+        "url": "/terms"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/account-deletion",
+        "h1": "Your account. Your decision.",
+        "overflow": false,
+        "error": false,
+        "url": "/account-deletion"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/app",
+        "h1": "Hey, Alex. Where to?",
+        "overflow": false,
+        "error": false,
+        "url": "/app"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/app/explore",
+        "h1": "Your route. Your pool.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/explore"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/app/create",
+        "h1": "Where to, together?",
+        "overflow": false,
+        "error": false,
+        "url": "/app/create"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/app/rides",
+        "h1": "Your little journeys.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/rides"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/app/rides/OX-1042",
+        "h1": "Kakkanad to Edappally",
+        "overflow": false,
+        "error": false,
+        "url": "/app/rides/OX-1042"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/app/history",
+        "h1": "The roads you\u2019ve shared.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/history"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/app/messages",
+        "h1": "A little hello.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/messages"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/app/notifications",
+        "h1": "You\u2019re in the loop.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/notifications"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/app/profile",
+        "h1": "A little about you.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/profile"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/app/settings",
+        "h1": "Make it feel like you.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/settings"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/app/safety",
+        "h1": "Your comfort. Your call.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/safety"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/app/support",
+        "h1": "A little help along the way.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/support"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/app/support/TK-208",
+        "h1": "Help with a pickup point",
+        "overflow": false,
+        "error": false,
+        "url": "/app/support/TK-208"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/app/rider",
+        "h1": "A seat to share?",
+        "overflow": false,
+        "error": false,
+        "url": "/app/rider"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/app/onboarding",
+        "h1": "A little introduction.",
+        "overflow": false,
+        "error": false,
+        "url": "/app/onboarding"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/admin",
+        "h1": "A city worth caring for.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/admin/users",
+        "h1": "The people behind the pixels.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/users"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/admin/rides",
+        "h1": "Every route has a story.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/rides"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/admin/reports",
+        "h1": "Listen first. Act with care.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/reports"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/admin/support",
+        "h1": "A little help, a real difference.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/support"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/admin/support/TK-208",
+        "h1": "Help with a pickup point",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/support/TK-208"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/admin/operations",
+        "h1": "Keep the little things moving.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/operations"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/admin/audit",
+        "h1": "Care leaves a clear trail.",
+        "overflow": false,
+        "error": false,
+        "url": "/admin/audit"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/status/maintenance",
+        "h1": "A little pause. A better journey.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/maintenance"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/status/offline",
+        "h1": "A little off the grid.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/offline"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/status/suspended",
+        "h1": "Let\u2019s take a little pause.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/suspended"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/status/banned",
+        "h1": "A moment to make things right.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/banned"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/status/update",
+        "h1": "A little newer. A little better.",
+        "overflow": false,
+        "error": false,
+        "url": "/status/update"
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/not-a-page",
+        "h1": "A little detour.",
+        "overflow": false,
+        "error": false,
+        "url": "/not-a-page"
+      }
+    ],
+    "final_affected_routes": [
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/",
+        "h1": "Your way.Our journey.",
+        "overflow": false,
+        "error": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+            "id": "color-contrast",
+            "impact": "serious",
+            "nodeCount": 7,
+            "nodes": [
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<a class=\"button primary nav-cta\" href=\"/login\" data-discover=\"true\">",
+                "target": [
+                  ".nav-cta"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<a class=\"button primary \" href=\"/login\" data-discover=\"true\">",
+                "target": [
+                  ".quiet-hero-actions > .primary.button[href$=\"login\"]"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters",
+                "html": "<span aria-hidden=\"true\">\u2193</span>",
+                "target": [
+                  ".quiet-hero-scroll > span"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element",
+                "html": "<span class=\"together-caption\">Different stories. A shared route.</span>",
+                "target": [
+                  ".together-caption"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<h2>The best part of going?<br>Going together.</h2>",
+                "target": [
+                  ".final-cta > h2"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<a class=\"button primary \" href=\"/login\" data-discover=\"true\">",
+                "target": [
+                  ".final-cta > .primary.button[href$=\"login\"]"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<p>Less alone. More along.</p>",
+                "target": [
+                  ".final-cta > p"
+                ]
+              }
+            ],
+            "tags": [
+              "cat.color",
+              "wcag2aa",
+              "wcag143",
+              "TTv5",
+              "TT13.c",
+              "EN-301-549",
+              "EN-9.1.4.3",
+              "ACT",
+              "RGAAv4",
+              "RGAA-3.2.1"
+            ]
+          }
+        ]
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "route": "/app/messages",
+        "h1": "A little hello.",
+        "overflow": false,
+        "error": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+            "id": "color-contrast",
+            "impact": "serious",
+            "nodeCount": 1,
+            "nodes": [
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<a class=\"button primary sidebar-create\" href=\"/app/create\" data-discover=\"true\">",
+                "target": [
+                  ".sidebar-create"
+                ]
+              }
+            ],
+            "tags": [
+              "cat.color",
+              "wcag2aa",
+              "wcag143",
+              "TTv5",
+              "TT13.c",
+              "EN-301-549",
+              "EN-9.1.4.3",
+              "ACT",
+              "RGAAv4",
+              "RGAA-3.2.1"
+            ]
+          }
+        ]
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/",
+        "h1": "Your way.Our journey.",
+        "overflow": false,
+        "error": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+            "id": "color-contrast",
+            "impact": "serious",
+            "nodeCount": 6,
+            "nodes": [
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<a class=\"button primary \" href=\"/login\" data-discover=\"true\">",
+                "target": [
+                  ".quiet-hero-actions > .primary.button[href$=\"login\"]"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters",
+                "html": "<span aria-hidden=\"true\">\u2193</span>",
+                "target": [
+                  ".quiet-hero-scroll > span"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element",
+                "html": "<span class=\"together-caption\">Different stories. A shared route.</span>",
+                "target": [
+                  ".together-caption"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<h2>The best part of going?<br>Going together.</h2>",
+                "target": [
+                  ".final-cta > h2"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<a class=\"button primary \" href=\"/login\" data-discover=\"true\">",
+                "target": [
+                  ".final-cta > .primary.button[href$=\"login\"]"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<p>Less alone. More along.</p>",
+                "target": [
+                  ".final-cta > p"
+                ]
+              }
+            ],
+            "tags": [
+              "cat.color",
+              "wcag2aa",
+              "wcag143",
+              "TTv5",
+              "TT13.c",
+              "EN-301-549",
+              "EN-9.1.4.3",
+              "ACT",
+              "RGAAv4",
+              "RGAA-3.2.1"
+            ]
+          }
+        ]
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "route": "/app/messages",
+        "h1": "A little hello.",
+        "overflow": false,
+        "error": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+            "id": "color-contrast",
+            "impact": "serious",
+            "nodeCount": 1,
+            "nodes": [
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<a class=\"button primary sidebar-create\" href=\"/app/create\" data-discover=\"true\">",
+                "target": [
+                  ".sidebar-create"
+                ]
+              }
+            ],
+            "tags": [
+              "cat.color",
+              "wcag2aa",
+              "wcag143",
+              "TTv5",
+              "TT13.c",
+              "EN-301-549",
+              "EN-9.1.4.3",
+              "ACT",
+              "RGAAv4",
+              "RGAA-3.2.1"
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/",
+        "h1": "Your way.Our journey.",
+        "overflow": false,
+        "error": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+            "id": "color-contrast",
+            "impact": "serious",
+            "nodeCount": 6,
+            "nodes": [
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<a class=\"button primary \" href=\"/login\" data-discover=\"true\">",
+                "target": [
+                  ".quiet-hero-actions > .primary.button[href$=\"login\"]"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters",
+                "html": "<span aria-hidden=\"true\">\u2193</span>",
+                "target": [
+                  ".quiet-hero-scroll > span"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element",
+                "html": "<span class=\"together-caption\">Different stories. A shared route.</span>",
+                "target": [
+                  ".together-caption"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<h2>The best part of going?<br>Going together.</h2>",
+                "target": [
+                  ".final-cta > h2"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<a class=\"button primary \" href=\"/login\" data-discover=\"true\">",
+                "target": [
+                  ".final-cta > .primary.button[href$=\"login\"]"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<p>Less alone. More along.</p>",
+                "target": [
+                  ".final-cta > p"
+                ]
+              }
+            ],
+            "tags": [
+              "cat.color",
+              "wcag2aa",
+              "wcag143",
+              "TTv5",
+              "TT13.c",
+              "EN-301-549",
+              "EN-9.1.4.3",
+              "ACT",
+              "RGAAv4",
+              "RGAA-3.2.1"
+            ]
+          }
+        ]
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "route": "/app/messages",
+        "h1": "A little hello.",
+        "overflow": false,
+        "error": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+            "id": "color-contrast",
+            "impact": "serious",
+            "nodeCount": 3,
+            "nodes": [
+              {
+                "failureSummary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+                "html": "<span class=\"conversation-count\">2</span>",
+                "target": [
+                  ".conversation:nth-child(3) > .conversation-count"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element",
+                "html": "<span class=\"chat-day\">A shared journey starts with a hello.</span>",
+                "target": [
+                  ".chat-day"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+                "html": "<span>Home</span>",
+                "target": [
+                  ".mobile-nav > a[href$=\"app\"][data-discover=\"true\"] > span"
+                ]
+              }
+            ],
+            "tags": [
+              "cat.color",
+              "wcag2aa",
+              "wcag143",
+              "TTv5",
+              "TT13.c",
+              "EN-301-549",
+              "EN-9.1.4.3",
+              "ACT",
+              "RGAAv4",
+              "RGAA-3.2.1"
+            ]
+          }
+        ]
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/",
+        "h1": "Your way.Our journey.",
+        "overflow": false,
+        "error": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+            "id": "color-contrast",
+            "impact": "serious",
+            "nodeCount": 5,
+            "nodes": [
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<a class=\"button primary \" href=\"/login\" data-discover=\"true\">",
+                "target": [
+                  ".quiet-hero-actions > .primary.button[href$=\"login\"]"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters",
+                "html": "<span aria-hidden=\"true\">\u2193</span>",
+                "target": [
+                  ".quiet-hero-scroll > span"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<h2>The best part of going?<br>Going together.</h2>",
+                "target": [
+                  ".final-cta > h2"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<a class=\"button primary \" href=\"/login\" data-discover=\"true\">",
+                "target": [
+                  ".final-cta > .primary.button[href$=\"login\"]"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+                "html": "<p>Less alone. More along.</p>",
+                "target": [
+                  ".final-cta > p"
+                ]
+              }
+            ],
+            "tags": [
+              "cat.color",
+              "wcag2aa",
+              "wcag143",
+              "TTv5",
+              "TT13.c",
+              "EN-301-549",
+              "EN-9.1.4.3",
+              "ACT",
+              "RGAAv4",
+              "RGAA-3.2.1"
+            ]
+          }
+        ]
+      },
+      {
+        "width": 320,
+        "height": 740,
+        "route": "/app/messages",
+        "h1": "A little hello.",
+        "overflow": false,
+        "error": false,
+        "violations": [],
+        "incomplete": [
+          {
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+            "id": "color-contrast",
+            "impact": "serious",
+            "nodeCount": 4,
+            "nodes": [
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element",
+                "html": "<strong>Fort Kochi crew</strong>",
+                "target": [
+                  ".conversation:nth-child(3) > span:nth-child(2) > strong"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element",
+                "html": "<small>Say the first hello.</small>",
+                "target": [
+                  ".conversation:nth-child(3) > span:nth-child(2) > small"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+                "html": "<span class=\"conversation-count\">2</span>",
+                "target": [
+                  ".conversation:nth-child(3) > .conversation-count"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element",
+                "html": "<span class=\"chat-day\">A shared journey starts with a hello.</span>",
+                "target": [
+                  ".chat-day"
+                ]
+              }
+            ],
+            "tags": [
+              "cat.color",
+              "wcag2aa",
+              "wcag143",
+              "TTv5",
+              "TT13.c",
+              "EN-301-549",
+              "EN-9.1.4.3",
+              "ACT",
+              "RGAAv4",
+              "RGAA-3.2.1"
+            ]
+          }
+        ]
+      }
+    ],
+    "build": "npm run build passed",
+    "format": "npx prettier --check src passed",
+    "source_sha256": {
+      "website/src/main.tsx": "2c43f211151463451ab1ecc3ac79fb079cc3f418c7ae2a8ef497c63d9dcfad8d",
+      "website/src/App.tsx": "739a1d969eb585eba955c4fc4af25004e73f71cba432b9e075cfd5723c3447f7",
+      "website/src/styles.css": "b6e94e18c1a3bc1ac1a7bd2d3a10363dfe2624e5940620424ca7c8fd77699003",
+      "website/src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
+      "website/src/pages/Admin.tsx": "10e19ab0e1bcc562ebca8b3fb819a72878d449b6dc51dcc52bfbdbd2f6c74cf5",
+      "website/src/pages/LiftRegistration.tsx": "cabb67b382f959c4ca20bb2f5842ff99a33204c63635fdadf9123ba03f023ddc",
+      "website/src/pages/Auth.tsx": "a8da3ea5c43548509d267d74bee5be82eb4597993e2b40f41c0734321390ba40",
+      "website/src/pages/Journeys.tsx": "533ad175a27bee3fa4b48df503fd16cb4758bda7183f510589c5aca7f589981c",
+      "website/src/pages/Public.tsx": "022a3048cbe1f11d98012c09a68dd78ab0d27c12555896b4e069902df76ff512",
+      "website/src/pages/Community.tsx": "4245df8ac71c6fe21947d40ea60864c3884fcea3ed45f7d1706de316a493541d",
+      "website/src/pages/Landing.tsx": "3716a57badeacf01b96912dc450781b06cdf327aa263a9784bd5769f6ef211c3",
+      "website/src/lib/store.ts": "ceaf1894db6b9a2e41ac063cf7efd283e3f291e0547f6105b1d0de3807a507ff",
+      "website/src/lib/data.ts": "1160e7b4e9ad5064a5b3f6896056b8c7dce1e9c8b0922a03aa7b92d8437ea99b",
+      "website/src/lib/types.ts": "42bf42fe9d40c318ec255043569020fcaf8be5763c4d28408c3b798453e98b22",
+      "website/src/lib/matching.ts": "3ffb4040f6a1d16ece0b96c42001f8cc516425b02d0aabfabf9fe925106800bd",
+      "website/src/components/Modal.tsx": "ea4da586afc73805f0799fda03ea744b1ca5a0577039e2f9c95ce12c99739f95",
+      "website/src/components/PixelArt.tsx": "cdf3115c91fe601d96930ce74ee94056e2d69447e20bd658433e98c8a4fb5e66",
+      "website/src/components/ui.tsx": "0c384c6674f0941d22273f1a8440880e3b27e068c3fd98d8ed538b26938f0cf7",
+      "website/src/components/HeroJourney.tsx": "3f80800886999bfbcba9398636164d97cd5689c75f6578b24b1ba6abb96d4c79",
+      "website/src/components/Layout.tsx": "c35536f95d72b93705e2798332b2aa87b388d6311f9e325a0aaf3f2e7add1741"
+    }
+  }
+}

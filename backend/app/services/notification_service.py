@@ -141,7 +141,13 @@ class NotificationService:
                 return False
 
             # Configure Android for high priority alarm
-            android_config = None
+            android_config = messaging.AndroidConfig(
+                priority='high',
+                notification=messaging.AndroidNotification(
+                    icon='ic_notification', color='#222222',
+                    channel_id='high_importance_channel',
+                ),
+            )
             if high_priority:
                 # Check if custom sound is requested in data
                 sound_uri = None
@@ -150,6 +156,7 @@ class NotificationService:
                     sound_uri = "android.resource://android/raw/ringtone"
 
                 android_notification = messaging.AndroidNotification(
+                    icon='ic_notification', color='#222222',
                     channel_id="ride_alarm_channel",
                     priority="max",
                     default_sound=True,
@@ -666,19 +673,19 @@ class NotificationService:
         )
 
     async def notify_catch_your_ride(
-        self, user_id: str, group_id: str, ride_time: str, pickup_summary: str
+        self, user_id: str, group_id: str, ride_time: str, pickup_summary: str,
+        minutes_remaining: int = 15,
     ) -> Notification:
         """
-        Send DATA-ONLY alarm notification when it's time to catch the ride.
+        Send a high-priority departure reminder for the client to display.
 
-        Uses data-only payload so Flutter can trigger full-screen alarm UI
-        via local notification with full-screen intent.
+        Android data messages use the initialized background notification handler.
         """
         # Store in database
         notification = await self.send_notification(
             user_id=user_id,
             notification_type=NotificationType.SYSTEM,
-            title="🔔 Catch Your Ride!",
+            title=f"Your ride is in {minutes_remaining} minutes",
             body=f"Your ride starts at {ride_time}. Head to {pickup_summary} now!",
             data={
                 "type": "RIDE_ALARM",
@@ -686,6 +693,7 @@ class NotificationService:
                 "ride_time": ride_time,
                 "pickup_summary": pickup_summary,
                 "action": "show_alarm",
+                "minutes_remaining": str(minutes_remaining),
             },
             send_push=True,
             high_priority=True,

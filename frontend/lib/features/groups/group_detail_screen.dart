@@ -5,14 +5,20 @@ library;
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:orix/core/widgets/pixel_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/providers/group_provider.dart';
-import '../../core/providers/notification_provider.dart';
-import '../../core/theme/app_theme.dart';
+import 'package:orix/core/providers/group_provider.dart';
+import 'package:orix/core/services/api_service.dart';
+import 'package:orix/core/providers/notification_provider.dart';
+import 'package:orix/core/theme/app_theme.dart';
+import '../profile/help_support/email_person_picker.dart';
+import '../profile/help_support/support_service.dart';
+import 'package:orix/core/widgets/trip_route_map.dart';
 import 'rating_dialog.dart';
+import '../profile/help_support/create_ticket_screen.dart';
 
 class GroupDetailScreen extends StatefulWidget {
   final String groupId;
@@ -34,7 +40,9 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
 
     // Start periodic refresh every 10 seconds to check for status changes
     _refreshTimer = Timer.periodic(const Duration(seconds: 10), (_) {
-      _loadGroup();
+      if (GoRouter.of(context).routeInformationProvider.value.uri.path ==
+          '/groups/${widget.groupId}')
+        _loadGroup();
     });
   }
 
@@ -49,26 +57,14 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
 
     if (!mounted) return;
 
-    final group = context.read<GroupProvider>().currentGroup;
-    final error = context.read<GroupProvider>().error;
-
-    // If group not found or error, navigate back to home immediately
-    if (group == null || error != null) {
-      _refreshTimer?.cancel();
-      if (mounted) {
-        // Use pop to return to previous screen (home)
-        Navigator.of(context).pop();
-      }
-      return;
-    }
-
-    // Check if ride time has passed and show rating dialog
+    // Transient refresh errors stay on this screen with retry controls.
+    // Completion comes only from the server lifecycle, never elapsed wall time.
     _checkAndShowRatingDialog();
   }
 
   void _checkAndShowRatingDialog() {
     final group = context.read<GroupProvider>().currentGroup;
-    if (group == null) return;
+    if (group == null || group.groupId != widget.groupId) return;
 
     // Show rating dialog only once when status becomes completed
     if (group.status == 'completed' && !_hasShownRatingDialog) {
@@ -113,491 +109,483 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<GroupProvider>(
-      builder: (context, groupProvider, _) {
-        final group = groupProvider.currentGroup;
-        final isLoading = groupProvider.isLoading;
-        final isConfirming = groupProvider.isConfirming;
-
-        return Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go('/');
-                }
-              },
+    final provider = context.watch<GroupProvider>();
+    final group = provider.currentGroup?.groupId == widget.groupId
+        ? provider.currentGroup
+        : null;
+    final scene = switch (group?.status) {
+      'completed' => PixelScene.completed,
+      'cancelled' => PixelScene.cancelled,
+      'expired' => PixelScene.noMatch,
+      'in_progress' => PixelScene.travelling,
+      'pending' => PixelScene.searching,
+      _ => PixelScene.found,
+    };
+    return OrixPage(
+      title: group?.routeSummary ?? 'Your journey',
+      description: group?.status.replaceAll('_', ' '),
+      maxWidth: 820,
+      actions: [
+        IconButton(
+          onPressed: provider.isLoading ? null : _loadGroup,
+          tooltip: 'Refresh journey',
+          icon: const Icon(Icons.refresh),
+        ),
+        if (group != null)
+          IconButton(
+            onPressed: () => context.push(
+              '/groups/${Uri.encodeComponent(widget.groupId)}/chat',
             ),
-            title: const Text('Ride Group'),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.chat_outlined),
-                onPressed: () => context.push('/groups/${widget.groupId}/chat'),
-              ),
-            ],
+            tooltip: 'Group conversation',
+            icon: const Icon(Icons.chat_bubble_outline),
           ),
-          body: isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _buildContent(group),
-          bottomNavigationBar: group != null && !group.myReadinessConfirmed
-              ? _buildConfirmButton(isConfirming)
-              : null,
-        );
-      },
-    );
-  }
-
-  Widget _buildContent(RideGroup? group) {
-    if (group == null) {
-      return const Center(child: Text('Group not found'));
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadGroup,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
-        children: [
-          Center(child: _buildStatusPill(group)),
-          const SizedBox(height: 40),
-          _buildRouteSection(group),
-          const SizedBox(height: 40),
-          _buildMembersSection(group),
-          // Show rate button for completed rides
-          if (group.status == 'completed') ...[
-            const SizedBox(height: 32),
-            _buildRateButton(group),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusPill(RideGroup group) {
-    final status = group.status;
-    final allConfirmed = group.allConfirmed;
-
-    Color color;
-    String text;
-    IconData icon;
-
-    if (status == 'completed') {
-      color = AppColors.primary;
-      text = 'Ride Completed - Rate Your Riders!';
-      icon = Icons.star;
-    } else if (status == 'active') {
-      color = AppColors.success;
-      text = 'Ride Confirmed';
-      icon = Icons.check_circle;
-    } else if (allConfirmed) {
-      color = AppColors.success;
-      text = 'All Ready!';
-      icon = Icons.check_circle;
-    } else {
-      color = AppColors.warning;
-      text = 'Waiting for confirmation';
-      icon = Icons.hourglass_empty;
-    }
-
-    return Column(
+      ],
+      bottom: group == null ? null : _buildActions(group, provider),
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: color.withAlphaValue(0.1),
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: color.withAlphaValue(0.2)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 16, color: color),
-              const SizedBox(width: 8),
-              Text(
-                text,
-                style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
+        if (provider.isLoading && group == null) const PixelLoader(),
+        if (provider.error != null) Text(provider.error!),
+        if (group == null && !provider.isLoading)
+          PixelSection(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const PixelAnimation(
+                  scene: PixelScene.error,
+                  label: 'Journey unavailable',
                 ),
-              ),
-            ],
-          ),
-        ),
-        if (status == 'confirming') ...[
-          const SizedBox(height: 12),
-          Text(
-            'Confirm your readiness closely',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-          ),
-        ],
-        if (status == 'completed') ...[
-          const SizedBox(height: 12),
-          Text(
-            'Tap on a member to rate them',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildRouteSection(RideGroup group) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'ROUTE',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: AppColors.textTertiary,
-                letterSpacing: 1.2,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            if (group.date != null || group.timeWindowStart != null)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (group.date != null)
-                    Text(
-                      _formatDate(group.date!),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  if (group.date != null && group.timeWindowStart != null)
-                    Text(
-                      ' • ',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textTertiary,
-                      ),
-                    ),
-                  if (group.timeWindowStart != null)
-                    Text(
-                      _formatTime(group.timeWindowStart!),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                ],
-              ),
-          ],
-        ),
-        const SizedBox(height: 24),
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Column(
-                children: [
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.primary, width: 2),
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      width: 2,
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      color: AppColors.outline.withAlphaValue(0.5),
-                    ),
-                  ),
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      group.pickupSummary,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    Text(
-                      group.dropSummary,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+                const Text('This journey could not be loaded.'),
+                TextButton(
+                  onPressed: _loadGroup,
+                  child: const Text('Try again'),
                 ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _formatDate(String date) {
-    try {
-      final parsedDate = DateTime.parse(date);
-      return DateFormat('EEE, MMM d').format(parsedDate);
-    } catch (_) {
-      return date;
-    }
-  }
-
-  String _formatTime(String time) {
-    try {
-      final parts = time.split(':');
-      final hour = int.parse(parts[0]);
-      final minute = parts[1];
-      final period = hour >= 12 ? 'PM' : 'AM';
-      final h12 = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
-      return '$h12:$minute $period';
-    } catch (_) {
-      return time;
-    }
-  }
-
-  Widget _buildMembersSection(RideGroup group) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'MEMBERS (${group.members.length})',
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: AppColors.textTertiary,
-            letterSpacing: 1.2,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 16),
-        ...group.members.map(_buildMemberRow),
-      ],
-    );
-  }
-
-  Widget _buildMemberRow(GroupMember member) {
-    final isConfirmed = member.readinessConfirmed;
-    final isMe = member.isMe;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: member.role == 'rider'
-                ? AppColors.secondary.withAlphaValue(0.1)
-                : AppColors.surfaceVariant,
-            child: Icon(
-              member.role == 'rider' ? Icons.two_wheeler : Icons.person_outline,
-              size: 20,
-              color: member.role == 'rider'
-                  ? AppColors.secondary
-                  : AppColors.textSecondary,
+              ],
             ),
+          )
+        else if (group != null) ...[
+          PixelAnimation(
+            key: ValueKey(group.status),
+            scene: scene,
+            label: group.status.replaceAll('_', ' '),
           ),
-          const SizedBox(width: 16),
-          Expanded(
+          const SizedBox(height: 24),
+          PixelSection(
+            title: 'Pickup plan',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      member.displayName,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (isMe)
-                      Container(
-                        margin: const EdgeInsets.only(left: 8),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withAlphaValue(0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          'YOU',
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                  ],
+                Text(
+                  group.myPickupSummary ?? group.pickupSummary,
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
-                Row(
-                  children: [
-                    if (member.phone != null && member.phone!.isNotEmpty) ...[
-                      Icon(
-                        Icons.phone_rounded,
-                        size: 14,
-                        color: AppColors.textTertiary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        member.phone!,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ] else ...[
-                      Text(
-                        member.role == 'rider' ? 'Rider' : 'Passenger',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textTertiary,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(width: 8),
-                    if (member.averageRating != null) ...[
-                      Icon(
-                        Icons.star_rounded,
-                        size: 14,
-                        color: Colors.amber[600],
-                      ),
-                      const SizedBox(width: 2),
-                      Text(
-                        member.averageRating!.toStringAsFixed(1),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.amber[700],
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ] else ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withAlphaValue(0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          'NEW',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
+                const SizedBox(height: 12),
+                if (group.myPickupTime ?? group.departureStart
+                    case final planned?)
+                  Text(
+                    DateFormat('EEE, d MMM · h:mm a').format(planned.toLocal()),
+                  ),
+                if (group.confirmationDeadline != null &&
+                    group.status == 'confirming')
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Text(
+                      'Confirm by ${DateFormat('h:mm a').format(group.confirmationDeadline!.toLocal())}.',
+                    ),
+                  ),
+                const SizedBox(height: 12),
+                Text(
+                  group.status == 'pending'
+                      ? 'Matching is active. Pickups must be within 300 m and destinations must be the same.'
+                      : group.canConfirm
+                      ? 'Confirm that this pickup works for you.'
+                      : group.status == 'in_progress'
+                      ? 'Finish your part of the journey after reaching your destination.'
+                      : 'Open the group conversation to coordinate your pickup.',
                 ),
               ],
             ),
           ),
-          if (isConfirmed)
-            const Icon(Icons.check_circle, size: 20, color: AppColors.success)
-          else
-            Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.outline),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildConfirmButton(bool isConfirming) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: ElevatedButton(
-            onPressed: isConfirming ? null : _confirmReadiness,
-            child: isConfirming
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Text("I'm Ready!"),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRateButton(RideGroup group) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.secondary],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withAlphaValue(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () =>
-              showRatingDialog(context: context, groupId: group.groupId),
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+          PixelSection(
+            title: 'Route',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(Icons.star_rounded, color: Colors.white, size: 28),
-                const SizedBox(width: 12),
                 Text(
-                  'Rate Your Ride Partners',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                  'From',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
                   ),
                 ),
+                const SizedBox(height: 6),
+                Text(group.pickupSummary),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Icon(Icons.south, size: 16),
+                ),
+                const Text(
+                  'To',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(group.dropSummary),
+                if (group.roadPlan != null) ...[
+                  const SizedBox(height: 20),
+                  TripRouteMap(roadPlan: group.roadPlan),
+                ],
               ],
             ),
           ),
+          PixelSection(
+            title: 'Your group · ${group.members.length}',
+            child: Column(
+              children: [
+                for (final member in group.members)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        PersonIdentity(
+                          person: UserSearchResult(
+                            userId: member.userId,
+                            displayName: member.displayName,
+                            email: member.email ?? '',
+                            photoUrl: member.photoUrl,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          member.isMe
+                              ? 'You · ${member.readinessConfirmed ? 'Confirmed' : 'Not confirmed'}'
+                              : member.isDriver
+                              ? 'Lift driver'
+                              : member.readinessConfirmed
+                              ? 'Confirmed'
+                              : 'Not confirmed',
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                        Text(
+                          member.occupationLabel,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        if (member.phone?.isNotEmpty == true)
+                          Text(member.phone!),
+                        if (!member.isMe)
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 4,
+                            children: [
+                              TextButton.icon(
+                                onPressed: () => Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => ReportUserScreen(
+                                      groupId: group.groupId,
+                                      userId: member.userId,
+                                      displayName: member.displayName,
+                                      email: member.email,
+                                      photoUrl: member.photoUrl,
+                                    ),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.flag_outlined, size: 16),
+                                label: const Text('Report'),
+                              ),
+                              TextButton.icon(
+                                onPressed: () => _blockMember(member),
+                                icon: const Icon(Icons.block, size: 16),
+                                label: const Text('Block contact'),
+                              ),
+                            ],
+                          ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (group.status == 'completed')
+            OutlinedButton(
+              onPressed: () =>
+                  showRatingDialog(context: context, groupId: group.groupId),
+              child: const Text('Rate your group'),
+            ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _performAction(
+    Future<bool> Function() action,
+    String successMessage,
+  ) async {
+    final provider = context.read<GroupProvider>();
+    final accepted = await action();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          accepted
+              ? successMessage
+              : provider.error ?? 'Could not update this trip.',
+        ),
+      ),
+    );
+    if (accepted)
+      unawaited(context.read<NotificationProvider>().fetchNotifications());
+  }
+
+  Future<void> _rejectGroup(RideGroup group) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        scrollable: true,
+        title: const Text('Find another group?'),
+        content: const Text(
+          'Matching will restart for this journey. We will avoid this group and its members for the rest of this search. Everyone in this group will be notified and matched again.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Stay'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Reject and search again'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final provider = context.read<GroupProvider>();
+    final accepted = await provider.rejectGroup(group.groupId);
+    if (!mounted) return;
+    if (accepted) {
+      context.go('/ride/matching');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            provider.error ??
+                'Matching restart was not confirmed. Refresh before retrying.',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _leaveGroup(RideGroup group) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Leave this group?'),
+        content: Text(
+          group.isLift && group.me?.isDriver == true
+              ? 'Leaving as the driver cancels this lift for everyone.'
+              : 'You will leave this group and can plan a new trip.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Stay'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Leave group'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final provider = context.read<GroupProvider>();
+    final accepted = await provider.leaveGroup(group.groupId);
+    if (!mounted) return;
+    if (accepted) {
+      context.go('/home');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(provider.error ?? 'Could not leave this group.'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _finishRide(RideGroup group) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Have you reached your destination?'),
+        content: const Text(
+          'Finish your ride when your part of the trip is complete.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Not yet'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Finish ride'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await _performAction(
+        () => context.read<GroupProvider>().finishRide(group.groupId),
+        'Your ride is marked finished.',
+      );
+    }
+  }
+
+  Widget? _buildActions(RideGroup group, GroupProvider provider) {
+    if (group.canConfirm)
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildConfirmButton(provider.isChangingGroup),
+          if (group.canReject)
+            TextButton(
+              onPressed: provider.isChangingGroup
+                  ? null
+                  : () => _rejectGroup(group),
+              child: const Text('Reject and search again'),
+            ),
+          SafeArea(
+            top: false,
+            child: TextButton(
+              onPressed: provider.isChangingGroup
+                  ? null
+                  : () => _leaveGroup(group),
+              child: const Text('Leave group'),
+            ),
+          ),
+        ],
+      );
+    final busy = provider.isChangingGroup;
+    final actions = <Widget>[
+      if (group.canMarkHere)
+        FilledButton.icon(
+          onPressed: busy
+              ? null
+              : () => _performAction(
+                  () => provider.markHere(group.groupId),
+                  'Arrival recorded. Finish your ride after reaching your destination.',
+                ),
+          icon: const Icon(Icons.place_outlined),
+          label: const Text('I am at my pickup point'),
+        ),
+      if (group.canStart)
+        FilledButton.icon(
+          onPressed: busy
+              ? null
+              : () => _performAction(
+                  () => provider.startRide(group.groupId),
+                  'Ride started.',
+                ),
+          icon: const Icon(Icons.play_arrow),
+          label: const Text('Start ride'),
+        ),
+      if (group.canFinish)
+        FilledButton.icon(
+          onPressed: busy ? null : () => _finishRide(group),
+          icon: const Icon(Icons.flag_outlined),
+          label: const Text('Finish my ride'),
+        ),
+      if (group.canReject)
+        TextButton(
+          onPressed: busy ? null : () => _rejectGroup(group),
+          child: const Text('Reject and search again'),
+        ),
+      if (group.canLeave)
+        TextButton(
+          onPressed: busy ? null : () => _leaveGroup(group),
+          child: const Text('Leave group'),
+        ),
+    ];
+    if (actions.isEmpty) return null;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: actions,
         ),
       ),
     );
   }
+
+  Future<void> _blockMember(GroupMember member) async {
+    final api = context.read<ApiService>();
+    final identity = api.authIdentity;
+    final accepted = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Block this contact?'),
+        content: Text(
+          '${member.email ?? 'This contact'} will be excluded from future matches. Shared active groups are cancelled. You can unblock later.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Block'),
+          ),
+        ],
+      ),
+    );
+    if (accepted != true ||
+        !mounted ||
+        identity == null ||
+        api.authIdentity != identity)
+      return;
+    try {
+      final response = await api.put<Map<String, dynamic>>(
+        '/users/${Uri.encodeComponent(member.userId)}/block',
+      );
+      if (!mounted || api.authIdentity != identity) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response.success
+                ? 'Traveler blocked.'
+                : response.error ?? 'Could not block traveler.',
+          ),
+        ),
+      );
+      if (response.success) await _loadGroup();
+    } catch (_) {
+      if (mounted && api.authIdentity == identity)
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Could not confirm the block. Refresh and try again.',
+            ),
+          ),
+        );
+    }
+  }
+
+  Widget _buildConfirmButton(bool busy) => SafeArea(
+    top: false,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      child: FilledButton(
+        onPressed: busy ? null : _confirmReadiness,
+        child: busy ? const PixelLoader() : const Text('Confirm pickup'),
+      ),
+    ),
+  );
 }

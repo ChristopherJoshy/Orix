@@ -1,15 +1,18 @@
+import 'dart:math';
+import 'dart:async';
+import 'package:orix/core/services/websocket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/services/api_service.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/custom_alert_dialog.dart';
+import 'package:orix/core/services/api_service.dart';
+import 'package:orix/core/theme/app_theme.dart';
+import 'package:orix/core/utils/error_helper.dart';
+import 'package:orix/core/widgets/custom_alert_dialog.dart';
+import 'package:orix/core/widgets/pixel_ui.dart';
 import 'support_service.dart';
-import '../../../../core/utils/error_helper.dart';
 
 class TicketChatScreen extends StatefulWidget {
   final String ticketId;
-
   const TicketChatScreen({super.key, required this.ticketId});
 
   @override
@@ -17,317 +20,342 @@ class TicketChatScreen extends StatefulWidget {
 }
 
 class _TicketChatScreenState extends State<TicketChatScreen> {
-  late SupportService _supportService;
-  final _messageController = TextEditingController();
-  final _scrollController = ScrollController();
-
+  final _draft = TextEditingController();
+  final _scroll = ScrollController();
   SupportTicket? _ticket;
-  bool _isLoading = true;
-  bool _isSending = false;
+  String? _identity, _error;
+  bool _loading = true, _sending = false;
+  int _version = 0;
+  String? _retryText, _retryId;
 
-  @override
-  void initState() {
-    super.initState();
+  bool get _closed => const {'closed', 'resolved'}.contains(_ticket?.status);
+
+  WebSocketService? _realtime;
+  Timer? _refreshDelay, _fallbackRefresh;
+  static const _events = [
+    'support_update',
+    'notification_update',
+    'resync',
+    'connection',
+  ];
+
+  void _onSupportUpdate(Map<String, dynamic> event) {
+    if (event['type'] == 'connection' && event['connected'] != true) return;
+    _scheduleRefresh();
+  }
+
+  void _scheduleRefresh() {
+    if (!mounted || _refreshDelay?.isActive == true) return;
+    _refreshDelay = Timer(const Duration(milliseconds: 200), () {
+      if (!mounted ||
+          WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed)
+        return;
+      if (_loading || _sending) {
+        _scheduleRefresh();
+        return;
+      }
+      unawaited(_load());
+    });
+  }
+
+  void _attachRealtime() {
+    final service = context.read<WebSocketService>();
+    if (identical(service, _realtime)) return;
+    for (final event in _events) {
+      _realtime?.off(event, _onSupportUpdate);
+    }
+    _realtime = service;
+    for (final event in _events) {
+      service.on(event, _onSupportUpdate);
+    }
+    _fallbackRefresh ??= Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _scheduleRefresh(),
+    );
   }
 
   @override
   void didChangeDependencies() {
+    _attachRealtime();
     super.didChangeDependencies();
-    _supportService = SupportService(context.read<ApiService>());
-    _loadTicket();
+    final identity = context.read<ApiService>().authIdentity;
+    if (_identity == identity && identity != null) return;
+    _identity = identity;
+    _version++;
+    _ticket = null;
+    _draft.clear();
+    _retryText = null;
+    _retryId = null;
+    _sending = false;
+    _load();
   }
 
   @override
   void dispose() {
-    _messageController.dispose();
-    _scrollController.dispose();
+    _refreshDelay?.cancel();
+    _fallbackRefresh?.cancel();
+    for (final event in _events) {
+      _realtime?.off(event, _onSupportUpdate);
+    }
+
+    _version++;
+    _draft.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
-  Future<void> _loadTicket() async {
-    try {
-      final ticket = await _supportService.getTicket(widget.ticketId);
-      if (mounted) {
-        setState(() {
-          _ticket = ticket;
-          _isLoading = false;
-        });
-        // Scroll to bottom after frame
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToBottom();
-        });
+  bool _valid(String? identity, int version) =>
+      mounted &&
+      identity != null &&
+      identity == _identity &&
+      identity == context.read<ApiService>().authIdentity &&
+      version == _version;
+
+  void _followMessages() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _scroll.hasClients) {
+        _scroll.jumpTo(_scroll.position.maxScrollExtent);
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(ErrorHelper.getUserFriendlyMessage(e))),
-        );
-      }
-    }
+    });
   }
 
-  void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
-  }
-
-  Future<void> _sendMessage() async {
-    final text = _messageController.text.trim();
-    if (text.isEmpty) return;
-
-    setState(() => _isSending = true);
-
+  Future<void> _load() async {
+    final api = context.read<ApiService>();
+    final identity = api.authIdentity;
+    if (identity == null) return;
+    final version = ++_version;
+    final follow =
+        _ticket == null ||
+        !_scroll.hasClients ||
+        _scroll.position.extentAfter < 100;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
-      final updatedTicket = await _supportService.sendMessage(
-        widget.ticketId,
-        text,
-      );
-      if (mounted) {
-        setState(() {
-          _ticket = updatedTicket;
-          _messageController.clear();
-        });
-        _scrollToBottom();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(ErrorHelper.getUserFriendlyMessage(e))),
-        );
+      final ticket = await SupportService(api).getTicket(widget.ticketId);
+      if (!_valid(identity, version)) return;
+      setState(() => _ticket = ticket);
+      if (follow) _followMessages();
+    } catch (error) {
+      if (_valid(identity, version)) {
+        setState(() => _error = ErrorHelper.getUserFriendlyMessage(error));
       }
     } finally {
-      if (mounted) setState(() => _isSending = false);
+      if (_valid(identity, version)) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _send() async {
+    final text = _draft.text.trim();
+    if (text.isEmpty || _sending || _loading || _ticket == null || _closed)
+      return;
+    final api = context.read<ApiService>();
+    final identity = api.authIdentity;
+    if (identity == null || identity != _identity) return;
+    if (_retryText != text || _retryId == null) {
+      final random = Random.secure();
+      _retryId = List.generate(
+        16,
+        (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0'),
+      ).join();
+      _retryText = text;
+    }
+    final version = ++_version;
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
+    try {
+      final ticket = await SupportService(
+        api,
+      ).sendMessage(widget.ticketId, text, clientMessageId: _retryId!);
+      if (!_valid(identity, version)) return;
+      setState(() {
+        _ticket = ticket;
+        _draft.clear();
+        _retryText = null;
+        _retryId = null;
+      });
+      _followMessages();
+    } catch (error) {
+      if (_valid(identity, version)) {
+        setState(() => _error = ErrorHelper.getUserFriendlyMessage(error));
+      }
+    } finally {
+      if (_valid(identity, version)) setState(() => _sending = false);
+    }
+  }
+
+  Future<void> _changeStatus({required bool close}) async {
+    if (_loading || _sending || _ticket == null) return;
+    final api = context.read<ApiService>();
+    final identity = api.authIdentity;
+    if (identity == null || identity != _identity) return;
+    if (close) {
+      final confirmed = await CustomAlertDialog.show<bool>(
+        context: context,
+        title: 'Close conversation?',
+        message: 'You can reopen this conversation if you need more help.',
+        primaryButtonText: 'Close conversation',
+        onPrimaryPressed: () => Navigator.pop(context, true),
+        secondaryButtonText: 'Keep open',
+        onSecondaryPressed: () => Navigator.pop(context, false),
+      );
+      if (!mounted || confirmed != true || identity != api.authIdentity) return;
+    }
+    final version = ++_version;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final service = SupportService(api);
+      final ticket = close
+          ? await service.closeTicket(widget.ticketId)
+          : await service.reopenTicket(widget.ticketId);
+      if (_valid(identity, version)) setState(() => _ticket = ticket);
+    } catch (error) {
+      if (_valid(identity, version)) {
+        setState(() => _error = ErrorHelper.getUserFriendlyMessage(error));
+      }
+    } finally {
+      if (_valid(identity, version)) setState(() => _loading = false);
     }
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_ticket?.subject ?? 'Ticket #${widget.ticketId}'),
-        actions: [
-          if (_ticket != null && _ticket!.status != 'closed')
-            IconButton(
-              icon: const Icon(Icons.check_circle_outline),
-              tooltip: 'Close Ticket',
-              onPressed: () => _confirmCloseTicket(),
-            ),
-          if (_ticket != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white70),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    _ticket!.status.toUpperCase(),
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _ticket?.messages.length ?? 0,
-                    itemBuilder: (context, index) {
-                      final message = _ticket!.messages[index];
-                      return _buildMessageBubble(message);
-                    },
-                  ),
-                ),
-                _buildInputArea(),
-              ],
-            ),
-    );
-  }
-
-  Widget _buildMessageBubble(TicketMessage message) {
-    final isMe = !message.isAdmin;
-    final align = isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start;
-    final color = isMe ? AppColors.primary : AppColors.surfaceVariant;
-    final textColor = isMe ? Colors.white : AppColors.textPrimary;
-    final timeStr = DateFormat('h:mm a').format(message.timestamp);
-
-    return Column(
-      crossAxisAlignment: align,
-      children: [
-        Container(
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.75,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.only(
-              topLeft: const Radius.circular(16),
-              topRight: const Radius.circular(16),
-              bottomLeft: isMe ? const Radius.circular(16) : Radius.zero,
-              bottomRight: isMe ? Radius.zero : const Radius.circular(16),
-            ),
-          ),
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      title: const OrixLogo(width: 100),
+      actions: [
+        IconButton(
+          tooltip: 'Refresh conversation',
+          onPressed: _loading || _sending ? null : _load,
+          icon: const Icon(Icons.refresh),
+        ),
+      ],
+    ),
+    body: SafeArea(
+      top: false,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 760),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (!isMe) ...[
-                Text(
-                  'Support Agent',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: textColor.withAlphaValue(180),
+              Expanded(
+                child: ListView.builder(
+                  controller: _scroll,
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+                  itemCount: (_ticket?.messages.length ?? 0) + 1,
+                  itemBuilder: (context, index) {
+                    if (index == 0) return _header();
+                    final message = _ticket!.messages[index - 1];
+                    return OrixMessageBubble(
+                      author: message.isAdmin ? 'Orix support' : 'You',
+                      content: message.content,
+                      time: DateFormat(
+                        'd MMM, h:mm a',
+                      ).format(message.timestamp.toLocal()),
+                      mine: !message.isAdmin,
+                    );
+                  },
+                ),
+              ),
+              if (_ticket != null && !_closed) ...[
+                const Divider(height: 1),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _draft,
+                          enabled: !_sending,
+                          minLines: 1,
+                          maxLines: 3,
+                          maxLength: 2000,
+                          textCapitalization: TextCapitalization.sentences,
+                          decoration: const InputDecoration(
+                            labelText: 'Reply to support',
+                            counterText: '',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      IconButton.filled(
+                        tooltip: 'Send reply',
+                        onPressed: _loading || _sending ? null : _send,
+                        icon: _sending
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: PixelLoader(),
+                              )
+                            : const Icon(Icons.arrow_upward),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 2),
               ],
-              Text(
-                message.content,
-                style: TextStyle(color: textColor, fontSize: 16),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                timeStr,
-                style: TextStyle(
-                  color: textColor.withAlphaValue(170),
-                  fontSize: 10,
-                ),
-                textAlign: TextAlign.end,
-              ),
             ],
           ),
         ),
-        const SizedBox(height: 12),
-      ],
-    );
-  }
-
-  Widget _buildInputArea() {
-    if (_ticket?.status == 'closed') {
-      return Container(
-        padding: const EdgeInsets.all(16),
-        color: AppColors.surface,
-        child: const Center(child: Text('This ticket is closed.')),
-      );
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlphaValue(10),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
       ),
-      child: SafeArea(
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _messageController,
-                decoration: InputDecoration(
-                  hintText: 'Type a message...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: AppColors.background,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                ),
-                minLines: 1,
-                maxLines: 4,
-                textCapitalization: TextCapitalization.sentences,
+    ),
+  );
+
+  Widget _header() => Padding(
+    padding: const EdgeInsets.only(bottom: 28),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Support conversation',
+          style: Theme.of(context).textTheme.headlineLarge,
+        ),
+        if (_ticket case final ticket?) ...[
+          const SizedBox(height: 12),
+          Text(ticket.subject, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Text(
+            _closed
+                ? 'This conversation is closed.'
+                : 'Orix support can reply here.',
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: _loading || _sending
+                  ? null
+                  : () => _changeStatus(close: !_closed),
+              child: Text(
+                _closed ? 'Reopen conversation' : 'Close conversation',
               ),
             ),
-            const SizedBox(width: 8),
-            FloatingActionButton(
-              onPressed: _isSending ? null : _sendMessage,
-              mini: true,
-              backgroundColor: AppColors.primary,
-              child: _isSending
-                  ? const SizedBox(
-                      height: 15,
-                      width: 15,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : const Icon(Icons.send, color: Colors.white, size: 20),
+          ),
+        ],
+        if (_error case final error?) ...[
+          const SizedBox(height: 12),
+          Semantics(liveRegion: true, child: Text(error)),
+          if (_ticket == null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                onPressed: _loading ? null : _load,
+                child: const Text('Retry'),
+              ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _confirmCloseTicket() async {
-    final confirmed = await CustomAlertDialog.show<bool>(
-      context: context,
-      title: 'Close Ticket?',
-      message:
-          'Are you sure you want to close this ticket? You won\'t be able to send more messages.',
-      primaryButtonText: 'Close',
-      onPrimaryPressed: () => Navigator.pop(context, true),
-      secondaryButtonText: 'Cancel',
-      onSecondaryPressed: () => Navigator.pop(context, false),
-      icon: Icons.check_circle_outline,
-      iconColor: AppColors.error,
-    );
-
-    if (confirmed == true) {
-      if (!mounted) return;
-      setState(() => _isLoading = true);
-
-      try {
-        final updated = await _supportService.closeTicket(widget.ticketId);
-        if (!mounted) return;
-
-        setState(() {
-          _ticket = updated;
-          _isLoading = false;
-        });
-
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Ticket closed')));
-      } catch (e) {
-        if (!mounted) return;
-
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(ErrorHelper.getUserFriendlyMessage(e))),
-        );
-      }
-    }
-  }
+        ],
+        if (_loading && _ticket == null)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 32),
+            child: PixelLoader(),
+          ),
+      ],
+    ),
+  );
 }

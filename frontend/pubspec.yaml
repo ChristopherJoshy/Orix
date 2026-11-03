@@ -1,8 +1,8 @@
 name: orix
-description: "ORIX - College Ride Coordination Platform"
+description: "Orix - Travel coordination"
 publish_to: 'none'
 
-version: 2.0.2+5
+version: 2.1.0+6
 
 environment:
   sdk: ^3.10.4
@@ -77,15 +77,18 @@ flutter:
     - assets/images/
     - assets/icons/
   
-  # Uncomment after adding Outfit font files to assets/fonts/
-  # Download from: https://fonts.google.com/specimen/Outfit
-  # fonts:
-  #   - family: Outfit
-  #     fonts:
-  #       - asset: assets/fonts/Outfit-Regular.ttf
-  #       - asset: assets/fonts/Outfit-Medium.ttf
-  #         weight: 500
-  #       - asset: assets/fonts/Outfit-SemiBold.ttf
-  #         weight: 600
-  #       - asset: assets/fonts/Outfit-Bold.ttf
-  #         weight: 700
+  fonts:
+    - family: Pixelify Sans
+      fonts:
+        - asset: assets/fonts/pixelify-sans-500.ttf
+          weight: 500
+        - asset: assets/fonts/pixelify-sans-600.ttf
+          weight: 600
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/manrope-400.ttf
+          weight: 400
+        - asset: assets/fonts/manrope-500.ttf
+          weight: 500
+        - asset: assets/fonts/manrope-600.ttf
+          weight: 600

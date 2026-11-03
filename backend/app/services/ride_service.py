@@ -100,6 +100,7 @@ class RideService:
             user_id=user_id,
             pickup=GeoPoint.from_lat_lng(data.pickup_lat, data.pickup_lng),
             pickup_label=data.pickup_label,
+            pickup_place_id=data.pickup_place_id,drop_place_id=data.drop_place_id,
             drop=GeoPoint.from_lat_lng(data.drop_lat, data.drop_lng),
             drop_label=data.drop_label,
             date=data.date,
@@ -138,6 +139,7 @@ class RideService:
             time_end=data.time_window_end,
             female_only=data.female_only,
             allow_riders=data.allow_riders,
+            pickup_place_id=data.pickup_place_id,drop_place_id=data.drop_place_id,
         )
 
         # SMART MATCHMAKING: Try to find an existing matching group

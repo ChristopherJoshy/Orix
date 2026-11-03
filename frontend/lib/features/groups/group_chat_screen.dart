@@ -3,14 +3,16 @@
 /// In-group chat with system messages using WebSocket for real-time updates.
 library;
 
+import 'package:orix/core/widgets/pixel_ui.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../core/providers/group_provider.dart';
-import '../../core/services/websocket_service.dart';
-import '../../core/theme/app_theme.dart';
+import 'package:orix/core/providers/group_provider.dart';
+import 'package:orix/core/theme/app_theme.dart';
 
 class GroupChatScreen extends StatefulWidget {
   final String groupId;
@@ -21,51 +23,61 @@ class GroupChatScreen extends StatefulWidget {
   State<GroupChatScreen> createState() => _GroupChatScreenState();
 }
 
-class _GroupChatScreenState extends State<GroupChatScreen> {
+class _GroupChatScreenState extends State<GroupChatScreen>
+    with WidgetsBindingObserver {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
-  WebSocketService? _wsService;
   Timer? _refreshTimer;
+  int _pollTicks = 0;
+  String? _lastMessageId;
 
   @override
   void initState() {
     super.initState();
-    _loadMessages();
-    _setupWebSocketListener();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(_loadMessages());
+      unawaited(context.read<GroupProvider>().fetchGroup(widget.groupId));
+    });
+    _startPolling();
+  }
+
+  bool get _visible =>
+      mounted &&
+      GoRouter.of(context).routeInformationProvider.value.uri.path ==
+          '/groups/${widget.groupId}/chat';
+
+  void _startPolling() {
+    _refreshTimer?.cancel();
 
     // Periodically refresh messages in case WebSocket misses an event
-    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      _loadMessages();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (!_visible) return;
+      _pollTicks++;
+      if (!context.read<GroupProvider>().isRealtimeConnected ||
+          _pollTicks.isEven)
+        _loadMessages();
     });
   }
 
-  void _setupWebSocketListener() {
-    // Get WebSocket service and listen for new messages
-    _wsService = context.read<WebSocketService>();
-    _wsService?.on('new_chat_message', _handleNewMessage);
-  }
-
-  void _handleNewMessage(Map<String, dynamic> data) {
-    // Check if message is for this group
-    if (data['group_id'] == widget.groupId) {
-      // Add message directly without full refetch to avoid flicker
-      context.read<GroupProvider>().addMessageFromWebSocket(data);
-      // Auto-scroll to bottom
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOut,
-          );
-        }
-      });
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _startPolling();
+      if (_visible) {
+        unawaited(_loadMessages());
+        unawaited(context.read<GroupProvider>().fetchGroup(widget.groupId));
+      }
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _refreshTimer?.cancel();
     }
   }
 
   @override
   void dispose() {
-    _wsService?.off('new_chat_message', _handleNewMessage);
+    WidgetsBinding.instance.removeObserver(this);
     _refreshTimer?.cancel();
     _messageController.dispose();
     _scrollController.dispose();
@@ -77,8 +89,20 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   }
 
   Future<void> _sendMessage() async {
+    final provider = context.read<GroupProvider>();
     final text = _messageController.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty ||
+        provider.isSendingMessage ||
+        provider.currentGroup?.canChat != true)
+      return;
+    if (text.runes.length > 1000) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Messages can contain up to 1000 characters.'),
+        ),
+      );
+      return;
+    }
 
     _messageController.clear();
 
@@ -106,53 +130,149 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     return Consumer<GroupProvider>(
       builder: (context, groupProvider, _) {
         final messages = groupProvider.messages;
+        final latest = messages.isEmpty ? null : messages.last.messageId;
+        if (latest != null && latest != _lastMessageId) {
+          // Follow live arrivals only while the reader is already near the end.
+          final follow =
+              _lastMessageId == null ||
+              !_scrollController.hasClients ||
+              _scrollController.position.extentAfter < 100;
+          _lastMessageId = latest;
+          if (follow)
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && _scrollController.hasClients) {
+                _scrollController.jumpTo(
+                  _scrollController.position.maxScrollExtent,
+                );
+              }
+            });
+        }
         final isSending = groupProvider.isSendingMessage;
+        final canChat =
+            groupProvider.currentGroup?.groupId == widget.groupId &&
+            groupProvider.currentGroup?.canChat == true;
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Group Chat')),
-          body: Column(
-            children: [
-              Expanded(
-                child: messages.isEmpty && !isSending
-                    ? _buildEmpty()
-                    : _buildMessageList(messages),
+          appBar: AppBar(
+            title: const OrixLogo(width: 100),
+            actions: [
+              IconButton(
+                tooltip: 'Open trip details',
+                onPressed: () => context.push(
+                  '/groups/${Uri.encodeComponent(widget.groupId)}',
+                ),
+                icon: const Icon(Icons.route_outlined),
               ),
-              _buildInputBar(isSending),
             ],
+          ),
+          body: SafeArea(
+            top: false,
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 760),
+                child: Column(
+                  children: [
+                    Expanded(child: _buildMessageList(messages, groupProvider)),
+                    _buildInputBar(isSending, canChat),
+                  ],
+                ),
+              ),
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _buildEmpty() {
-    return Center(
-      child: Text(
-        'No messages yet',
-        style: Theme.of(
-          context,
-        ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
-      ),
-    );
+  Future<void> _loadEarlier(GroupProvider provider) async {
+    final previousHeight = _scrollController.hasClients
+        ? _scrollController.position.maxScrollExtent
+        : 0.0;
+    final previousOffset = _scrollController.hasClients
+        ? _scrollController.offset
+        : 0.0;
+    await provider.loadOlderMessages(widget.groupId);
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) return;
+      _scrollController.jumpTo(
+        (previousOffset +
+                _scrollController.position.maxScrollExtent -
+                previousHeight)
+            .clamp(0.0, _scrollController.position.maxScrollExtent)
+            .toDouble(),
+      );
+    });
   }
 
-  Widget _buildMessageList(List<ChatMessage> messages) {
-    return ListView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.all(16),
-      itemCount: messages.length,
-      itemBuilder: (context, index) {
-        final msg = messages[index];
-        final isSystem = msg.messageType == 'system';
-
-        if (isSystem) {
-          return _buildSystemMessage(msg);
-        }
-
-        return _buildUserMessage(msg);
-      },
-    );
-  }
+  Widget _buildMessageList(
+    List<ChatMessage> messages,
+    GroupProvider provider,
+  ) => ListView.builder(
+    controller: _scrollController,
+    padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+    itemCount: messages.length + 1,
+    itemBuilder: (context, index) {
+      if (index == 0) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Group conversation',
+                style: Theme.of(context).textTheme.headlineLarge,
+              ),
+              const SizedBox(height: 12),
+              const Text('Plan your pickup and stay in touch with your group.'),
+              if (!provider.isRealtimeConnected) ...[
+                const SizedBox(height: 12),
+                const Text(
+                  'Reconnecting live updates…',
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
+              ],
+              if (provider.chatError case final error?) ...[
+                const SizedBox(height: 12),
+                Semantics(liveRegion: true, child: Text(error)),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: provider.isLoadingMessages
+                        ? null
+                        : _loadMessages,
+                    child: const Text('Refresh messages'),
+                  ),
+                ),
+              ],
+              if (provider.canLoadOlderMessages)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: provider.isLoadingMessages
+                        ? null
+                        : () => _loadEarlier(provider),
+                    child: const Text('Load earlier messages'),
+                  ),
+                ),
+              if (messages.isEmpty) ...[
+                const SizedBox(height: 24),
+                if (provider.isLoadingMessages)
+                  const PixelLoader()
+                else
+                  const Text('No messages yet.'),
+              ],
+            ],
+          ),
+        );
+      }
+      final message = messages[index - 1];
+      return message.messageType == 'system'
+          ? _buildSystemMessage(message)
+          : _buildUserMessage(message);
+    },
+  );
 
   Widget _buildSystemMessage(ChatMessage msg) {
     return Padding(
@@ -162,7 +282,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
             color: AppColors.surfaceVariant,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.zero,
           ),
           child: Text(
             msg.content,
@@ -175,74 +295,36 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     );
   }
 
-  Widget _buildUserMessage(ChatMessage msg) {
-    final isMine = msg.isMine;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        mainAxisAlignment: isMine
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (!isMine) ...[
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: AppColors.primary.withAlphaValue(0.1),
-              child: Text(
-                (msg.userDisplayName ?? 'U').substring(0, 1),
-                style: const TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: isMine ? AppColors.primary : AppColors.surfaceVariant,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(isMine ? 16 : 4),
-                  bottomRight: Radius.circular(isMine ? 4 : 16),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (!isMine && msg.userDisplayName != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Text(
-                        msg.userDisplayName!,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  Text(
-                    msg.content,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: isMine ? Colors.white : AppColors.textPrimary,
-                    ),
+  Widget _buildUserMessage(ChatMessage message) => OrixMessageBubble(
+    author: message.isMine
+        ? 'You'
+        : message.userDisplayName?.isNotEmpty == true
+        ? message.userDisplayName!
+        : 'Travel partner',
+    content: message.content,
+    time:
+        '${message.createdAt.toLocal().hour.toString().padLeft(2, '0')}:${message.createdAt.toLocal().minute.toString().padLeft(2, '0')}',
+    mine: message.isMine,
+    status: message.isPending
+        ? const Text(
+            'Sending…',
+            style: TextStyle(color: Colors.white70, fontSize: 11),
+          )
+        : message.failed && message.clientMessageId != null
+        ? TextButton(
+            onPressed: context.read<GroupProvider>().isSendingMessage
+                ? null
+                : () => context.read<GroupProvider>().retryMessage(
+                    widget.groupId,
+                    message.clientMessageId!,
                   ),
-                ],
-              ),
-            ),
-          ),
-          if (isMine) const SizedBox(width: 40),
-        ],
-      ),
-    );
-  }
+            style: TextButton.styleFrom(foregroundColor: Colors.white),
+            child: const Text('Not confirmed · Retry'),
+          )
+        : null,
+  );
 
-  Widget _buildInputBar(bool isSending) {
+  Widget _buildInputBar(bool isSending, bool canChat) {
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -253,14 +335,20 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           ),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
               child: TextField(
                 controller: _messageController,
+                enabled: canChat && !isSending,
+                maxLength: 1000,
                 decoration: InputDecoration(
-                  hintText: 'Type a message...',
+                  labelText: canChat
+                      ? 'Message your group'
+                      : 'This group is read-only',
+                  counterText: '',
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.zero,
                     borderSide: BorderSide.none,
                   ),
                   filled: true,
@@ -270,19 +358,16 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     vertical: 12,
                   ),
                 ),
-                textInputAction: TextInputAction.send,
-                onSubmitted: (_) => _sendMessage(),
+                minLines: 1,
+                maxLines: 3,
+                textInputAction: TextInputAction.newline,
               ),
             ),
             const SizedBox(width: 8),
             IconButton(
-              onPressed: isSending ? null : _sendMessage,
+              onPressed: isSending || !canChat ? null : _sendMessage,
               icon: isSending
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
+                  ? const SizedBox(width: 20, height: 20, child: PixelLoader())
                   : const Icon(Icons.send),
               style: IconButton.styleFrom(
                 backgroundColor: AppColors.primary,

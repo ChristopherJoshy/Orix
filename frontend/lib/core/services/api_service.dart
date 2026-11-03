@@ -4,6 +4,7 @@
 library;
 
 import 'dart:convert';
+import 'dart:async';
 import 'dart:io' show SocketException, HttpException, File;
 
 import 'package:http/http.dart' as http;
@@ -27,6 +28,7 @@ class ApiResponse<T> {
   final String? error;
   final String? errorCode;
   final int statusCode;
+  final String? nextCursor;
 
   ApiResponse({
     required this.success,
@@ -34,10 +36,16 @@ class ApiResponse<T> {
     this.error,
     this.errorCode,
     required this.statusCode,
+    this.nextCursor,
   });
 
-  factory ApiResponse.success(T data, int statusCode) =>
-      ApiResponse(success: true, data: data, statusCode: statusCode);
+  factory ApiResponse.success(T data, int statusCode, {String? nextCursor}) =>
+      ApiResponse(
+        success: true,
+        data: data,
+        statusCode: statusCode,
+        nextCursor: nextCursor,
+      );
 
   factory ApiResponse.failure(
     String error,
@@ -66,6 +74,8 @@ class ApiService {
   final http.Client _client = http.Client();
   AuthService? _authService;
 
+  String? get authIdentity => _authService?.currentUser?.uid;
+
   /// Response cache for GET requests
   final Map<String, _CacheEntry> _cache = {};
 
@@ -79,7 +89,6 @@ class ApiService {
   static const Map<String, int> _cacheTtl = {
     // Ride status changes frequently and should always be fresh
     // to avoid stale data reappearing after completion
-    '/users/me/rider': 30, // Rider info changes rarely
   };
 
   /// Set auth service reference
@@ -92,23 +101,37 @@ class ApiService {
     Future<T> Function() operation, {
     int retries = _maxRetries,
   }) async {
-    int attempt = 0;
-    while (true) {
+    for (var attempt = 0; ; attempt++) {
       try {
-        return await operation();
+        final result = await operation();
+        if (result is http.Response &&
+            const {
+              408,
+              425,
+              429,
+              500,
+              502,
+              503,
+              504,
+            }.contains(result.statusCode) &&
+            attempt + 1 < retries) {
+          final seconds = int.tryParse(result.headers['retry-after'] ?? '');
+          if (seconds != null && seconds > 10) return result;
+          final delay = seconds != null && seconds > 0
+              ? Duration(seconds: seconds)
+              : _retryDelayBase * (1 << attempt);
+          await Future<void>.delayed(delay);
+          continue;
+        }
+        return result;
       } on SocketException {
-        attempt++;
-        if (attempt >= retries) {
-          rethrow;
-        }
-        await Future.delayed(_retryDelayBase * attempt);
+        if (attempt + 1 >= retries) rethrow;
       } on http.ClientException {
-        attempt++;
-        if (attempt >= retries) {
-          rethrow;
-        }
-        await Future.delayed(_retryDelayBase * attempt);
+        if (attempt + 1 >= retries) rethrow;
+      } on TimeoutException {
+        if (attempt + 1 >= retries) rethrow;
       }
+      await Future<void>.delayed(_retryDelayBase * (1 << attempt));
     }
   }
 
@@ -174,7 +197,11 @@ class ApiService {
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = parser != null && body != null ? parser(body) : body as T?;
-        return ApiResponse.success(data as T, response.statusCode);
+        return ApiResponse.success(
+          data as T,
+          response.statusCode,
+          nextCursor: response.headers['x-next-cursor'],
+        );
       } else {
         String error = 'Request failed';
         String? errorCode;
@@ -283,13 +310,14 @@ class ApiService {
     bool forceRefresh = false,
   }) async {
     try {
+      final requestIdentity = authIdentity;
       var uri = Uri.parse('$baseUrl$endpoint');
       if (queryParams != null) {
         uri = uri.replace(queryParameters: queryParams);
       }
 
       // Check cache first (unless force refresh)
-      final cacheKey = uri.toString();
+      final cacheKey = '${requestIdentity ?? 'public'}:${uri.toString()}';
       final ttl = _getCacheTtl(endpoint);
 
       if (!forceRefresh && ttl > Duration.zero) {
@@ -302,10 +330,15 @@ class ApiService {
 
       // Perform request with retry logic
       final response = await _retryWithBackoff(() async {
+        final headers = await _getHeaders(withAuth: withAuth);
+        if (withAuth && authIdentity != requestIdentity)
+          throw StateError('Account changed');
         return await _client
-            .get(uri, headers: await _getHeaders(withAuth: withAuth))
+            .get(uri, headers: headers)
             .timeout(ApiConfig.timeout);
       });
+      if (withAuth && authIdentity != requestIdentity)
+        throw StateError('Account changed');
 
       final result = _parseResponse(response, parser);
 

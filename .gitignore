@@ -50,3 +50,29 @@ backend/firebase_credentials.json
 __pycache__/
 *.pyc
 *.pyo
+
+# Local agent skills
+/.agents/skills/
+
+# Local runtime configuration and Firebase Admin credentials
+**/.env
+**/.env.local
+**/.env.*.local
+/backend/*firebase-adminsdk*.json
+/backend/secrets/
+
+# Credentials and local environment files, at any depth
+**/.env*
+!**/.env.example
+**/*.env
+!**/example.env
+**/*firebase*adminsdk*.json
+**/*service-account*.json
+**/*service_account*.json
+**/credentials*.json
+**/google-services*.json
+**/GoogleService-Info*.plist
+*.p12
+*.pfx
+*.jks
+*.keystore

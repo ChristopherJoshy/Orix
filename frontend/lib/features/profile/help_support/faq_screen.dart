@@ -1,86 +1,50 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_theme.dart';
+import 'package:orix/core/widgets/pixel_ui.dart';
 
 class FAQScreen extends StatelessWidget {
   const FAQScreen({super.key});
-
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('FAQs')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _buildFAQItem(
-            context,
-            question: 'What is ORIX?',
-            answer:
-                'ORIX is a ride-sharing community exclusive to college students and staff. It helps you find others traveling on the same route to share costs and reduce carbon footprint.',
-          ),
-          _buildFAQItem(
-            context,
-            question: 'Who can use ORIX?',
-            answer:
-                'Only Verified Users can join. You must sign up with a valid email address from a supported college domain (e.g., @sjcetpalai.ac.in). This ensures a safer community of peers.',
-          ),
-          _buildFAQItem(
-            context,
-            question: 'How do I pay for rides?',
-            answer:
-                'ORIX does NOT process payments. Riders and Passengers typically split fuel and toll costs. You can settle this directly via Cash, UPI, or any other method you both agree on at the end of the ride.',
-          ),
-          _buildFAQItem(
-            context,
-            question: 'Is ORIX safe?',
-            answer:
-                'We focus on community trust. Everyone on ORIX is verified via their college email. However, always exercise caution: check college IDs before entering a car and let friends know your whereabouts.',
-          ),
-          _buildFAQItem(
-            context,
-            question: 'Why do I see ads?',
-            answer:
-                'ORIX is free to use! To cover our server and maintenance costs without charging you subscription fees, we display non-intrusive advertisements.',
-          ),
-          _buildFAQItem(
-            context,
-            question: 'Can I cancel a requested ride?',
-            answer:
-                'Yes, but frequent late cancellations may affect your reputation score. Please cancel as early as possible so the Rider can find another passenger.',
-          ),
-          _buildFAQItem(
-            context,
-            question: 'My college is not supported. What do I do?',
-            answer:
-                'We are expanding! Please use the "Contact Support" option to request your college domain to be added to our network.',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFAQItem(
-    BuildContext context, {
-    required String question,
-    required String answer,
-  }) {
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: AppColors.surface,
-      child: ExpansionTile(
-        title: Text(
-          question,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+  Widget build(BuildContext context) => OrixPage(
+    title: 'Common questions',
+    children: [
+      for (final item in const [
+        (
+          'How does pooling work?',
+          'Choose your starting point, destination and time. Pickups must be within 300 metres, the destination must be the same, and everyone’s time and safety preferences must fit.',
         ),
-        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        children: [
-          Text(
-            answer,
-            style: const TextStyle(color: AppColors.textSecondary, height: 1.5),
+        (
+          'How do I offer a lift?',
+          'Open Offer a lift and register your route, time and available passenger seats.',
+        ),
+        (
+          'How are costs shared?',
+          'Your group agrees on costs and settles them directly. Orix does not process payments.',
+        ),
+        (
+          'Can I cancel?',
+          'You can cancel a waiting request or leave an eligible group from the journey screen. If you are the driver, leaving cancels the lift for the group.',
+        ),
+        (
+          'How do I report a concern?',
+          'Choose the contact’s email and a reason, then describe what happened. This starts a private conversation with moderation so you can answer follow-up questions.',
+        ),
+        (
+          'Can I block someone?',
+          'Yes. Search by email in Blocked contacts. Blocking excludes future matches and cancels shared active groups.',
+        ),
+        (
+          'Does sign-in guarantee safety?',
+          'No. Confirm who you are meeting and any vehicle details. For immediate danger, contact local emergency services.',
+        ),
+      ])
+        Card(
+          child: ExpansionTile(
+            title: Text(item.$1),
+            childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            expandedCrossAxisAlignment: CrossAxisAlignment.start,
+            children: [Text(item.$2)],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+    ],
+  );
 }

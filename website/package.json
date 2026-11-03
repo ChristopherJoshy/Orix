@@ -1,0 +1,36 @@
+{
+  "name": "orix-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test:errors": "tsc --ignoreConfig --noEmit false --outDir /tmp/orix-web-tests --target ES2022 --module ES2022 --skipLibCheck src/lib/errors.ts && node tests/errors.test.mjs"
+  },
+  "dependencies": {
+    "@fontsource/manrope": "5.3.0",
+    "@fontsource/pixelify-sans": "5.3.0",
+    "@radix-ui/react-dialog": "1.3.1",
+    "firebase": "13.1.0",
+    "lucide-react": "1.66.0",
+    "motion": "14.9.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-router-dom": "7.18.5",
+    "sonner": "2.0.8",
+    "zustand": "5.0.16"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.2.1",
+    "prettier": "3.9.10",
+    "typescript": "7.0.2",
+    "vite": "8.3.5"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "1.14.7"
+  }
+}

@@ -43,7 +43,7 @@ class MatchmakingService:
         
         # Thresholds
         self.MIN_MATCH_SCORE = 0.5
-        self.MAX_PICKUP_DISTANCE_KM = 1.0  # Starting location must be within 1km (HARD)
+        self.MAX_PICKUP_DISTANCE_KM = 0.3  # Starting location must be within 300 m (HARD)
         self.MAX_BEARING_DIFF_DEGREES = 45  # Route direction threshold for path overlap
         self.MAX_GROUP_SIZE = 4
         self.MIN_GROUP_SIZE = 1  # Groups can start with 1 member
@@ -59,20 +59,23 @@ class MatchmakingService:
         Calculate route overlap score between two requests.
         
         Scoring approach:
-        1. Pickup proximity (HARD CONSTRAINT: within 1km)
+        1. Pickup proximity (HARD CONSTRAINT: within 300 m)
         2. Route direction similarity (destinations on same path)
         3. Path convergence check (drops are along similar trajectory)
         
         Returns score between 0.0 (no overlap) and 1.0 (perfect match).
-        Returns 0.0 if pickup distance > 1km (hard constraint).
+        Returns 0.0 if pickup distance > 300 m (hard constraint).
         """
         # Calculate pickup distance - HARD CONSTRAINT
         pickup_distance = geodesic(pickup1, pickup2).kilometers
         
-        # Pickup must be within 1km - this is a hard constraint
+        # Pickup must be within 300 m - this is a hard constraint
         if pickup_distance > self.MAX_PICKUP_DISTANCE_KM:
             return 0.0
         
+        if geodesic(drop1, drop2).meters > 1:
+            return 0.0
+
         # Normalize pickup distance (closer = better)
         pickup_score = max(0, 1 - (pickup_distance / self.MAX_PICKUP_DISTANCE_KM))
         
@@ -253,7 +256,11 @@ class MatchmakingService:
         pickup2 = (request2["pickup_lat"], request2["pickup_lng"])
         drop2 = (request2["drop_lat"], request2["drop_lng"])
         
+        first_id, second_id = request1.get('drop_place_id'), request2.get('drop_place_id')
+        same_id = not first_id or not second_id or first_id == second_id
         route_score = self.calculate_route_overlap(pickup1, drop1, pickup2, drop2)
+        if not same_id or route_score <= 0:
+            return {'score': 0.0, 'reason': 'pickup_or_destination_mismatch'} if return_details else 0.0
         
         # Time compatibility score
         time_score = self.calculate_time_compatibility(
@@ -285,7 +292,7 @@ class MatchmakingService:
         pickup_lat: float,
         pickup_lng: float,
         date: str,
-        max_distance_meters: float = 1000
+        max_distance_meters: float = 300
     ) -> List[str]:
         """
         Get request IDs within max_distance_meters of the given pickup location.
@@ -297,7 +304,7 @@ class MatchmakingService:
             pickup_lat: Latitude of pickup point
             pickup_lng: Longitude of pickup point  
             date: Date to filter requests
-            max_distance_meters: Maximum distance in meters (default 1km)
+            max_distance_meters: Maximum distance in meters (default 300 m)
             
         Returns:
             List of request_ids within the specified distance
@@ -403,6 +410,7 @@ class MatchmakingService:
             # Parse request data (same format as redis_service.get_request_data)
             candidate = {
                 "request_id": pid,
+                "drop_place_id":data.get("drop_place_id"),
                 "user_id": data.get("user_id", ""),
                 "pickup_lat": float(data.get("pickup_lat", 0)),
                 "pickup_lng": float(data.get("pickup_lng", 0)),

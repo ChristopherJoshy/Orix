@@ -31,6 +31,7 @@ audit_service = AuditService()
 
 
 class UserProfileResponse(BaseModel):
+    occupation: str = 'other'
     """User profile response."""
 
     user_id: str
@@ -102,6 +103,7 @@ async def get_profile(current_user: User = Depends(get_current_user)):
         user_id=current_user.user_id,
         email=current_user.email,
         display_name=current_user.display_name,
+        occupation=current_user.occupation,
         photo_url=current_user.photo_url,
         phone=current_user.phone,
         gender=current_user.gender,
@@ -118,21 +120,26 @@ async def get_profile(current_user: User = Depends(get_current_user)):
 async def search_users(
     query: str, current_user: User = Depends(get_current_active_user)
 ):
-    """
-    Search for users to report.
-    Returns limited public info.
-    """
-    users = await user_service.search_users(query)
-
-    return [
-        SearchResult(
-            user_id=u.user_id,
-            display_name=u.display_name,
-            photo_url=u.photo_url,
-            email=u.email,
-        )
-        for u in users
+    from app.database import get_db
+    from app.services.email_directory import rank_emails
+    query = query.strip()
+    if not 2 <= len(query) <= 100:
+        raise HTTPException(422, 'Search by 2–100 characters of an email')
+    db = get_db()
+    pipeline = [
+        {'$match': {'members.user_id': current_user.user_id}},
+        {'$unwind': '$members'},
+        {'$match': {'members.user_id': {'$ne': current_user.user_id}}},
+        {'$group': {'_id': '$members.user_id'}},
+        {'$lookup': {'from': 'users', 'localField': '_id', 'foreignField': 'user_id', 'as': 'profile'}},
+        {'$unwind': '$profile'},
+        {'$match': {'profile.status': {'$nin': ['deleting', 'deleted']}}},
+        {'$sort': {'profile.email': 1, '_id': 1}},
+        {'$limit': 200},
+        {'$project': {'_id': 0, 'user_id': '$profile.user_id', 'display_name': '$profile.display_name', 'email': '$profile.email', 'photo_url': '$profile.photo_url'}},
     ]
+    records = await db.ride_groups.aggregate(pipeline).to_list(200)
+    return [SearchResult(**record) for record in rank_emails(records, query)]
 
 
 @router.put("/me", response_model=UserProfileResponse)
@@ -165,6 +172,7 @@ async def update_profile(
         user_id=updated_user.user_id,
         email=updated_user.email,
         display_name=updated_user.display_name,
+        occupation=updated_user.occupation,
         photo_url=updated_user.photo_url,
         phone=updated_user.phone,
         gender=updated_user.gender,
@@ -328,6 +336,7 @@ async def upload_avatar(
             user_id=updated_user.user_id,
             email=updated_user.email,
             display_name=updated_user.display_name,
+        occupation=updated_user.occupation,
             photo_url=updated_user.photo_url,
             phone=updated_user.phone,
             gender=updated_user.gender,

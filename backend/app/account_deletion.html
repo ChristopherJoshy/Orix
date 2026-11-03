@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Delete your ORIX account</title>
+  <link rel="stylesheet" href="/account-deletion/style.css">
+  {{if .Enabled}}<script type="module" src="/account-deletion/app.js"></script>{{end}}
+</head>
+<body>
+<main>
+  <p class="brand">ORIX</p>
+  <h1>Delete your account</h1>
+  <p>You can request deletion here without installing the ORIX app.</p>
+  <section aria-labelledby="what-happens">
+    <h2 id="what-happens">What happens to your data</h2>
+    <p>Your active trips will be cancelled. Your ORIX profile, contact details,
+      uploaded avatar, ride requests, preferences, ratings and blocking records
+      will be removed along with your ORIX sign-in identity.</p>
+    <p>Your messages and identifying details in shared groups, reports and support
+      conversations will be removed or anonymized. Other members' unrelated
+      accounts and trip records will remain.</p>
+    <p>Deletion runs in the background and may take longer if a service is
+      unavailable. Submitting a request does not mean cleanup has already finished.
+      This does not delete your Google account.</p>
+    {{if .PrivacyURL}}<p>See our <a href="{{.PrivacyURL}}">privacy policy</a> for retention,
+      backups and provider records.</p>{{end}}
+  </section>
+  {{if .Enabled}}
+  <section aria-labelledby="request-heading">
+    <h2 id="request-heading">Request deletion</h2>
+    <p>Sign in with the Google account you use for ORIX. Check the account below
+      before requesting deletion.</p>
+    <button id="sign-in" type="button" disabled>Sign in with Google</button>
+    <div id="account-panel" hidden>
+      <p>Signed in as <strong id="account-email"></strong></p>
+      <label class="confirmation"><input id="confirm-deletion" type="checkbox">
+        I understand my active trips will be cancelled and I want to permanently
+        delete my ORIX account and associated data.</label>
+      <div class="actions">
+        <button id="delete-account" class="danger" type="button" disabled>Request permanent deletion</button>
+        <button id="sign-out" class="secondary" type="button">Use another account</button>
+      </div>
+    </div>
+    <p id="status" role="status" aria-live="polite">Preparing secure sign-in…</p>
+    <noscript><p>Enable JavaScript to use Google sign-in, or use the support option below.</p></noscript>
+  </section>
+  {{else}}
+  <p>Web sign-in is temporarily unavailable.</p>
+  {{end}}
+  <section aria-labelledby="support-heading">
+    <h2 id="support-heading">Cannot sign in?</h2>
+    {{if .SupportEmail}}
+    <p>Email <a href="mailto:{{.SupportEmail}}?subject=ORIX%20account%20deletion">{{.SupportEmail}}</a>
+      to request ORIX account deletion or help accessing your account. Include the
+      email address used for ORIX. Support will verify ownership before acting.
+      Do not send passwords, sign-in codes or identity tokens.</p>
+    {{else}}
+    <p>Support contact details are not available on this deployment yet. Please
+      return later to request assistance.</p>
+    {{end}}
+  </section>
+</main>
+</body>
+</html>

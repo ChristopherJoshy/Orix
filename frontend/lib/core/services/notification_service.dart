@@ -1,61 +1,204 @@
+import 'dart:convert';
+import 'dart:ui' show Color;
+
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-/// Background message handler (must be top-level function)
-/// CRITICAL: Handles DATA-ONLY FCM messages when app is backgrounded/killed
-@pragma('vm:entry-point')
-Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
+import '../../firebase_options.dart';
 
-  // Handle RIDE_ALARM data-only messages
-  if (message.data['type'] == 'RIDE_ALARM') {
-    final FlutterLocalNotificationsPlugin localNotifications =
-        FlutterLocalNotificationsPlugin();
+/// Push identity is separate from the installation token: tokens can outlive a
+/// sign-in. New Go notifications always carry the intended Firebase identity.
+class PushRecipient {
+  static bool matches(Map<String, dynamic> data, String? currentUid) =>
+      currentUid != null &&
+      currentUid.isNotEmpty &&
+      data['recipient_firebase_uid'] == currentUid;
+}
 
-    // Show full-screen alarm notification
-    await localNotifications.show(
-      999, // Unique ID for alarm
-      '🔔 Catch Your Ride!',
-      'Your ride is starting! Tap to open.',
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          'ride_alarm_channel',
-          'Ride Alarms',
-          channelDescription: 'Full-screen alarms for ride start times',
-          icon: '@drawable/ic_notification',
-          priority: Priority.max,
-          importance: Importance.max,
-          playSound: true,
-          enableVibration: true,
-          audioAttributesUsage: AudioAttributesUsage.alarm,
-          fullScreenIntent: true,
-          category: AndroidNotificationCategory.alarm,
-          visibility: NotificationVisibility.public,
-          ongoing: true,
-          autoCancel: false,
-          actions: [
-            AndroidNotificationAction(
-              'I_AM_HERE',
-              'I Am Here',
-              showsUserInterface: true,
-            ),
-          ],
-        ),
-      ),
-      payload:
-          'show_alarm|${message.data['group_id']}|${message.data['ride_time']}|${message.data['pickup_summary']}',
-    );
+/// Conversation taps retain identifiers only, never report content or a URL.
+class ConversationNotificationPayload {
+  static Map<String, String>? fromData(Map<String, dynamic> data) {
+    final report = data['report_id'];
+    final ticket = data['ticket_id'];
+    final group = data['group_id'];
+    final recipient = data['recipient_firebase_uid'];
+    final user = data['recipient_user_id'];
+    if (recipient is! String ||
+        recipient.isEmpty ||
+        user is! String ||
+        user.isEmpty)
+      return null;
+    final String field;
+    final String id;
+    if (report is String && report.isNotEmpty && report.length <= 100) {
+      field = 'report_id';
+      id = report;
+    } else if (ticket is String && ticket.isNotEmpty && ticket.length <= 100) {
+      field = 'ticket_id';
+      id = ticket;
+    } else if (group is String && group.isNotEmpty && group.length <= 100) {
+      field = 'group_id';
+      id = group;
+    } else {
+      return null;
+    }
+    return {
+      field: id,
+      if (data['type'] is String) 'type': data['type'] as String,
+      'recipient_firebase_uid': recipient,
+      'recipient_user_id': user,
+    };
   }
 }
 
+/// One payload format for foreground delivery, background delivery and taps.
+class RideAlarmPayload {
+  static bool isAlarm(Map<String, dynamic> data) {
+    final type = data['type'];
+    return (type is String &&
+            const {'ride_alarm', 'ride_start'}.contains(type.toLowerCase())) ||
+        data['action'] == 'show_alarm';
+  }
+
+  static Map<String, String>? fromData(Map<String, dynamic> data) {
+    if (!isAlarm(data)) return null;
+    final groupId = data['group_id'];
+    if (groupId is! String || groupId.trim().isEmpty) return null;
+    return {
+      'group_id': groupId,
+      if (data['recipient_firebase_uid'] is String)
+        'recipient_firebase_uid': data['recipient_firebase_uid'] as String,
+      if (data['recipient_user_id'] is String)
+        'recipient_user_id': data['recipient_user_id'] as String,
+      'ride_time': data['ride_time'] is String
+          ? data['ride_time'] as String
+          : '',
+      'pickup_summary': data['pickup_summary'] is String
+          ? data['pickup_summary'] as String
+          : '',
+    };
+  }
+
+  static Map<String, String>? decode(String? payload) {
+    if (payload == null || payload.isEmpty) return null;
+    try {
+      final data = jsonDecode(payload);
+      if (data is Map<String, dynamic>) return fromData(data);
+    } on FormatException {
+      // Notifications already delivered by older versions use pipes.
+      if (payload.startsWith('show_alarm|')) {
+        final parts = payload.split('|');
+        if (parts.length >= 4) {
+          return fromData({
+            'action': 'show_alarm',
+            'group_id': parts[1],
+            'ride_time': parts[2],
+            'pickup_summary': parts.sublist(3).join('|'),
+          });
+        }
+      }
+    }
+    return null;
+  }
+
+  static String encode(Map<String, dynamic> data) =>
+      jsonEncode({...?fromData(data), 'type': 'ride_alarm'});
+}
+
+const _localInitialization = InitializationSettings(
+  android: AndroidInitializationSettings('@drawable/ic_notification'),
+  iOS: DarwinInitializationSettings(
+    requestAlertPermission: false,
+    requestBadgePermission: false,
+    requestSoundPermission: false,
+  ),
+);
+
+int _reminderNotificationId(String groupId) {
+  var hash = 17;
+  for (final unit in groupId.codeUnits) {
+    hash = (hash * 31 + unit) & 0x7fffffff;
+  }
+  return hash;
+}
+
+Future<void> _showRideReminder(
+  FlutterLocalNotificationsPlugin plugin,
+  Map<String, dynamic> data,
+) async {
+  final payload = RideAlarmPayload.fromData(data);
+  if (payload == null) return;
+  final when = DateTime.tryParse(payload['ride_time'] ?? '');
+  if (when != null && !when.isAfter(DateTime.now())) return;
+  final minutes = when == null
+      ? null
+      : (when.difference(DateTime.now()).inMilliseconds /
+                Duration.millisecondsPerMinute)
+            .ceil();
+  try {
+    await plugin.show(
+      _reminderNotificationId(payload['group_id']!),
+      minutes == null
+          ? 'Ride reminder'
+          : 'Your pickup is in $minutes ${minutes == 1 ? 'minute' : 'minutes'}',
+      'Tap for your current pickup details.',
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'ride_reminders_v2',
+          'Ride reminders',
+          channelDescription: 'Reminders when your coordinated ride starts',
+          icon: '@drawable/ic_notification',
+          color: const Color(0xFF222222),
+          colorized: false,
+          importance: Importance.high,
+          priority: Priority.high,
+          visibility: NotificationVisibility.private,
+          category: AndroidNotificationCategory.reminder,
+          onlyAlertOnce: true,
+        ),
+        iOS: DarwinNotificationDetails(presentAlert: true, presentSound: true),
+      ),
+      payload: RideAlarmPayload.encode(data),
+    );
+  } catch (_) {
+    if (kDebugMode) debugPrint('Ride reminder could not be displayed.');
+  }
+}
+
+@pragma('vm:entry-point')
+Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  if (!RideAlarmPayload.isAlarm(message.data)) return;
+  // The background isolate must load persisted auth before deciding who owns
+  // this push. Never display a prior account's reminder after sign-out/switch.
+  final user = await FirebaseAuth.instance.authStateChanges().first.timeout(
+    const Duration(seconds: 3),
+    onTimeout: () => null,
+  );
+  if (!PushRecipient.matches(message.data, user?.uid)) return;
+  if (defaultTargetPlatform == TargetPlatform.iOS &&
+      message.notification != null)
+    return;
+  final plugin = FlutterLocalNotificationsPlugin();
+  await plugin.initialize(_localInitialization);
+  await _showRideReminder(plugin, message.data);
+}
+
 /// Notification service
-class NotificationService {
-  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+class NotificationService extends ChangeNotifier {
+  FirebaseMessaging get _messaging => FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
+
+  Future<void> dismissRideReminder(String groupId) async {
+    await _localNotifications.cancel(_reminderNotificationId(groupId));
+    await _localNotifications.cancel(
+      999,
+    ); // Previously delivered legacy reminder.
+  }
 
   /// FCM token
   String? _fcmToken;
@@ -71,8 +214,43 @@ class NotificationService {
   Map<String, String>? _pendingAlarmData;
   Map<String, String>? get pendingAlarmData => _pendingAlarmData;
 
+  void _queueAlarm(Map<String, String>? data) {
+    if (data == null) return;
+    _pendingAlarmData = data;
+    notifyListeners();
+  }
+
   void clearPendingAlarmData() {
     _pendingAlarmData = null;
+  }
+
+  Map<String, String>? _pendingConversation;
+  Map<String, String>? get pendingConversation => _pendingConversation;
+  void clearPendingConversation() => _pendingConversation = null;
+
+  void _queueNotificationTap(Map<String, dynamic> data) {
+    if (RideAlarmPayload.isAlarm(data)) {
+      _queueAlarm(RideAlarmPayload.fromData(data));
+      return;
+    }
+    final conversation = ConversationNotificationPayload.fromData(data);
+    if (conversation == null) return;
+    _pendingConversation = conversation;
+    notifyListeners();
+  }
+
+  void _localNotificationTap(String? payload) {
+    if (payload == null) return;
+    try {
+      final data = jsonDecode(payload);
+      if (data is Map<String, dynamic>) {
+        _queueNotificationTap(data);
+        return;
+      }
+    } on FormatException {
+      // Preserve alarm taps from older app versions.
+      _queueAlarm(RideAlarmPayload.decode(payload));
+    }
   }
 
   /// Stream of incoming messages when app is in foreground
@@ -96,11 +274,11 @@ class NotificationService {
         playSound: true,
       );
 
-  /// Android Notification Channel for Ride Alarms (rings until user responds)
+  /// Dismissible high-priority pickup reminders; no repeating alarm or fullscreen.
   static const AndroidNotificationChannel _alarmChannel =
       AndroidNotificationChannel(
-        'ride_alarm_channel', // id
-        'Ride Alarms', // title
+        'ride_reminders_v2', // id
+        'Ride reminders', // title
         description:
             'Urgent ride notifications that require immediate attention.',
         importance: Importance.max,
@@ -113,53 +291,22 @@ class NotificationService {
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    // Platform specific initialization settings
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@drawable/ic_notification');
-
-    // Note: iOS permissions are requested by FirebaseMessaging below
-    const DarwinInitializationSettings initializationSettingsDarwin =
-        DarwinInitializationSettings();
-
-    const InitializationSettings initializationSettings =
-        InitializationSettings(
-          android: initializationSettingsAndroid,
-          iOS: initializationSettingsDarwin,
-        );
-
+    FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
     await _localNotifications.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: (details) {
-        // Handle notification tap to show alarm screen
-        final payload = details.payload;
-        if (payload != null && payload.isNotEmpty) {
-          List<String> parts = [];
-
-          if (payload.startsWith('show_alarm|')) {
-            parts = payload.split('|');
-          } else if (payload.startsWith('show_alarm:')) {
-            // Legacy colon-delimited payload
-            parts = payload.split(':');
-          } else if (payload.contains('|')) {
-            // Fallback to raw pipe-separated payload
-            parts = payload.split('|');
-          }
-
-          if (parts.length >= 4) {
-            final groupId = parts[1];
-            final rideTime = parts[2];
-            final pickupSummary = parts.sublist(3).join('|');
-
-            // Store pending alarm details for display when app opens
-            _pendingAlarmData = {
-              'group_id': groupId,
-              'ride_time': rideTime,
-              'pickup_summary': pickupSummary,
-            };
-          }
-        }
-      },
+      _localInitialization,
+      onDidReceiveNotificationResponse: (details) =>
+          _localNotificationTap(details.payload),
     );
+    final launch = await _localNotifications.getNotificationAppLaunchDetails();
+    if (launch?.didNotificationLaunchApp ?? false) {
+      _localNotificationTap(launch?.notificationResponse?.payload);
+    }
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      _queueNotificationTap(message.data);
+    });
+    final initial = await _messaging.getInitialMessage();
+    if (initial != null) _queueNotificationTap(initial.data);
+    _isInitialized = true;
 
     // Create Android channels
     final resolve = _localNotifications
@@ -171,66 +318,49 @@ class NotificationService {
       await resolve.createNotificationChannel(_alarmChannel);
     }
 
-    // Request permission
+    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+    final settings = await _messaging.getNotificationSettings();
+    if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+        settings.authorizationStatus == AuthorizationStatus.provisional) {
+      await _enablePush();
+    }
+  }
+
+  bool _pushEnabled = false;
+
+  /// Called only after the user chooses notifications during setup/settings.
+  Future<bool> requestPermission() async {
     final settings = await _messaging.requestPermission(
       alert: true,
       badge: true,
       sound: true,
       provisional: false,
     );
-
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      _isInitialized = true;
-
-      // Set up background handler
-      FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
-
-      // Get FCM token
-      _fcmToken = await _messaging.getToken();
-      debugPrint('[Notifications] Permission granted; token: $_fcmToken');
-
-      // Listen for token refresh
-      _messaging.onTokenRefresh.listen((token) {
-        _fcmToken = token;
-        debugPrint('[Notifications] FCM token refreshed: $token');
-        onTokenRefresh?.call(token);
-      });
-
-      // Enable foreground notification presentation options
-      await _messaging.setForegroundNotificationPresentationOptions(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
-
-      // Handle foreground messages
-      FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-
-      // Initialize preferences for promotions
-      final prefs = await SharedPreferences.getInstance();
-      final promotionsEnabled = prefs.getBool('notif_promotions') ?? true;
-
-      if (promotionsEnabled) {
-        await subscribeToTopic('promotions');
-      } else {
-        await unsubscribeFromTopic('promotions');
-      }
-    } else {
-      debugPrint(
-        '[Notifications] Permission not granted: ${settings.authorizationStatus}',
-      );
-    }
+    final granted =
+        settings.authorizationStatus == AuthorizationStatus.authorized ||
+        settings.authorizationStatus == AuthorizationStatus.provisional;
+    if (granted) await _enablePush();
+    return granted;
   }
 
-  /// Toggle promotions
-  Future<void> setPromotionsEnabled(bool enabled) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('notif_promotions', enabled);
-
-    if (enabled) {
-      await subscribeToTopic('promotions');
-    } else {
-      await unsubscribeFromTopic('promotions');
+  Future<void> _enablePush() async {
+    if (_pushEnabled) return;
+    _fcmToken = await _messaging.getToken();
+    _pushEnabled = true;
+    _messaging.onTokenRefresh.listen((token) {
+      _fcmToken = token;
+      onTokenRefresh?.call(token);
+    });
+    await _messaging.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    if (_fcmToken != null) onTokenRefresh?.call(_fcmToken!);
+    try {
+      await _messaging.unsubscribeFromTopic('promotions');
+    } catch (_) {
+      /* Retry on next launch. */
     }
   }
 
@@ -238,11 +368,20 @@ class NotificationService {
   final Set<String> _processedMessageIds = {};
 
   void _handleForegroundMessage(RemoteMessage message) {
-    if (message.messageId != null) {
-      if (_processedMessageIds.contains(message.messageId)) {
+    if (!PushRecipient.matches(
+      message.data,
+      FirebaseAuth.instance.currentUser?.uid,
+    ))
+      return;
+    final suppliedId = message.data['notification_id'];
+    final dedupeId = suppliedId is String && suppliedId.isNotEmpty
+        ? suppliedId
+        : message.messageId;
+    if (dedupeId != null) {
+      if (_processedMessageIds.contains(dedupeId)) {
         return;
       }
-      _processedMessageIds.add(message.messageId!);
+      _processedMessageIds.add(dedupeId);
 
       if (_processedMessageIds.length > 50) {
         _processedMessageIds.remove(_processedMessageIds.first);
@@ -252,58 +391,11 @@ class NotificationService {
     RemoteNotification? notification = message.notification;
     AndroidNotification? android = message.notification?.android;
 
-    // Check if this is a ride-related notification
-    final type = message.data['type'] ?? '';
-    final isRideAlarmData = message.data['isRideAlarm'] == 'true';
-    final isRideAlarm =
-        isRideAlarmData ||
-        type == 'ride_start' ||
-        type == 'ride_reminder' ||
-        type == 'ride_completed';
-
-    debugPrint(
-      '[Notifications] Received foreground message: type=$type, isRideAlarm=$isRideAlarm',
-    );
-
-    // For ride alarms (when app is in FOREGROUND), show full-screen notification
-    if (isRideAlarm) {
-      final groupId = message.data['group_id'] ?? '';
-      final rideTime = message.data['ride_time'] ?? '';
-      final pickupSummary = message.data['pickup_summary'] ?? '';
-
-      // Show full-screen notification with action button
-      _localNotifications.show(
-        999, // Fixed ID for alarm
-        '🔔 Catch Your Ride!',
-        'Your ride is starting! Tap to open.',
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            'ride_alarm_channel',
-            'Ride Alarms',
-            channelDescription: 'Full-screen alarms for ride start times',
-            icon: '@drawable/ic_notification',
-            priority: Priority.max,
-            importance: Importance.max,
-            playSound: true,
-            enableVibration: true,
-            audioAttributesUsage: AudioAttributesUsage.alarm,
-            fullScreenIntent: true,
-            category: AndroidNotificationCategory.alarm,
-            visibility: NotificationVisibility.public,
-            ongoing: true,
-            autoCancel: false,
-            actions: [
-              AndroidNotificationAction(
-                'I_AM_HERE',
-                'I Am Here',
-                showsUserInterface: true,
-              ),
-            ],
-          ),
-        ),
-        payload: 'show_alarm|$groupId|$rideTime|$pickupSummary',
-      );
-
+    if (RideAlarmPayload.isAlarm(message.data)) {
+      if (defaultTargetPlatform != TargetPlatform.iOS ||
+          message.notification == null) {
+        _showRideReminder(_localNotifications, message.data);
+      }
       onNotificationReceived?.call(message);
       return;
     }
@@ -319,13 +411,19 @@ class NotificationService {
             _androidChannel.id,
             _androidChannel.name,
             channelDescription: _androidChannel.description,
-            icon:
-                '@drawable/ic_notification', // Monochrome small icon to satisfy Android requirements
+            icon: '@drawable/ic_notification',
+            color: const Color(0xFF222222),
+            colorized: false,
+            visibility: NotificationVisibility.private,
             priority: Priority.high,
             importance: Importance.max,
             playSound: true,
           ),
         ),
+        payload: jsonEncode({
+          ...?ConversationNotificationPayload.fromData(message.data),
+          if (message.data['type'] is String) 'type': message.data['type'],
+        }),
       );
     }
 

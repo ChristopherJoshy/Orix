@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="ORIX" shape-rendering="crispEdges">
+  <style>path{fill:#202020}@media(prefers-color-scheme:dark){path{fill:#f7f7f7}}</style>
+  <g transform="translate(4 4)">
+    <path d="M6 2h12v4h4v12h-4v4H6v-4H2V6h4zm2 6v8h8V8z" fill-rule="evenodd"/>
+    <path d="M18 18h6v6h-6z"/>
+  </g>
+</svg>

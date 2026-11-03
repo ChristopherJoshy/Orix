@@ -1,213 +1,142 @@
-/// Login Screen
-///
-/// Google Sign-In authentication screen.
-library;
-
+import 'package:orix/core/widgets/orix_illustration.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
-
-import '../../core/providers/auth_provider.dart';
-import '../../core/theme/app_theme.dart';
+import 'package:orix/core/providers/auth_provider.dart';
+import 'package:orix/core/config/api_config.dart';
+import 'package:orix/core/theme/app_theme.dart';
+import 'package:orix/core/widgets/pixel_ui.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
-
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Local state removed in favor of AuthProvider state
-
-  Future<void> _signInWithGoogle() async {
-    // Just trigger the sign-in. The UI will rebuild based on AuthProvider state.
-    await context.read<AuthProvider>().signInWithGoogle();
-
-    // Explicitly check for error after the attempt if we want to show a snackbar,
-    // but the UI builds the error widget based on provider state anyway.
+  Future<void> _showInternalLogin() async {
+    final email = TextEditingController(text: 'traveler-a@orix.example');
+    final password = TextEditingController();
+    final provider = context.read<AuthProvider>();
+    try {
+      final accepted = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Local test account'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: email,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(labelText: 'Test email'),
+              ),
+              TextField(
+                controller: password,
+                obscureText: true,
+                autocorrect: false,
+                enableSuggestions: false,
+                decoration: const InputDecoration(labelText: 'Test password'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Sign in'),
+            ),
+          ],
+        ),
+      );
+      if (accepted == true && mounted) {
+        await provider.signInInternal(email.text.trim(), password.text);
+      }
+    } finally {
+      email.dispose();
+      password.dispose();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Watch AuthProvider for state changes
-    final authProvider = context.watch<AuthProvider>();
-    final isLoading = authProvider.isLoading;
-    final error = authProvider.error;
-
+    final auth = context.watch<AuthProvider>();
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
+        child: OrixWelcomeLayout(
+          header: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Spacer(flex: 2),
-
-              // Logo and branding
-              _buildBranding(),
-
-              const Spacer(flex: 3),
-
-              // Error message
-              if (error != null) _buildError(error),
-
-              // Sign in button
-              _buildGoogleSignInButton(isLoading),
-
-              const SizedBox(height: 24),
-
-              // College info
-              _buildCollegeInfo(),
-
-              const Spacer(),
-
-              // Terms
-              _buildTerms(),
+              const OrixLogo(width: 132),
+              const SizedBox(height: 28),
+              Text(
+                'Go together.',
+                style: Theme.of(context).textTheme.headlineLarge,
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'A familiar route. A little company.\nSign in to find your people.',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+            ],
+          ),
+          controls: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (auth.error != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Semantics(liveRegion: true, child: Text(auth.error!)),
+                ),
+              FilledButton(
+                onPressed: auth.isLoading
+                    ? null
+                    : () => InternalTestConfig.enabled
+                          ? _showInternalLogin()
+                          : context.read<AuthProvider>().signInWithGoogle(),
+                child: auth.isLoading
+                    ? const PixelButtonLoader()
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (!InternalTestConfig.enabled) ...[
+                            SvgPicture.asset(
+                              'assets/images/google_logo.svg',
+                              width: 20,
+                              height: 20,
+                              colorFilter: const ColorFilter.mode(
+                                Colors.white,
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                          ],
+                          Flexible(
+                            child: Text(
+                              InternalTestConfig.enabled
+                                  ? 'Internal test account'
+                                  : 'Continue with Google',
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Review the community terms and privacy notice during setup.',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                  height: 1.7,
+                ),
+              ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildBranding() {
-    return Column(
-      children: [
-        // ORIX Logo SVG
-        SizedBox(
-          width: 120,
-          height: 120,
-          child: SvgPicture.asset(
-            'assets/images/orix_logo.svg',
-            fit: BoxFit.contain,
-          ),
-        ),
-
-        const SizedBox(height: 24),
-
-        // App name
-        Text(
-          'ORIX',
-          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            letterSpacing: 6,
-            color: AppColors.textPrimary,
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        Text(
-          'Ride Together. Save Together.',
-          style: Theme.of(
-            context,
-          ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildError(String error) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: AppColors.error.withAlphaValue(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.error.withAlphaValue(0.3)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.error_outline, color: AppColors.error),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              error,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGoogleSignInButton(bool isLoading) {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: OutlinedButton(
-        onPressed: isLoading ? null : _signInWithGoogle,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black87,
-          side: BorderSide.none,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
-          ),
-        ),
-        child: isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SvgPicture.asset(
-                    'assets/images/google_logo.svg',
-                    width: 24,
-                    height: 24,
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Continue with Google',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
-              ),
-      ),
-    );
-  }
-
-  Widget _buildCollegeInfo() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.school_outlined, color: AppColors.primary),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Use your college email to sign in',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTerms() {
-    return Text(
-      'By continuing, you agree to our Terms of Service and Privacy Policy',
-      style: Theme.of(
-        context,
-      ).textTheme.bodySmall?.copyWith(color: AppColors.textTertiary),
-      textAlign: TextAlign.center,
     );
   }
 }

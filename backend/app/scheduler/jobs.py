@@ -104,7 +104,7 @@ class RideReminderJob(ScheduledJob):
     Send reminders for upcoming rides.
 
     Industry Pattern: User engagement notifications
-    Frequency: Every 5 minutes
+    Frequency: Every minute
     Purpose: Improve user experience and reduce no-shows
     """
 
@@ -119,145 +119,6 @@ class RideReminderJob(ScheduledJob):
         except Exception as e:
             logger.error(f"[{self.name}] Error sending reminders: {e}")
             raise
-
-
-class RideAlarmJob(ScheduledJob):
-    """
-    Send alarm notifications when it's time to catch the ride.
-
-    Industry Pattern: Time-critical user notifications
-    Frequency: Every 1 minute
-    Purpose: Alert users to be at pickup location
-
-    NOTE: This is now redundant with ride_reminder_service 0-minute reminder.
-    Kept for backwards compatibility but should be removed in future.
-    """
-
-    def __init__(self):
-        super().__init__("RideAlarm")
-        self.notification_service = NotificationService()
-
-    async def _run(self):
-        from app.services.notification_tracker import get_notification_tracker
-
-        db = get_db()
-        tracker = get_notification_tracker()
-        now = utc_now()
-
-        # Find all pending/active/confirming groups where ride time is NOW (within 2 minute tolerance)
-        # FIXED: Include 'pending' status groups that show "All Ready!" in UI
-        active_groups = await db.ride_groups.find(
-            {"status": {"$in": ["pending", "active", "confirming"]}}
-        ).to_list(1000)
-
-        for group in active_groups:
-            try:
-                await self._check_and_send_alarm(db, tracker, group, now)
-            except Exception as e:
-                logger.error(
-                    f"[{self.name}] Error processing group {group.get('group_id')}: {e}"
-                )
-
-    async def _check_and_send_alarm(self, db, tracker, group: dict, now):
-        """Check if alarm notification should be sent for this group.
-
-        Also auto-completes the group when ride time is reached.
-        """
-        time_window = group.get("time_window")
-        if not time_window or not time_window.get("start"):
-            return
-
-        ride_date = group.get("date")
-        if not ride_date:
-            return
-
-        tz_offset = group.get("timezone_offset_minutes")
-        if tz_offset is None:
-            return
-
-        start_time_str = time_window["start"]
-
-        try:
-            ride_datetime_utc = parse_local_to_utc(ride_date, start_time_str, tz_offset)
-        except (ValueError, TypeError):
-            return
-
-        # Calculate time until ride start
-        time_until_ride = (ride_datetime_utc - now).total_seconds()
-        group_id = group["group_id"]
-        notif_type = "ride_alarm"
-
-        # Send alarm 5 minutes before ride start time (within a 2-minute window to avoid missing it)
-        # Alarm window: 7 minutes before to 5 minutes before ride start
-        alarm_time_seconds = time_until_ride - 300  # 5 minutes before in seconds
-
-        if -120 <= alarm_time_seconds <= 120:  # Within 2 minutes of alarm time
-            # Send alarm to all members (with deduplication)
-            for member in group.get("members", []):
-                user_id = member.get("user_id")
-                if not user_id:
-                    continue
-
-                # Check if already sent (prevents spam on restart/multiple runs)
-                already_sent = await tracker.was_sent(notif_type, group_id, user_id)
-                if already_sent:
-                    continue
-
-                try:
-                    await self.notification_service.notify_catch_your_ride(
-                        user_id=user_id,
-                        group_id=group_id,
-                        ride_time=start_time_str,
-                        pickup_summary=group.get("pickup_summary", ""),
-                    )
-
-                    # Mark as sent (2-hour TTL)
-                    await tracker.mark_sent(notif_type, group_id, user_id, ttl_hours=2)
-
-                    logger.info(
-                        f"[{self.name}] Sent alarm to {user_id} for group {group_id}"
-                    )
-                except Exception as e:
-                    logger.error(
-                        f"[{self.name}] Failed to send alarm to {user_id}: {e}"
-                    )
-
-        # Auto-complete group when ride start time has passed
-        # This ensures the group is marked completed at the actual ride start time
-        if time_until_ride <= 0:
-            try:
-                result = await db.ride_groups.find_one_and_update(
-                    {
-                        "group_id": group_id,
-                        "status": {"$in": ["pending", "active", "confirming"]},
-                    },
-                    {
-                        "$set": {
-                            "status": "completed",
-                            "completed_at": now,
-                        }
-                    },
-                    return_document=True,
-                )
-
-                if result:
-                    logger.info(f"[{self.name}] Auto-completed group {group_id}")
-
-                    # Send rating notifications to all members
-                    try:
-                        from app.services.group_service import GroupService
-
-                        group_service = GroupService()
-                        await group_service._send_rating_notifications(result)
-                    except Exception as e:
-                        logger.error(
-                            f"[{self.name}] Failed to send rating notifications for "
-                            f"group {group_id}: {e}"
-                        )
-            except Exception as e:
-                logger.error(
-                    f"[{self.name}] Failed to auto-complete group {group_id}: {e}"
-                )
 
 
 class PromotionalNotificationJob(ScheduledJob):
@@ -392,7 +253,7 @@ class DataCleanupJob(ScheduledJob):
                 )
 
         # 5. Delete completed groups outside the retention window
-        # Groups are auto-completed by RideAlarmJob when ride time reaches
+        # Legacy cleanup currently completes groups when departure time is reached
         completed_groups = await db.ride_groups.find({"status": "completed"}).to_list(
             1000
         )
@@ -534,8 +395,8 @@ class DataCleanupJob(ScheduledJob):
     async def _auto_complete_if_due(self, db, group: dict, now):
         """Auto-complete groups whose ride start time has passed.
 
-        This is a fallback for cases where RideAlarmJob didn't run in time
-        (e.g., scheduler downtime). Works for pending/active/confirming groups.
+        Legacy behavior for pending/active/confirming groups; departure-based
+        completion must be replaced by an explicit trip lifecycle in the Go port.
         Returns True if the group was transitioned to completed.
         """
 
@@ -658,6 +519,5 @@ class DataCleanupJob(ScheduledJob):
 # Job instances (singleton pattern)
 health_check_job = HealthCheckJob()
 ride_reminder_job = RideReminderJob()
-ride_alarm_job = RideAlarmJob()
 promotional_notification_job = PromotionalNotificationJob()
 data_cleanup_job = DataCleanupJob()

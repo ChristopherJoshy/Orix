@@ -36,6 +36,8 @@ class UserRole(str, Enum):
 
 
 class User(BaseModel):
+    occupation: str = 'other'
+
     """
     User model for MongoDB.
     

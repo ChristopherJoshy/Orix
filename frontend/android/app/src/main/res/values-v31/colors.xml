@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- ORIX brand colors for Android 12+ -->
-    <color name="splash_background">#010101</color>
-    <color name="orix_primary">#FB3B30</color>
+    <color name="splash_background">#F7F7F7</color>
+    <color name="orix_primary">#222222</color>
 </resources>

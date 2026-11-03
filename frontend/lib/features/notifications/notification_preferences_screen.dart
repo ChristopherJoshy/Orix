@@ -1,18 +1,13 @@
-/// Notification Preferences Screen
-///
-/// Allows users to manage their notification settings.
-/// Persists preferences using SharedPreferences.
+/// Account preferences saved by the Go notification service.
 library;
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:orix/core/widgets/pixel_ui.dart';
 import 'package:provider/provider.dart';
-import '../../core/services/notification_service.dart';
-import '../../core/theme/app_theme.dart';
+import 'package:orix/core/services/api_service.dart';
 
 class NotificationPreferencesScreen extends StatefulWidget {
   const NotificationPreferencesScreen({super.key});
-
   @override
   State<NotificationPreferencesScreen> createState() =>
       _NotificationPreferencesScreenState();
@@ -20,181 +15,152 @@ class NotificationPreferencesScreen extends StatefulWidget {
 
 class _NotificationPreferencesScreenState
     extends State<NotificationPreferencesScreen> {
-  // Preference keys
-  static const _keyRideMatches = 'notif_ride_matches';
-  static const _keyGroupUpdates = 'notif_group_updates';
-  static const _keyChatMessages = 'notif_chat_messages';
-  static const _keySystemAlerts = 'notif_system_alerts';
-  static const _keyPromotions = 'notif_promotions';
-
-  bool _rideMatches = true;
-  bool _groupUpdates = true;
-  bool _chatMessages = true;
-  bool _systemAlerts = true;
-  bool _promotions = false;
-  bool _isLoading = true;
-
+  Map<String, bool>? _values;
+  bool _busy = false;
+  String? _error;
+  String? _identity;
   @override
   void initState() {
     super.initState();
-    _loadPreferences();
-  }
-
-  Future<void> _loadPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
-
-    setState(() {
-      _rideMatches = prefs.getBool(_keyRideMatches) ?? true;
-      _groupUpdates = prefs.getBool(_keyGroupUpdates) ?? true;
-      _chatMessages = prefs.getBool(_keyChatMessages) ?? true;
-      _systemAlerts = prefs.getBool(_keySystemAlerts) ?? true;
-      _promotions =
-          prefs.getBool(_keyPromotions) ??
-          true; // Default to true per requirements
-      _isLoading = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _load();
     });
   }
 
-  Future<void> _savePreference(String key, bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(key, value);
+  bool _valid(ApiService api, String? identity) =>
+      mounted && identity != null && api.authIdentity == identity;
+  Future<void> _load() async {
+    final api = context.read<ApiService>();
+    final identity = api.authIdentity;
+    if (identity == null || _busy) return;
+    setState(() {
+      _busy = true;
+      _error = null;
+      _identity = identity;
+    });
+    try {
+      final response = await api.get<Map<String, dynamic>>(
+        '/users/me/notification-preferences',
+        forceRefresh: true,
+      );
+      if (!_valid(api, identity)) return;
+      if (!response.success || response.data == null) {
+        setState(
+          () => _error = response.error ?? 'Could not load preferences.',
+        );
+        return;
+      }
+      setState(
+        () => _values = {
+          for (final key in [
+            'ride_reminders',
+            'group_updates',
+            'chat_messages',
+            'promotions',
+          ])
+            key: response.data![key] == true,
+        },
+      );
+    } catch (_) {
+      if (_valid(api, identity))
+        setState(() => _error = 'Could not load preferences.');
+    } finally {
+      if (_valid(api, identity)) setState(() => _busy = false);
+    }
   }
 
-  void _updatePreference(String key, bool value, void Function(bool) setter) {
-    setState(() => setter(value));
-    _savePreference(key, value);
-
-    // Handle topic subscription for promotions
-    if (key == _keyPromotions) {
-      context.read<NotificationService>().setPromotionsEnabled(value);
+  Future<void> _save(String key, bool value) async {
+    final api = context.read<ApiService>();
+    final identity = _identity;
+    if (!_valid(api, identity) || _busy) return;
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final response = await api.put<Map<String, dynamic>>(
+        '/users/me/notification-preferences',
+        body: {key: value},
+      );
+      if (!_valid(api, identity)) return;
+      if (!response.success || response.data == null) {
+        setState(() => _error = response.error ?? 'Could not save preference.');
+        return;
+      }
+      setState(
+        () => _values = {
+          for (final key in [
+            'ride_reminders',
+            'group_updates',
+            'chat_messages',
+            'promotions',
+          ])
+            key: response.data![key] == true,
+        },
+      );
+    } catch (_) {
+      if (_valid(api, identity))
+        setState(() => _error = 'Could not save preference.');
+    } finally {
+      if (_valid(api, identity)) setState(() => _busy = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Notification Preferences')),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Notification Preferences')),
-      body: ListView(
-        children: [
-          _buildSection('Ride Notifications', [
-            _buildSwitch(
-              'Ride Matches',
-              'Get notified when you\'re matched with a group',
-              _rideMatches,
-              (v) => _updatePreference(
-                _keyRideMatches,
-                v,
-                (val) => _rideMatches = val,
-              ),
-            ),
-            _buildSwitch(
-              'Group Updates',
-              'Updates about your ride group status',
-              _groupUpdates,
-              (v) => _updatePreference(
-                _keyGroupUpdates,
-                v,
-                (val) => _groupUpdates = val,
-              ),
-            ),
-          ]),
-          _buildSection('Communication', [
-            _buildSwitch(
-              'Chat Messages',
-              'New messages from your ride group',
-              _chatMessages,
-              (v) => _updatePreference(
-                _keyChatMessages,
-                v,
-                (val) => _chatMessages = val,
-              ),
-            ),
-          ]),
-          _buildSection('Other', [
-            _buildSwitch(
-              'System Alerts',
-              'Important app updates and announcements',
-              _systemAlerts,
-              (v) => _updatePreference(
-                _keySystemAlerts,
-                v,
-                (val) => _systemAlerts = val,
-              ),
-            ),
-            _buildSwitch(
-              'Promotions',
-              'Special offers and promotions',
-              _promotions,
-              (v) => _updatePreference(
-                _keyPromotions,
-                v,
-                (val) => _promotions = val,
-              ),
-            ),
-          ]),
-          const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'You can also manage notifications in your device settings.',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(height: 24),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSection(String title, List<Widget> children) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    final values = _identity == context.read<ApiService>().authIdentity
+        ? _values
+        : null;
+    return OrixPage(
+      title: 'Notifications',
+      description:
+          'Choose what you receive. Device notification permissions also apply.',
+      maxWidth: 680,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w600,
+        if (_busy) const PixelLoader(),
+        if (_error != null) Text(_error!),
+        if (values != null)
+          PixelSection(
+            title: 'Your preferences',
+            child: Column(
+              children: [
+                for (final item in const [
+                  (
+                    'ride_reminders',
+                    'Pickup reminders',
+                    'Before your journey starts',
+                  ),
+                  (
+                    'group_updates',
+                    'Group updates',
+                    'Changes to your travel group',
+                  ),
+                  (
+                    'chat_messages',
+                    'Group messages',
+                    'New messages from your group',
+                  ),
+                  (
+                    'promotions',
+                    'Product updates',
+                    'Optional news and promotions',
+                  ),
+                ])
+                  PixelToggle(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(item.$2),
+                    subtitle: Text(item.$3),
+                    value: values[item.$1] ?? false,
+                    onChanged: _busy ? null : (value) => _save(item.$1, value),
+                  ),
+              ],
             ),
           ),
-        ),
-        Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(children: children),
+        TextButton(
+          onPressed: _busy ? null : _load,
+          child: const Text('Refresh preferences'),
         ),
       ],
-    );
-  }
-
-  Widget _buildSwitch(
-    String title,
-    String subtitle,
-    bool value,
-    ValueChanged<bool> onChanged,
-  ) {
-    return SwitchListTile(
-      title: Text(title),
-      subtitle: Text(
-        subtitle,
-        style: Theme.of(
-          context,
-        ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-      ),
-      value: value,
-      onChanged: onChanged,
     );
   }
 }

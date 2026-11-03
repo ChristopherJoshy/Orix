@@ -1,130 +1,88 @@
-/// Page Transitions
-///
-/// Lightweight custom page transitions for smooth navigation.
+/// Restrained navigation motion shared by the monochrome app screens.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-/// Fast, smooth slide transition from right
-class SlideTransitionPage<T> extends CustomTransitionPage<T> {
+Widget _transition(
+  BuildContext context,
+  Animation<double> animation,
+  Widget child,
+  Offset distance,
+) {
+  if (MediaQuery.disableAnimationsOf(context) ||
+      WidgetsBinding
+          .instance
+          .platformDispatcher
+          .accessibilityFeatures
+          .reduceMotion) {
+    return child;
+  }
+  // Driven animations do not allocate status listeners requiring disposal.
+  final progress = animation.drive(CurveTween(curve: Curves.easeOutCubic));
+  if (distance == Offset.zero) {
+    return FadeTransition(opacity: progress, child: child);
+  }
+  final ratio = MediaQuery.devicePixelRatioOf(context);
+  return AnimatedBuilder(
+    animation: progress,
+    child: FadeTransition(opacity: progress, child: child),
+    builder: (context, page) => Transform.translate(
+      // Whole physical pixels preserve the logo and sprite edges during travel.
+      offset: Offset(
+        (distance.dx * (1 - progress.value) * ratio).round() / ratio,
+        (distance.dy * (1 - progress.value) * ratio).round() / ratio,
+      ),
+      child: page,
+    ),
+  );
+}
+
+class _OrixTransitionPage<T> extends CustomTransitionPage<T> {
+  _OrixTransitionPage({
+    required super.child,
+    super.name,
+    super.arguments,
+    super.restorationId,
+    super.key,
+    Offset distance = Offset.zero,
+  }) : super(
+         transitionDuration: const Duration(milliseconds: 180),
+         reverseTransitionDuration: const Duration(milliseconds: 140),
+         transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+             _transition(context, animation, child, distance),
+       );
+}
+
+/// A small directional cue for opening details, independent of window width.
+class SlideTransitionPage<T> extends _OrixTransitionPage<T> {
   SlideTransitionPage({
     required super.child,
     super.name,
     super.arguments,
     super.restorationId,
     super.key,
-  }) : super(
-         transitionDuration: const Duration(milliseconds: 200),
-         reverseTransitionDuration: const Duration(milliseconds: 180),
-         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-           final curvedAnimation = CurvedAnimation(
-             parent: animation,
-             curve: Curves.easeOutCubic,
-             reverseCurve: Curves.easeInCubic,
-           );
-
-           return SlideTransition(
-             position: Tween<Offset>(
-               begin: const Offset(0.15, 0),
-               end: Offset.zero,
-             ).animate(curvedAnimation),
-             child: FadeTransition(
-               opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
-                 CurvedAnimation(
-                   parent: animation,
-                   curve: const Interval(0.0, 0.8),
-                 ),
-               ),
-               child: child,
-             ),
-           );
-         },
-       );
+  }) : super(distance: const Offset(12, 0));
 }
 
-/// Fade transition for dialogs and overlays
-class FadeTransitionPage<T> extends CustomTransitionPage<T> {
+/// Main destinations appear without moving their text or stretching branding.
+class FadeTransitionPage<T> extends _OrixTransitionPage<T> {
   FadeTransitionPage({
     required super.child,
     super.name,
     super.arguments,
     super.restorationId,
     super.key,
-  }) : super(
-         transitionDuration: const Duration(milliseconds: 150),
-         reverseTransitionDuration: const Duration(milliseconds: 120),
-         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-           return FadeTransition(
-             opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
-             child: child,
-           );
-         },
-       );
+  });
 }
 
-/// Scale + fade transition for important screens
-class ScaleTransitionPage<T> extends CustomTransitionPage<T> {
-  ScaleTransitionPage({
-    required super.child,
-    super.name,
-    super.arguments,
-    super.restorationId,
-    super.key,
-  }) : super(
-         transitionDuration: const Duration(milliseconds: 220),
-         reverseTransitionDuration: const Duration(milliseconds: 180),
-         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-           final curvedAnimation = CurvedAnimation(
-             parent: animation,
-             curve: Curves.easeOutBack,
-             reverseCurve: Curves.easeIn,
-           );
-
-           return ScaleTransition(
-             scale: Tween<double>(
-               begin: 0.94,
-               end: 1.0,
-             ).animate(curvedAnimation),
-             child: FadeTransition(
-               opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
-                 CurvedAnimation(
-                   parent: animation,
-                   curve: const Interval(0.0, 0.6),
-                 ),
-               ),
-               child: child,
-             ),
-           );
-         },
-       );
-}
-
-/// Vertical slide for bottom sheets and modals
-class SlideUpTransitionPage<T> extends CustomTransitionPage<T> {
+/// Creation flows have the same short motion, directed from below.
+class SlideUpTransitionPage<T> extends _OrixTransitionPage<T> {
   SlideUpTransitionPage({
     required super.child,
     super.name,
     super.arguments,
     super.restorationId,
     super.key,
-  }) : super(
-         transitionDuration: const Duration(milliseconds: 250),
-         reverseTransitionDuration: const Duration(milliseconds: 200),
-         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-           final curvedAnimation = CurvedAnimation(
-             parent: animation,
-             curve: Curves.easeOutCubic,
-             reverseCurve: Curves.easeInCubic,
-           );
-
-           return SlideTransition(
-             position: Tween<Offset>(
-               begin: const Offset(0, 0.1),
-               end: Offset.zero,
-             ).animate(curvedAnimation),
-             child: FadeTransition(opacity: curvedAnimation, child: child),
-           );
-         },
-       );
+  }) : super(distance: const Offset(0, 12));
 }

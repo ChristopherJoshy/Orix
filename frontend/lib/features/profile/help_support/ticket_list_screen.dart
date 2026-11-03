@@ -1,10 +1,12 @@
+import 'dart:async';
+import 'package:orix/core/services/websocket_service.dart';
 import 'package:flutter/material.dart';
+import 'package:orix/core/widgets/pixel_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/services/api_service.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../../core/router/app_router.dart';
+import 'package:orix/core/services/api_service.dart';
+import 'package:orix/core/router/app_router.dart';
 import 'support_service.dart';
 
 class TicketListScreen extends StatefulWidget {
@@ -15,154 +17,179 @@ class TicketListScreen extends StatefulWidget {
 }
 
 class _TicketListScreenState extends State<TicketListScreen> {
-  late SupportService _supportService;
-  late Future<List<SupportTicket>> _ticketsFuture;
+  final Map<String, SupportTicket> _tickets = {};
+  String? _identity;
+  String? _cursor;
+  String? _error;
+  bool _busy = false;
+  WebSocketService? _realtime;
+  Timer? _refreshDelay, _fallbackRefresh;
+  static const _events = [
+    'support_update',
+    'notification_update',
+    'resync',
+    'connection',
+  ];
+
+  void _onSupportUpdate(Map<String, dynamic> event) {
+    if (event['type'] == 'connection' && event['connected'] != true) return;
+    _scheduleRefresh();
+  }
+
+  void _scheduleRefresh() {
+    if (!mounted || _refreshDelay?.isActive == true) return;
+    _refreshDelay = Timer(const Duration(milliseconds: 200), () {
+      if (!mounted ||
+          WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed)
+        return;
+      if (_busy) {
+        _scheduleRefresh();
+        return;
+      }
+      unawaited(_refresh());
+    });
+  }
+
+  void _attachRealtime() {
+    final service = context.read<WebSocketService>();
+    if (identical(service, _realtime)) return;
+    for (final event in _events) {
+      _realtime?.off(event, _onSupportUpdate);
+    }
+    _realtime = service;
+    for (final event in _events) {
+      service.on(event, _onSupportUpdate);
+    }
+    _fallbackRefresh ??= Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _scheduleRefresh(),
+    );
+  }
 
   @override
-  void initState() {
-    super.initState();
+  void dispose() {
+    _refreshDelay?.cancel();
+    _fallbackRefresh?.cancel();
+    for (final event in _events) {
+      _realtime?.off(event, _onSupportUpdate);
+    }
+    super.dispose();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _supportService = SupportService(context.read<ApiService>());
-    _refresh();
+    _attachRealtime();
   }
 
-  void _refresh() {
-    setState(() {
-      _ticketsFuture = _supportService.getUserTickets();
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _refresh();
     });
   }
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'open':
-        return AppColors.warning;
-      case 'in_progress':
-        return AppColors.primary;
-      case 'resolved':
-        return AppColors.success;
-      case 'closed':
-        return AppColors.textTertiary;
-      default:
-        return AppColors.textSecondary;
+  Future<void> _refresh({bool more = false}) async {
+    final api = context.read<ApiService>();
+    final identity = api.authIdentity;
+    if (_busy ||
+        identity == null ||
+        (more && (_cursor == null || _identity != identity)))
+      return;
+    setState(() {
+      _busy = true;
+      _error = null;
+      if (_identity != identity) {
+        _tickets.clear();
+        _cursor = null;
+      }
+      _identity = identity;
+    });
+    try {
+      final page = await SupportService(
+        api,
+      ).getUserTickets(before: more ? _cursor : null);
+      if (!mounted || api.authIdentity != identity) return;
+      setState(() {
+        if (!more) _tickets.clear();
+        for (final ticket in page.tickets) {
+          _tickets[ticket.ticketId] = ticket;
+        }
+        _cursor = page.nextCursor;
+      });
+    } catch (_) {
+      if (mounted && api.authIdentity == identity)
+        setState(() => _error = 'Could not load tickets.');
+    } finally {
+      if (mounted && api.authIdentity == identity)
+        setState(() => _busy = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('My Tickets')),
-      body: FutureBuilder<List<SupportTicket>>(
-        future: _ticketsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-
-          final tickets = snapshot.data ?? [];
-
-          if (tickets.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+    final tickets = _identity == context.read<ApiService>().authIdentity
+        ? _tickets.values.toList()
+        : <SupportTicket>[];
+    tickets.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    return OrixPage(
+      title: 'Support conversations',
+      description: 'Your questions and replies from the support team.',
+      children: [
+        FilledButton(
+          onPressed: () => context.push(RoutePaths.createTicket),
+          child: const Text('New conversation'),
+        ),
+        const SizedBox(height: 24),
+        if (_busy) const PixelLoader(),
+        if (_error != null) Text(_error!),
+        if (tickets.isEmpty && !_busy && _error == null)
+          const PixelSection(child: Text('No support conversations yet.')),
+        for (final ticket in tickets)
+          PixelSection(
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              onTap: () async {
+                await context.push(
+                  '/profile/support/tickets/${Uri.encodeComponent(ticket.ticketId)}',
+                );
+                if (mounted) _refresh();
+              },
+              title: Text(
+                ticket.subject,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
-                    Icons.confirmation_number_outlined,
-                    size: 64,
-                    color: AppColors.textTertiary,
+                  const SizedBox(height: 8),
+                  Text(
+                    '${ticket.status.replaceAll('_', ' ')} · ${DateFormat('d MMM, h:mm a').format(ticket.updatedAt.toLocal())}',
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'No tickets found',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: AppColors.textSecondary,
+                  if (ticket.messages.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      ticket.messages.last.content,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context.push(RoutePaths.createTicket),
-                    child: const Text('Create New Ticket'),
-                  ),
+                  ],
                 ],
               ),
-            );
-          }
-
-          return RefreshIndicator(
-            onRefresh: () async => _refresh(),
-            child: ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: tickets.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final ticket = tickets[index];
-                return _buildTicketCard(context, ticket);
-              },
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildTicketCard(BuildContext context, SupportTicket ticket) {
-    final dateFormat = DateFormat('MMM d, h:mm a');
-    return Card(
-      child: ListTile(
-        onTap: () => context
-            .push(
-              RoutePaths.ticketChat.replaceFirst(':ticketId', ticket.ticketId),
-            )
-            .then((_) => _refresh()), // Refresh upon return
-        title: Text(
-          ticket.subject,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Text(
-              '#${ticket.ticketId} • ${dateFormat.format(ticket.updatedAt)}',
-              style: const TextStyle(fontSize: 12),
-            ),
-            if (ticket.messages.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(
-                ticket.messages.last.content,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: AppColors.textSecondary),
-              ),
-            ],
-          ],
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: _getStatusColor(ticket.status).withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: _getStatusColor(ticket.status)),
-          ),
-          child: Text(
-            ticket.status.toUpperCase(),
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: _getStatusColor(ticket.status),
+              trailing: const Icon(Icons.chevron_right),
             ),
           ),
+        if (_cursor != null && tickets.isNotEmpty)
+          TextButton(
+            onPressed: _busy ? null : () => _refresh(more: true),
+            child: const Text('Earlier conversations'),
+          ),
+        TextButton(
+          onPressed: _busy ? null : _refresh,
+          child: const Text('Refresh'),
         ),
-      ),
+      ],
     );
   }
 }

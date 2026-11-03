@@ -1,6 +1,6 @@
-import '../../../core/services/api_service.dart';
-import '../../../core/config/api_config.dart';
-import '../../../core/utils/time_utils.dart';
+import 'package:orix/core/services/api_service.dart';
+import 'package:orix/core/config/api_config.dart';
+import 'package:orix/core/utils/time_utils.dart';
 
 class SupportTicket {
   final String ticketId;
@@ -96,20 +96,30 @@ class SupportService {
     return SupportTicket.fromJson(response.data);
   }
 
-  Future<List<SupportTicket>> getUserTickets() async {
-    final response = await _apiService.get('/support/tickets');
-
+  Future<({List<SupportTicket> tickets, String? nextCursor})> getUserTickets({
+    String? before,
+  }) async {
+    final response = await _apiService.get<List<dynamic>>(
+      '/support/tickets',
+      forceRefresh: true,
+      queryParams: {'limit': '50', if (before != null) 'before': before},
+    );
     if (!response.success || response.data == null) {
       throw Exception(response.error ?? 'Failed to fetch tickets');
     }
-
-    return (response.data as List)
-        .map((t) => SupportTicket.fromJson(t))
-        .toList();
+    return (
+      tickets: response.data!
+          .map((row) => SupportTicket.fromJson(row as Map<String, dynamic>))
+          .toList(),
+      nextCursor: response.nextCursor,
+    );
   }
 
   Future<SupportTicket> getTicket(String ticketId) async {
-    final response = await _apiService.get('/support/tickets/$ticketId');
+    final response = await _apiService.get(
+      '/support/tickets/${Uri.encodeComponent(ticketId)}',
+      forceRefresh: true,
+    );
 
     if (!response.success || response.data == null) {
       throw Exception(response.error ?? 'Failed to fetch ticket details');
@@ -118,10 +128,14 @@ class SupportService {
     return SupportTicket.fromJson(response.data);
   }
 
-  Future<SupportTicket> sendMessage(String ticketId, String content) async {
+  Future<SupportTicket> sendMessage(
+    String ticketId,
+    String content, {
+    required String clientMessageId,
+  }) async {
     final response = await _apiService.post(
-      '/support/tickets/$ticketId/message',
-      body: {'content': content},
+      '/support/tickets/${Uri.encodeComponent(ticketId)}/message',
+      body: {'content': content, 'client_message_id': clientMessageId},
     );
 
     if (!response.success || response.data == null) {
@@ -133,7 +147,7 @@ class SupportService {
 
   Future<SupportTicket> closeTicket(String ticketId) async {
     final response = await _apiService.post(
-      '/support/tickets/$ticketId/close',
+      '/support/tickets/${Uri.encodeComponent(ticketId)}/close',
       body: {},
     );
 
@@ -144,8 +158,23 @@ class SupportService {
     return SupportTicket.fromJson(response.data);
   }
 
+  Future<SupportTicket> reopenTicket(String ticketId) async {
+    final response = await _apiService.post<Map<String, dynamic>>(
+      '/support/tickets/${Uri.encodeComponent(ticketId)}/reopen',
+      body: {},
+    );
+    if (!response.success || response.data == null) {
+      throw Exception(response.error ?? 'Failed to reopen ticket');
+    }
+    return SupportTicket.fromJson(response.data!);
+  }
+
   Future<List<UserSearchResult>> searchUsers(String query) async {
-    final response = await _apiService.get('/users/search?query=$query');
+    final response = await _apiService.get<List<dynamic>>(
+      '/users/search',
+      queryParams: {'query': query},
+      forceRefresh: true,
+    );
 
     if (!response.success || response.data == null) {
       return [];

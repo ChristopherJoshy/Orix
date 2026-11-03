@@ -27,6 +27,8 @@ notification_service = NotificationService()
 
 class RideRequestResponse(BaseModel):
     """Ride request response."""
+    pickup_place_id: Optional[str] = None
+    drop_place_id: Optional[str] = None
     request_id: str
     pickup_label: str
     drop_label: str
@@ -146,6 +148,7 @@ async def create_ride_request(
     return RideRequestResponse(
         request_id=created_request.request_id,
         pickup_label=created_request.pickup_label,
+        pickup_place_id=created_request.pickup_place_id,drop_place_id=created_request.drop_place_id,
         drop_label=created_request.drop_label,
         date=created_request.date,
         time_window=created_request.time_window,
@@ -209,6 +212,7 @@ async def get_my_rides(
         RideRequestResponse(
             request_id=r.request_id,
             pickup_label=r.pickup_label,
+            pickup_place_id=r.pickup_place_id,drop_place_id=r.drop_place_id,
             drop_label=r.drop_label,
             date=r.date,
             time_window=r.time_window,

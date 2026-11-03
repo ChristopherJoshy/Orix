@@ -8,13 +8,14 @@ import '../config/api_config.dart';
 
 class ErrorMessages {
   static const String noInternet =
-      'No internet connection. Please check your network.';
+      'Connection lost. The network is on a chaya break. Check your connection and retry.';
   static const String connectionFailed =
-      'Unable to connect to server. Please try again.';
-  static const String timeout = 'Request timed out. Please try again.';
+      'Could not reach Orix. The network missed its KSRTC. Try again.';
+  static const String timeout = 'That took the scenic route. Please try again.';
   static const String serverError =
-      'Something went wrong on our end. Please try again later.';
-  static const String unknownError = 'Something went wrong. Please try again.';
+      'Orix is taking a chaya break. Please try again shortly.';
+  static const String unknownError =
+      'That did not go through. Let us try again.';
   static const String parseFailed = unknownError;
   static const String locationSearchFailed = unknownError;
   static const String uploadFailed = 'Image upload failed. Please try again.';
@@ -47,7 +48,7 @@ class ErrorMessages {
       return 'Please check your input and try again.';
     }
     if (lower.contains('server error') || lower.contains('internal error')) {
-      return 'Server error. Please try again later.';
+      return 'Orix is taking a chaya break. Please try again shortly.';
     }
     if (lower.contains('timeout')) {
       return timeout;
@@ -100,13 +101,6 @@ class ErrorHelper {
         } catch (_) {}
       }
 
-      final metadata = <String, dynamic>{};
-      if (getUserInfo != null) {
-        try {
-          metadata.addAll(getUserInfo!());
-        } catch (_) {}
-      }
-
       final contextStr = context ?? 'Frontend Error';
 
       String level = 'error';
@@ -119,10 +113,10 @@ class ErrorHelper {
 
       final body = jsonEncode({
         'level': level,
-        'message': error.toString(),
+        'message': 'Client operation failed (${error.runtimeType})',
         'context': contextStr,
-        'stack_trace': stackTrace?.toString(),
-        'metadata': metadata,
+        'stack_trace': null,
+        'metadata': <String, dynamic>{},
       });
 
       http.post(url, headers: headers, body: body).catchError((_) {

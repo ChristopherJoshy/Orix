@@ -100,7 +100,7 @@ class UserService:
         update_data["updated_at"] = utc_now()
         
         result = await db.users.update_one(
-            {"user_id": user_id},
+            {"user_id": user_id, "onboarding_completed": {"$ne": True}},
             {"$set": update_data}
         )
         
@@ -114,7 +114,11 @@ class UserService:
         user_id: str,
         phone: str,
         gender: Optional[str],
-        safety_consent: bool
+        safety_consent: bool,
+        occupation: str = 'other',
+        offer_lifts: bool = False,
+        photo_clear: bool = False,
+        tour_version: int = 0,
     ) -> Optional[User]:
         """
         Complete user onboarding.
@@ -137,6 +141,13 @@ class UserService:
         update_data = {
             "phone": phone,
             "safety_consent": True,
+            "occupation": occupation,
+            "privacy_consent": True,
+            "privacy_consent_at": utc_now(),
+            "introduction_preferences": {
+                "offer_lifts": offer_lifts, "photo_clear": photo_clear,
+                "tour_version": tour_version,
+            },
             "onboarding_completed": True,
             "updated_at": utc_now()
         }
@@ -145,7 +156,7 @@ class UserService:
             update_data["gender"] = gender
         
         await db.users.update_one(
-            {"user_id": user_id},
+            {"user_id": user_id, "onboarding_completed": {"$ne": True}},
             {"$set": update_data}
         )
         

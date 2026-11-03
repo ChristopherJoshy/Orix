@@ -9,6 +9,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    geocoding_base_url: str = ""
+    geocoding_api_token: Optional[str] = None
     """Application settings loaded from environment variables."""
 
     # ==========================================================================
@@ -18,24 +20,12 @@ class Settings(BaseSettings):
     firebase_service_account_path: Optional[str] = None
     firebase_project_id: str
 
-    # ==========================================================================
-    # Allowed College Domains (REQUIRED - no development bypass)
-    # ==========================================================================
-    allowed_college_domains: str  # No default - must be configured
+    # Retained for legacy administrative tools; never used for access control.
+    allowed_college_domains: str = ""
 
     @property
     def allowed_domains_list(self) -> List[str]:
-        """Parse comma-separated domains into list."""
-        domains = [
-            d.strip().lower()
-            for d in self.allowed_college_domains.split(",")
-            if d.strip()
-        ]
-        if not domains:
-            raise RuntimeError(
-                "ALLOWED_COLLEGE_DOMAINS must be configured with at least one domain"
-            )
-        return domains
+        return [d.strip().lower() for d in self.allowed_college_domains.split(",") if d.strip()]
 
     # ==========================================================================
     # MongoDB Configuration
@@ -51,12 +41,12 @@ class Settings(BaseSettings):
     # ==========================================================================
     # Telegram Bot Configuration
     # ==========================================================================
-    telegram_bot_token: str
+    telegram_bot_token: str = ""
     telegram_webhook_url: Optional[str] = None
     telegram_admin_chat_ids: str = ""
     telegram_log_chat_id: str = ""
     telegram_allowed_group_id: str = ""
-    telegram_secret_admin_passphrase: str  # No default - must be configured
+    telegram_secret_admin_passphrase: str = ""
     telegram_head_admin_id: str = ""  # Head admin with full privileges
 
     @property

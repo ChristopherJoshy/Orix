@@ -470,6 +470,7 @@ class GroupService:
                     {
                         "user_id": user.user_id,
                         "display_name": user.display_name,
+                        "occupation": user.occupation,
                         "photo_url": user.photo_url,
                         "phone": phone_display,
                         "gender": user.gender,

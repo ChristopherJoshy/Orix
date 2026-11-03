@@ -1,0 +1,37 @@
+{
+  "metadata_validation": "19/19 passed",
+  "file_hash_verification": "193/193 matched reviewed manifest",
+  "symlinks": 0,
+  "runtime_smoke_checks": [
+    {
+      "query": [
+        "keyboard focus modal",
+        "--domain",
+        "ux"
+      ],
+      "exit_code": 0,
+      "count": 3,
+      "design_system": false
+    },
+    {
+      "query": [
+        "responsive layout",
+        "--stack",
+        "flutter"
+      ],
+      "exit_code": 0,
+      "count": 3,
+      "design_system": false
+    },
+    {
+      "query": [
+        "premium creative portfolio",
+        "--design-system"
+      ],
+      "exit_code": 0,
+      "count": null,
+      "design_system": true
+    }
+  ],
+  "application_checks": "Not run; user testing gate preserved."
+}

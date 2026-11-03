@@ -1,0 +1,540 @@
+/* Landing art direction: quiet paper, generous editorial grid, pixel display type. */
+.orix-home {
+  --home-ink: #242424;
+  --home-muted: #626262;
+  --home-line: #d8d8d8;
+  color: var(--home-ink);
+  background: #f8f8f8;
+}
+.orix-home .home-width {
+  width: calc(100% - 112px);
+  max-width: 1440px;
+  margin-inline: auto;
+}
+.orix-home p {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--home-muted);
+}
+.orix-home h1,
+.orix-home h2 {
+  letter-spacing: -0.035em;
+  font-weight: 500;
+  overflow-wrap: normal;
+}
+.orix-home a:focus-visible,
+.orix-home summary:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 6px;
+}
+.orix-home a {
+  transition: opacity 0.15s;
+}
+.orix-home a:hover {
+  opacity: 0.65;
+}
+.orix-home .home-header {
+  height: 112px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+.orix-home .home-header nav {
+  display: flex;
+  gap: 40px;
+  font-size: 0.8125rem;
+}
+.orix-home .home-login {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 0.875rem;
+  min-height: 48px;
+}
+.orix-home .home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+  padding: 40px 0 64px;
+}
+.orix-home .home-intro {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 32px;
+  font-size: 0.8125rem;
+}
+.orix-home .home-intro > span {
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+  box-shadow: 6px -6px #b8b8b8;
+}
+.orix-home .home-hero h1 {
+  font-size: clamp(3.5rem, 1.5rem + 4.8vw, 6.25rem);
+  line-height: 1.04;
+}
+.orix-home .home-lede {
+  margin: 30px 0 32px;
+  font-size: 1.0625rem;
+  line-height: 1.8;
+}
+.orix-home .home-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 28px;
+}
+.orix-home .home-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 19px 25px;
+  min-height: 56px;
+  color: #fff;
+  background: var(--home-ink);
+  clip-path: var(--step);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.orix-home .home-button:focus-visible {
+  clip-path: none;
+}
+.orix-home .home-text-link {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.orix-home .home-hero-note {
+  margin: 28px 0 0;
+  font-size: 0.75rem;
+}
+.orix-home .home-hero-art {
+  margin: 0;
+  justify-self: center;
+  width: min(100%, 500px);
+  position: relative;
+}
+.orix-home .home-hero-art img {
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+  filter: grayscale(1);
+}
+.orix-home .home-hero-art figcaption {
+  margin-top: 16px;
+  text-align: right;
+  font-size: 0.6875rem;
+  color: var(--home-muted);
+}
+.orix-home .home-route-note {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 27px 0;
+  border-block: 1px solid var(--home-line);
+}
+.orix-home .home-route-note p {
+  color: var(--home-ink);
+  margin: 0;
+  font-size: 1.125rem;
+}
+.orix-home .home-route-note > span:last-child {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--home-muted);
+}
+.orix-home .home-route-glyph {
+  width: 68px;
+  display: flex;
+  align-items: center;
+}
+.orix-home .home-route-glyph i {
+  width: 10px;
+  height: 10px;
+  background: var(--home-ink);
+}
+.orix-home .home-route-glyph b {
+  flex: 1;
+  border-top: 2px dashed #919191;
+  margin-inline: 5px;
+}
+.orix-home .home-mobile-break {
+  display: none;
+}
+.orix-home .home-section {
+  padding-block: 112px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 80px;
+}
+.orix-home .home-section-index {
+  display: block;
+  color: var(--home-muted);
+  font-size: 0.75rem;
+  margin-bottom: 24px;
+}
+.orix-home h2 {
+  font-size: clamp(2.5rem, 1.25rem + 2.8vw, 4rem);
+  line-height: 1.08;
+}
+.orix-home .home-section-title > p {
+  margin-top: 24px;
+}
+.orix-home .home-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.orix-home .home-steps li {
+  display: flex;
+  gap: 25px;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--home-line);
+}
+.orix-home .home-steps li:first-child {
+  padding-top: 0;
+}
+.orix-home .home-step-number {
+  font-family: var(--display);
+  font-size: 1.5rem;
+  color: #777;
+}
+.orix-home .home-steps h3 {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.orix-home .home-steps p {
+  font-size: 0.875rem;
+  margin: 9px 0 0;
+  max-width: 42ch;
+}
+.orix-home .home-comfort {
+  color: #f8f8f8;
+  background: #242424;
+}
+.orix-home .home-comfort-inner {
+  padding-block: 88px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 80px;
+}
+.orix-home .home-comfort .home-section-index {
+  color: #b4b4b4;
+}
+.orix-home .home-comfort-lede {
+  color: #f8f8f8;
+  font-size: 1.5rem;
+  line-height: 1.5;
+  margin: 0 0 28px;
+}
+.orix-home .home-comfort ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 30px;
+}
+.orix-home .home-comfort li {
+  position: relative;
+  padding-left: 19px;
+  margin-bottom: 15px;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: #d0d0d0;
+}
+.orix-home .home-comfort li:before {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #aaa;
+  left: 0;
+  top: 10px;
+}
+.orix-home .home-inline-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 25px;
+  border-bottom: 1px solid #777;
+  min-height: 48px;
+  font-size: 0.875rem;
+}
+.orix-home .home-lift {
+  align-items: center;
+  border-bottom: 1px solid var(--home-line);
+}
+.orix-home .home-lift p {
+  max-width: 42ch;
+  margin: 0 0 18px;
+}
+.orix-home .home-faq {
+  padding-bottom: 88px;
+}
+.orix-home .home-faq details {
+  border-bottom: 1px solid var(--home-line);
+}
+.orix-home .home-faq summary {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  justify-content: space-between;
+  list-style: none;
+  cursor: pointer;
+  padding: 24px 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  font-weight: 600;
+}
+.orix-home .home-faq summary::-webkit-details-marker {
+  display: none;
+}
+.orix-home .home-faq details:first-child summary {
+  padding-top: 0;
+}
+.orix-home .home-faq-toggle {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  position: relative;
+}
+.orix-home .home-faq-toggle:before,
+.orix-home .home-faq-toggle:after {
+  content: "";
+  position: absolute;
+  background: currentColor;
+}
+.orix-home .home-faq-toggle:before {
+  width: 12px;
+  height: 2px;
+  left: 0;
+  top: 5px;
+}
+.orix-home .home-faq-toggle:after {
+  width: 2px;
+  height: 12px;
+  left: 5px;
+  top: 0;
+}
+.orix-home details[open] .home-faq-toggle:after {
+  display: none;
+}
+.orix-home .home-faq details p {
+  font-size: 0.875rem;
+  margin: 0 24px 24px 0;
+}
+.orix-home .home-end {
+  padding: 64px 0 88px;
+  text-align: center;
+}
+.orix-home .home-end p {
+  margin: 0 0 12px;
+  font-size: 0.875rem;
+}
+.orix-home .home-end h2 {
+  margin-bottom: 32px;
+}
+.orix-home .home-footer {
+  border-top: 1px solid var(--home-line);
+  padding-block: 34px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.orix-home .home-footer .brand-wordmark {
+  width: 90px;
+  height: auto;
+}
+.orix-home .home-footer p,
+.orix-home .home-footer > span {
+  font-size: 0.6875rem;
+  margin: 0;
+}
+.orix-home .home-footer nav {
+  display: flex;
+  gap: 24px;
+  margin-left: auto;
+  font-size: 0.75rem;
+}
+@media (min-width: 1600px) {
+  .orix-home .home-hero {
+    padding-top: 60px;
+    padding-bottom: 80px;
+  }
+  .orix-home .home-hero-art {
+    width: 540px;
+  }
+}
+@media (max-width: 1100px) {
+  .orix-home .home-width {
+    width: calc(100% - 64px);
+  }
+  .orix-home .home-hero h1 {
+    font-size: clamp(3.25rem, 1.25rem + 4.5vw, 4.5rem);
+  }
+  .orix-home .home-section,
+  .orix-home .home-comfort-inner {
+    gap: 48px;
+  }
+  .orix-home .home-desktop-break {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .orix-home .home-width {
+    width: calc(100% - 40px);
+  }
+  .orix-home .home-header {
+    height: 88px;
+  }
+  .orix-home .home-header nav {
+    display: none;
+  }
+  .orix-home .home-hero {
+    grid-template-columns: 1fr;
+    padding-top: 32px;
+    gap: 36px;
+    padding-bottom: 36px;
+  }
+  .orix-home .home-intro {
+    margin-bottom: 24px;
+  }
+  .orix-home .home-hero h1 {
+    font-size: clamp(3rem, 1.5rem + 5.5vw, 4.5rem);
+  }
+  .orix-home .home-lede {
+    max-width: 34ch;
+    font-size: 1rem;
+    margin: 24px 0;
+  }
+  .orix-home .home-hero-note {
+    margin-top: 18px;
+  }
+  .orix-home .home-hero-art {
+    width: min(86%, 380px);
+  }
+  .orix-home .home-route-note {
+    gap: 16px;
+    padding-block: 22px;
+  }
+  .orix-home .home-route-note > span:last-child {
+    display: none;
+  }
+  .orix-home .home-route-note p {
+    font-size: 1rem;
+  }
+  .orix-home .home-route-glyph {
+    width: 46px;
+    flex-shrink: 0;
+  }
+  .orix-home .home-section,
+  .orix-home .home-comfort-inner {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    padding-block: 64px;
+  }
+  .orix-home h2 {
+    font-size: 2.75rem;
+  }
+  .orix-home .home-section-index {
+    margin-bottom: 18px;
+  }
+  .orix-home .home-section-title > p {
+    margin-bottom: 0;
+  }
+  .orix-home .home-comfort-lede {
+    font-size: 1.375rem;
+  }
+  .orix-home .home-end {
+    padding: 24px 0 64px;
+  }
+  .orix-home .home-footer {
+    gap: 20px;
+    padding-block: 28px;
+  }
+  .orix-home .home-footer nav {
+    order: 3;
+    width: 100%;
+    margin: 0;
+  }
+  .orix-home .home-footer > span {
+    margin-left: auto;
+  }
+  .orix-home .home-footer > p {
+    display: none;
+  }
+}
+@media (max-width: 360px) {
+  .orix-home .home-actions {
+    gap: 12px 24px;
+  }
+  .orix-home .home-hero h1 {
+    font-size: 2.75rem;
+  }
+  .orix-home h2 {
+    font-size: 2.375rem;
+  }
+  .orix-home .home-route-note p {
+    font-size: 0.875rem;
+  }
+  .orix-home .home-hero-art {
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orix-home a {
+    transition: none;
+  }
+}
+
+.orix-home .home-header nav a,
+.orix-home .home-footer nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+.orix-home h1,
+.orix-home h2 {
+  overflow-wrap: break-word;
+}
+
+.orix-home .about-builder {
+  border-top: 1px solid var(--home-line);
+  padding-block: 72px;
+  max-width: 100%;
+}
+.orix-home .about-builder h2 {
+  font-size: clamp(2rem, 1.5rem + 1.5vw, 3.25rem);
+}
+.orix-home .about-builder > p {
+  max-width: 62ch;
+}
+.orix-home .about-builder blockquote {
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 1rem + 1.4vw, 2rem);
+  line-height: 1.4;
+  max-width: 38ch;
+  margin: 28px 0 12px;
+}
+.orix-home .about-builder .builder-signature {
+  font-size: 0.75rem;
+}
+.orix-home .about-builder nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+}
+.orix-home .about-builder nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  font-size: 0.875rem;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}

@@ -109,7 +109,9 @@ class RedisService:
         time_start: str,
         time_end: str,
         female_only: bool,
-        allow_riders: bool
+        allow_riders: bool,
+        pickup_place_id: Optional[str] = None,
+        drop_place_id: Optional[str] = None,
     ) -> bool:
         """
         Add a ride request to the matchmaking queue.
@@ -136,6 +138,8 @@ class RedisService:
         # Store request details
         request_data = {
             "user_id": user_id,
+            "pickup_place_id": pickup_place_id or "",
+            "drop_place_id": drop_place_id or "",
             "pickup_lat": str(pickup_lat),
             "pickup_lng": str(pickup_lng),
             "drop_lat": str(drop_lat),

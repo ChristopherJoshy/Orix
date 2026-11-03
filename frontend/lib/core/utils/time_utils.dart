@@ -6,8 +6,21 @@ class TimeUtils {
 
   /// Parse UTC datetime string from API and convert to local.
   static DateTime parseUtc(String isoString) {
-    final normalized = isoString.endsWith('Z') ? isoString : '${isoString}Z';
-    return DateTime.parse(normalized).toLocal();
+    final value = isoString.trim();
+    final hasZone = RegExp(
+      r'(?:Z|[+-]\d{2}:?\d{2})$',
+      caseSensitive: false,
+    ).hasMatch(value);
+    return DateTime.parse(hasZone ? value : '${value}Z').toLocal();
+  }
+
+  static DateTime? tryParseUtc(Object? value) {
+    if (value is! String || value.isEmpty) return null;
+    try {
+      return parseUtc(value);
+    } on FormatException {
+      return null;
+    }
   }
 
   /// Get current timezone offset in minutes for API requests.

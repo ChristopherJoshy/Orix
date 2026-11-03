@@ -1,685 +1,470 @@
-/// Onboarding Screen
-///
-/// Premium multi-step onboarding - OLED optimized, no glow effects.
-library;
-
+import 'package:orix/core/widgets/orix_illustration.dart';
+import 'package:orix/core/widgets/account_photo.dart';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
-
-import '../../core/providers/auth_provider.dart';
-import '../../core/router/app_router.dart';
-import '../../core/theme/app_theme.dart';
+import 'package:go_router/go_router.dart';
+import 'package:orix/core/providers/auth_provider.dart';
+import 'package:orix/core/services/api_service.dart';
+import 'package:orix/core/services/notification_service.dart';
+import 'package:orix/core/config/privacy_config.dart';
+import 'package:orix/core/router/app_router.dart';
+import 'package:orix/core/widgets/pixel_ui.dart';
+import 'package:orix/core/widgets/orix_tour.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
-
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  final _pageController = PageController();
-  final _phoneController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  final _phoneFocus = FocusNode();
-
-  int _currentPage = 0;
-  String? _selectedGender;
-  bool _safetyConsent = false;
-  bool _privacyConsent = false;
-  bool _isLoading = false;
-
-  String? _error;
-
-  static const _totalPages = 3;
-
-  @override
-  void initState() {
-    super.initState();
-    _phoneFocus.addListener(() => setState(() {}));
-  }
-
+  final _phone = TextEditingController();
+  final _form = GlobalKey<FormState>();
+  String? _gender, _error, _permissionNote;
+  bool _safety = false, _privacy = false, _busy = false;
+  bool _photoClear = false, _offerLifts = false, _uploaded = false;
+  bool _permissionBusy = false;
+  Uint8List? _preview;
+  int _step = 0;
+  String? _occupation;
   @override
   void dispose() {
-    _pageController.dispose();
-    _phoneController.dispose();
-    _phoneFocus.dispose();
+    _phone.dispose();
     super.dispose();
   }
 
-  void _nextPage() async {
-    // Validation for Page 0 (Profile)
-    if (_currentPage == 0) {
-      if (!_formKey.currentState!.validate()) return;
-
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOut,
-      );
-      return;
-    }
-
-    if (_currentPage < _totalPages - 1) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOut,
-      );
-    }
-  }
-
-  void _previousPage() {
-    if (_currentPage > 0) {
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOut,
-      );
-    }
-  }
-
-  Future<void> _submit() async {
-    if (!_safetyConsent || !_privacyConsent) {
-      setState(() => _error = 'Please accept both policies');
+  Future<void> _photo() async {
+    if (_busy) return;
+    final api = context.read<ApiService>();
+    final identity = api.authIdentity;
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
+    if (picked == null || !mounted || identity != api.authIdentity) return;
+    final bytes = await picked.readAsBytes();
+    if (!mounted || identity != api.authIdentity) return;
+    if (bytes.length > 2 * 1024 * 1024) {
+      setState(() => _error = 'Choose a photo smaller than 2 MB.');
       return;
     }
     setState(() {
-      _isLoading = true;
+      _busy = true;
       _error = null;
+      _photoClear = false;
     });
-
-    final authProvider = context.read<AuthProvider>();
-    // Phone is already linked via verifyOTP, but we still update backend data
-    final success = await authProvider.completeOnboarding(
-      phone: '+91${_phoneController.text.trim()}',
-      gender: _selectedGender,
-      safetyConsent: true,
-    );
-
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    if (success) {
-      context.go(RoutePaths.home);
-    } else {
-      setState(() => _error = authProvider.error);
+    try {
+      final response = await api.postMultipart<Map<String, dynamic>>(
+        '/users/me/avatar',
+        file: File(picked.path),
+        fileField: 'file',
+        mediaType: picked.path.toLowerCase().endsWith('.png')
+            ? 'image/png'
+            : 'image/jpeg',
+        parser: (value) => value as Map<String, dynamic>,
+      );
+      if (!mounted || identity != api.authIdentity) return;
+      if (!response.success) {
+        setState(
+          () => _error = response.error ?? 'Photo upload failed. Try again.',
+        );
+        return;
+      }
+      setState(() {
+        _preview = bytes;
+        _uploaded = true;
+      });
+    } catch (_) {
+      if (mounted && identity == api.authIdentity)
+        setState(() => _error = 'Photo upload was not confirmed. Try again.');
+    } finally {
+      if (mounted && identity == api.authIdentity)
+        setState(() => _busy = false);
     }
   }
 
-  String _toTitleCase(String text) {
-    return text
-        .split(' ')
-        .map((word) {
-          if (word.isEmpty) return word;
-          return word[0].toUpperCase() + word.substring(1).toLowerCase();
-        })
-        .join(' ');
+  Future<void> _permission(bool notifications) async {
+    setState(() {
+      _permissionBusy = true;
+      _permissionNote = null;
+    });
+    try {
+      final bool granted;
+      if (notifications) {
+        granted = await context.read<NotificationService>().requestPermission();
+      } else {
+        final permission = await Geolocator.requestPermission();
+        granted =
+            permission == LocationPermission.whileInUse ||
+            permission == LocationPermission.always;
+      }
+      if (mounted)
+        setState(
+          () => _permissionNote = granted
+              ? '${notifications ? 'Notifications' : 'Location'} enabled.'
+              : 'Permission is off. You can continue and change it in device settings.',
+        );
+    } catch (_) {
+      if (mounted)
+        setState(
+          () => _permissionNote =
+              'Permission could not be enabled. You can continue without it.',
+        );
+    } finally {
+      if (mounted) setState(() => _permissionBusy = false);
+    }
+  }
+
+  Future<void> _finish() async {
+    if (_busy ||
+        !_safety ||
+        !_privacy ||
+        !_photoClear ||
+        PrivacyConfig.policy == null)
+      return;
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    final auth = context.read<AuthProvider>();
+    try {
+      final success = await auth.completeOnboarding(
+        phone: _phone.text.trim().replaceAll(RegExp(r'[^+0-9]'), ''),
+        gender: _gender,
+        safetyConsent: true,
+        offerLifts: _offerLifts,
+        photoClear: true,
+        tourVersion: 1,
+        occupation: _occupation ?? 'other',
+      );
+      if (!mounted) return;
+      if (success) {
+        context.go(RoutePaths.home);
+      } else {
+        setState(
+          () => _error = auth.error ?? 'Could not save setup. Try again.',
+        );
+      }
+    } catch (_) {
+      if (mounted)
+        setState(
+          () =>
+              _error = 'Could not save setup. Check your connection and retry.',
+        );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                onPageChanged: (index) => setState(() => _currentPage = index),
-                children: [
-                  _buildProfilePage(),
-                  _buildSafetyPage(),
-                  _buildPrivacyPage(),
-                ],
-              ),
-            ),
-            _buildNavigation(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      child: Row(
-        children: List.generate(_totalPages, (index) {
-          final isActive = index <= _currentPage;
-          final isCurrent = index == _currentPage;
-          return Expanded(
-            child: Container(
-              margin: EdgeInsets.only(right: index < _totalPages - 1 ? 8 : 0),
-              height: isCurrent ? 3 : 2,
-              decoration: BoxDecoration(
-                color: isActive ? AppColors.primary : const Color(0xFF1A1A1A),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-
-  Widget _buildProfilePage() {
     final user = context.watch<AuthProvider>().user;
-    final displayName = user?.displayName != null
-        ? _toTitleCase(user!.displayName)
-        : null;
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 40),
-            const Text(
-              'Welcome to ORIX',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-                letterSpacing: -1,
-              ),
-            ),
-            if (displayName != null) ...[
-              const SizedBox(height: 6),
-              Text(
-                displayName,
-                style: const TextStyle(
-                  fontSize: 20,
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-            const SizedBox(height: 56),
-
-            // Phone Input
-            const Text(
-              'Phone Number',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Shared only with your ride group',
-              style: TextStyle(color: Color(0xFF666666), fontSize: 13),
-            ),
-            const SizedBox(height: 14),
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: _phoneFocus.hasFocus
-                      ? AppColors.primary
-                      : const Color(0xFF2A2A2A),
-                  width: _phoneFocus.hasFocus ? 1.5 : 1,
-                ),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Row(
+    final hasPhoto = _uploaded || user?.photoUrl?.isNotEmpty == true;
+    return OrixPage(
+      title: [
+        'Your details',
+        'Your photo',
+        'Travel preferences',
+        'Ready to travel',
+      ][_step],
+      description: 'Step ${_step + 1} of 4',
+      maxWidth: 640,
+      canPop: false,
+      children: [
+        if (_step == 0)
+          const OrixIllustration(
+            scene: OrixIllustrationScene.companions,
+            height: 180,
+          ),
+        if (_step == 0)
+          Form(
+            key: _form,
+            child: PixelSection(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
-                    decoration: const BoxDecoration(
-                      border: Border(
-                        right: BorderSide(color: Color(0xFF2A2A2A)),
-                      ),
-                    ),
-                    child: const Text(
-                      '+91',
-                      style: TextStyle(
-                        color: Color(0xFF888888),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                  Text(
+                    user?.displayName ?? 'Your profile',
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _phoneController,
-                      focusNode: _phoneFocus,
-                      keyboardType: TextInputType.number,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        letterSpacing: 2,
-                        color: Colors.white,
+                  const SizedBox(height: 8),
+                  Text(user?.email ?? ''),
+                  const SizedBox(height: 24),
+                  DropdownButtonFormField<String>(
+                    initialValue: _occupation,
+                    decoration: const InputDecoration(labelText: 'I am a'),
+                    validator: (value) => value == null
+                        ? 'Choose student, teacher or other.'
+                        : null,
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'student',
+                        child: Text('Student'),
                       ),
-                      cursorColor: AppColors.primary,
-                      decoration: const InputDecoration(
-                        hintText: 'Enter 10-digit number',
-                        hintStyle: TextStyle(
-                          color: Color(0xFF444444),
-                          letterSpacing: 0,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
+                      DropdownMenuItem(
+                        value: 'teacher',
+                        child: Text('Teacher'),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) return 'Required';
-                        final clean = value.replaceAll(RegExp(r'\D'), '');
-                        if (clean.length != 10) return 'Enter 10 digits';
-                        return null;
-                      },
+                      DropdownMenuItem(value: 'other', child: Text('Other')),
+                    ],
+                    onChanged: (value) =>
+                        setState(() => _occupation = value ?? 'other'),
+                  ),
+                  const SizedBox(height: 24),
+                  TextFormField(
+                    controller: _phone,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(
+                      labelText: 'Phone number',
+                      hintText: '+91 98765 43210',
+                      helperText: 'Include your country code',
                     ),
+                    validator: (value) =>
+                        RegExp(r'^\+[1-9][0-9]{9,14}$').hasMatch(
+                          (value ?? '').replaceAll(RegExp(r'[^+0-9]'), ''),
+                        )
+                        ? null
+                        : 'Enter a phone number with country code.',
+                  ),
+                  const SizedBox(height: 24),
+                  DropdownButtonFormField<String>(
+                    initialValue: _gender,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Gender (optional)',
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'F', child: Text('Woman')),
+                      DropdownMenuItem(value: 'M', child: Text('Man')),
+                      DropdownMenuItem(
+                        value: 'O',
+                        child: Text('Another identity / prefer not to say'),
+                      ),
+                    ],
+                    onChanged: (value) => setState(() => _gender = value),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Women-only matching depends on verified eligibility.',
                   ),
                 ],
               ),
             ),
-            if (_error != null && _currentPage == 0)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Text(
-                  _error!,
-                  style: const TextStyle(color: AppColors.error, fontSize: 13),
-                ),
-              ),
-
-            const SizedBox(height: 40),
-
-            // Gender - Pill Buttons
-            const Text(
-              'Gender',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Required • For female-only matching',
-              style: TextStyle(color: Color(0xFF666666), fontSize: 13),
-            ),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                _buildGenderPill('M', 'Male'),
-                const SizedBox(width: 12),
-                _buildGenderPill('F', 'Female'),
-              ],
-            ),
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGenderPill(String value, String label) {
-    final isSelected = _selectedGender == value;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(
-          () => _selectedGender = _selectedGender == value ? null : value,
-        ),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? AppColors.primary.withAlpha(18)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(50),
-            border: Border.all(
-              color: isSelected
-                  ? AppColors.primary
-                  : Colors.white.withAlpha(50),
-              width: 1,
-            ),
           ),
-          child: Center(
-            child: Text(
-              label,
-              style: TextStyle(
-                color: isSelected
-                    ? AppColors.primary
-                    : Colors.white.withAlpha(180),
-                fontWeight: FontWeight.w500,
-                fontSize: 15,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSafetyPage() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 40),
-          Row(
-            children: const [
-              Icon(Icons.shield_outlined, color: AppColors.primary, size: 26),
-              SizedBox(width: 10),
-              Text(
-                'Safety First',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  letterSpacing: -0.5,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Our community guidelines',
-            style: TextStyle(color: Color(0xFF666666), fontSize: 14),
-          ),
-          const SizedBox(height: 32),
-
-          // Rule Cards
-          _buildRuleCard(
-            Icons.handshake_outlined,
-            'Respect Everyone',
-            'Treat all users with dignity and respect',
-          ),
-          _buildRuleCard(
-            Icons.lock_outlined,
-            'Protect Privacy',
-            'Never share personal info outside the app',
-          ),
-          _buildRuleCard(
-            Icons.report_outlined,
-            'Report Issues',
-            'Flag any safety concerns immediately',
-          ),
-          _buildRuleCard(
-            Icons.gavel_outlined,
-            'Follow Laws',
-            'Comply with all traffic regulations',
-          ),
-          _buildRuleCard(
-            Icons.block_outlined,
-            'Zero Tolerance',
-            'Harassment leads to permanent ban',
-            isWarning: true,
-          ),
-
-          const SizedBox(height: 28),
-          _buildConsentBar(
-            value: _safetyConsent,
-            onChanged: (v) => setState(() => _safetyConsent = v),
-            label: 'I agree to the safety guidelines',
-          ),
-          const SizedBox(height: 40),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPrivacyPage() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 40),
-          Row(
-            children: const [
-              Icon(Icons.lock_outline, color: AppColors.primary, size: 26),
-              SizedBox(width: 10),
-              Text(
-                'Your Privacy',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  letterSpacing: -0.5,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'How we handle your data',
-            style: TextStyle(color: Color(0xFF666666), fontSize: 14),
-          ),
-          const SizedBox(height: 32),
-
-          // Reordered for trust hierarchy
-          _buildRuleCard(
-            Icons.security_outlined,
-            'Encrypted',
-            'All data transmitted securely',
-          ),
-          _buildRuleCard(
-            Icons.visibility_off_outlined,
-            'No Tracking',
-            'We don\'t track you outside the app',
-          ),
-          _buildRuleCard(
-            Icons.delete_outline,
-            'Data Deletion',
-            'Request account deletion anytime',
-          ),
-          _buildRuleCard(
-            Icons.location_on_outlined,
-            'Location Data',
-            'Used only for ride matching',
-          ),
-          _buildRuleCard(
-            Icons.phone_android_outlined,
-            'Phone Number',
-            'Visible only to your ride group',
-          ),
-          _buildRuleCard(
-            Icons.bug_report_outlined,
-            'Error Logging',
-            'Anonymous crash reports help us improve',
-          ),
-
-          const SizedBox(height: 28),
-          _buildConsentBar(
-            value: _privacyConsent,
-            onChanged: (v) => setState(() => _privacyConsent = v),
-            label: 'I agree to the privacy policy',
-          ),
-
-          if (!_privacyConsent && _currentPage == 2) ...[
-            const SizedBox(height: 12),
-            const Text(
-              'Accept the privacy policy to continue',
-              style: TextStyle(color: Color(0xFF555555), fontSize: 12),
-            ),
-          ],
-
-          if (_error != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              _error!,
-              style: const TextStyle(color: AppColors.error, fontSize: 13),
-            ),
-          ],
-          const SizedBox(height: 40),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRuleCard(
-    IconData icon,
-    String title,
-    String subtitle, {
-    bool isWarning = false,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isWarning
-            ? AppColors.primary.withAlpha(22)
-            : Colors.white.withAlpha(8),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 22,
-            color: isWarning ? AppColors.primary : const Color(0xFF777777),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
+        if (_step == 1)
+          PixelSection(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: isWarning ? FontWeight.w600 : FontWeight.w500,
-                    fontSize: 15,
-                    color: Colors.white,
-                  ),
+                const Text(
+                  'Use a recent photo with your face clearly visible. Travel partners use it to recognise you and may decline a match if they cannot identify you.',
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    color: Color(0xFF666666),
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildConsentBar({
-    required bool value,
-    required ValueChanged<bool> onChanged,
-    required String label,
-  }) {
-    return GestureDetector(
-      onTap: () => onChanged(!value),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: value
-              ? AppColors.primary.withAlpha(18)
-              : Colors.white.withAlpha(6),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: value ? AppColors.primary : Colors.transparent,
-            width: 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 22,
-              height: 22,
-              decoration: BoxDecoration(
-                color: value ? AppColors.primary : Colors.transparent,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: value ? AppColors.primary : const Color(0xFF444444),
-                  width: 2,
-                ),
-              ),
-              child: value
-                  ? const Icon(Icons.check, size: 14, color: Colors.black)
-                  : null,
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavigation() {
-    final isLastPage = _currentPage == _totalPages - 1;
-    final canProceed =
-        (_currentPage == 0 && _selectedGender != null) ||
-        (_currentPage == 1 && _safetyConsent) ||
-        (_currentPage == 2 && _privacyConsent);
-
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
-      color: Colors.black,
-      child: Row(
-        children: [
-          if (_currentPage > 0)
-            TextButton(
-              onPressed: _previousPage,
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white.withAlpha(150),
-              ),
-              child: const Text('Back', style: TextStyle(fontSize: 15)),
-            ),
-          const Spacer(),
-          SizedBox(
-            height: 54,
-            child: ElevatedButton(
-              onPressed: _isLoading || !canProceed
-                  ? null
-                  : (isLastPage ? _submit : _nextPage),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.black,
-                disabledBackgroundColor: AppColors.primary.withValues(
-                  alpha: 0.3,
-                ),
-                disabledForegroundColor: Colors.white.withValues(alpha: 0.5),
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 0,
-              ),
-              child: _isLoading
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: Colors.black,
-                      ),
-                    )
-                  : Text(
-                      isLastPage ? 'Get Started' : 'Continue',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                const SizedBox(height: 24),
+                if (_preview != null)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: ColorFiltered(
+                      colorFilter: const ColorFilter.matrix([
+                        .2126,
+                        .7152,
+                        .0722,
+                        0,
+                        0,
+                        .2126,
+                        .7152,
+                        .0722,
+                        0,
+                        0,
+                        .2126,
+                        .7152,
+                        .0722,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        1,
+                        0,
+                      ]),
+                      child: Image.memory(
+                        _preview!,
+                        width: 128,
+                        height: 128,
+                        fit: BoxFit.cover,
                       ),
                     ),
+                  ),
+                if (_preview == null && user?.photoUrl != null) ...[
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: AccountPhoto(url: user!.photoUrl, size: 128),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('Replace this photo if your face is not clear.'),
+                ],
+                PixelAnimation(
+                  scene: _busy
+                      ? PixelScene.uploading
+                      : _uploaded
+                      ? PixelScene.uploaded
+                      : PixelScene.found,
+                  size: 160,
+                ),
+                OutlinedButton(
+                  onPressed: _busy ? null : _photo,
+                  child: const Text('Choose a clear photo'),
+                ),
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  title: const Text('My profile photo clearly shows my face'),
+                  value: _photoClear,
+                  onChanged: hasPhoto && !_busy
+                      ? (value) => setState(() => _photoClear = value ?? false)
+                      : null,
+                ),
+              ],
+            ),
+          ),
+        if (_step == 2) ...[
+          PixelSection(
+            title: 'Lift offers',
+            child: PixelToggle(
+              title: const Text('I would like to offer lifts'),
+              subtitle: const Text(
+                'You will still register a route, time and seats before being matched as a driver.',
+              ),
+              value: _offerLifts,
+              onChanged: (value) => setState(() => _offerLifts = value),
+            ),
+          ),
+          PixelSection(
+            title: 'Optional permissions',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Notifications tell you about matches and pickup updates. Location can fill your starting point while using the app. You can also select places manually.',
+                ),
+                const SizedBox(height: 16),
+                OutlinedButton(
+                  onPressed: _permissionBusy ? null : () => _permission(true),
+                  child: const Text('Enable notifications'),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton(
+                  onPressed: _permissionBusy ? null : () => _permission(false),
+                  child: const Text('Enable location'),
+                ),
+                if (_permissionNote != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Semantics(
+                      liveRegion: true,
+                      child: Text(_permissionNote!),
+                    ),
+                  ),
+              ],
             ),
           ),
         ],
-      ),
+        if (_step == 3) ...[
+          OutlinedButton(
+            onPressed: () => showOrixTour(context),
+            child: const Text('Take the app tour'),
+          ),
+          const SizedBox(height: 24),
+          PixelSection(
+            title: 'Before your first journey',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Check the person and pickup plan before travelling. Agree on costs directly. Block contacts by email or start a private report conversation if you need help.',
+                ),
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  title: const Text('I agree to the community safety rules'),
+                  value: _safety,
+                  onChanged: (v) => setState(() => _safety = v ?? false),
+                ),
+                TextButton(
+                  onPressed: PrivacyConfig.policy == null
+                      ? null
+                      : PrivacyConfig.openPolicy,
+                  child: const Text('Read the privacy policy'),
+                ),
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  title: const Text('I have read the privacy policy'),
+                  value: _privacy,
+                  onChanged: PrivacyConfig.policy == null
+                      ? null
+                      : (v) => setState(() => _privacy = v ?? false),
+                ),
+              ],
+            ),
+          ),
+        ],
+        if (_error != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Semantics(liveRegion: true, child: Text(_error!)),
+          ),
+        FilledButton(
+          onPressed:
+              _busy ||
+                  _permissionBusy ||
+                  (_step == 3 &&
+                      (!_safety || !_privacy || PrivacyConfig.policy == null))
+              ? null
+              : () {
+                  if (_step == 0 && _form.currentState?.validate() != true)
+                    return;
+                  if (_step == 1 && (!hasPhoto || !_photoClear)) {
+                    setState(
+                      () => _error =
+                          'Add or confirm a clear photo before continuing.',
+                    );
+                    return;
+                  }
+                  if (_step == 3) {
+                    _finish();
+                    return;
+                  }
+                  setState(() {
+                    _step++;
+                    _error = null;
+                  });
+                  if (_step == 3) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) showOrixTour(context);
+                    });
+                  }
+                },
+          child: _busy
+              ? const PixelButtonLoader()
+              : Text(_step == 3 ? 'Finish setup' : 'Continue'),
+        ),
+        if (_step > 0)
+          TextButton(
+            onPressed: _busy
+                ? null
+                : () => setState(() {
+                    _step--;
+                    _error = null;
+                  }),
+            child: const Text('Back'),
+          ),
+      ],
     );
   }
 }

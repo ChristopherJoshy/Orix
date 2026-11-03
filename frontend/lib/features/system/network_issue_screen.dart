@@ -3,15 +3,16 @@
 /// Displayed when network connectivity is lost.
 library;
 
+import 'package:orix/core/widgets/pixel_ui.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/providers/auth_provider.dart';
-import '../../core/providers/connectivity_provider.dart';
-import '../../core/theme/app_theme.dart';
+import 'package:orix/core/providers/auth_provider.dart';
+import 'package:orix/core/providers/connectivity_provider.dart';
 
 class NetworkIssueScreen extends StatefulWidget {
   final VoidCallback? onRetry;
@@ -118,130 +119,25 @@ class _NetworkIssueScreenState extends State<NetworkIssueScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Icon container
-                Container(
-                  padding: const EdgeInsets.all(28),
-                  decoration: BoxDecoration(
-                    color: AppColors.error.withAlphaValue(0.1),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.error.withAlphaValue(0.3),
-                      width: 2,
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.wifi_off_rounded,
-                    size: 64,
-                    color: AppColors.error,
-                  ),
-                ),
-
-                const SizedBox(height: 32),
-
-                // Title
-                Text(
-                  'Connection Lost',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                // Message
-                Text(
-                  'We couldn\'t connect to the server.\nPlease check your internet connection.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-
-                const SizedBox(height: 40),
-
-                // Retry Button
-                SizedBox(
-                  width: 200,
-                  height: 48,
-                  child: ElevatedButton.icon(
-                    onPressed: _isRetrying ? null : _retryConnection,
-                    icon: _isRetrying
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.refresh_rounded),
-                    label: Text(_isRetrying ? 'Connecting...' : 'Try Again'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: AppColors.primary.withAlpha(150),
-                      disabledForegroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Auto-reconnect hint
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceVariant,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (!_isRetrying) ...[
-                        SizedBox(
-                          width: 12,
-                          height: 12,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppColors.textTertiary,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                      Text(
-                        'Auto-retrying in background...',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textTertiary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+  Widget build(BuildContext context) => OrixPage(
+    title: 'You’re offline.',
+    description:
+        'The network is on a chaya break. Check your connection and try again.',
+    maxWidth: 600,
+    children: [
+      const PixelAnimation(
+        scene: PixelScene.connectionLost,
+        label: 'The network is on a chaya break',
       ),
-    );
-  }
+      const SizedBox(height: 24),
+      FilledButton(
+        onPressed: _isRetrying ? null : _retryConnection,
+        child: _isRetrying ? const PixelLoader() : const Text('Try again'),
+      ),
+      const SizedBox(height: 16),
+      const Text(
+        'We’ll also check for a connection while this screen is open.',
+      ),
+    ],
+  );
 }

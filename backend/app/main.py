@@ -5,13 +5,6 @@ Main application entry point with middleware, routers, and OpenAPI
 documentation.
 """
 
-from app.telegram_bot.bot import (
-    create_bot,
-    logger as bot_logger,
-)
-from telegram import (
-    Update,
-)
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -42,31 +35,6 @@ from app.services.notification_service import NotificationService
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 
-# Domain display name defaults (used for seeding)
-DOMAIN_NAMES = {
-    "sjcetpalai.ac.in": "SJCET Palai",
-    "adishankara.ac.in": ("Adi Shankara Institute of Engineering and Technology"),
-}
-
-
-async def seed_domains_from_env():
-    """Seed domains from .env to MongoDB on startup."""
-    db = get_db()
-
-    for domain in settings.allowed_domains_list:
-        # Check if domain already exists
-        existing = await db.domain_names.find_one({"domain": domain})
-        if not existing:
-            name = DOMAIN_NAMES.get(domain) or domain.split(".")[0].upper()
-            await db.domain_names.insert_one({"domain": domain, "name": name})
-            print(f"Seeded domain: {domain} -> {name}")
-        else:
-            print(f"Domain exists: {domain}")
-
-    domains_count = len(settings.allowed_domains_list)
-    print(f"Domain seeding complete - {domains_count} domains from .env")
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator:
     """
@@ -74,65 +42,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
 
     Handles startup and shutdown events:
     - Initialize database connections
-    - Seed domains from .env to MongoDB
     - Start background workers
-    - Initialize Telegram Bot
     - Cleanup on shutdown
     """
     # Startup
     await init_db()
-
-    # Set up Telegram logging for console messages
-    if settings.telegram_bot_token and settings.head_admin_id:
-        try:
-            from app.utils.telegram_log_handler import setup_telegram_logging
-
-            setup_telegram_logging(
-                settings.telegram_bot_token, str(settings.head_admin_id)
-            )
-        except Exception as e:
-            print(f"Failed to setup Telegram logging: {e}")
-
-    # Seed domains from .env to MongoDB
-    await seed_domains_from_env()
-
-    # Initialize Telegram Bot
-    import asyncio as aio
-
-    global bot_app
-    telegram_active = False
-    if settings.telegram_bot_token:
-        try:
-
-            async def init_telegram():
-                global bot_app
-                bot_app = create_bot()
-                await bot_app.initialize()
-
-                if settings.telegram_webhook_url:
-                    # Webhook mode: set webhook and DON'T start polling
-                    webhook_url = f"{settings.telegram_webhook_url}" f"/api/v1/webhook"
-                    await bot_app.bot.set_webhook(webhook_url)
-                    webhook_info = await bot_app.bot.get_webhook_info()
-                    bot_logger.info(f"Webhook set to: {webhook_url}")
-                    bot_logger.info(
-                        f"Webhook info: url={webhook_info.url}, "
-                        f"pending={webhook_info.pending_update_count}, "
-                        f"last_error={webhook_info.last_error_message}"
-                    )
-                else:
-                    # Polling mode: start the updater
-                    await bot_app.start()
-                    await bot_app.updater.start_polling()
-                return True
-
-            # 30 second timeout for bot initialization
-            await aio.wait_for(init_telegram(), timeout=30.0)
-            telegram_active = True
-        except aio.TimeoutError:
-            bot_logger.error("Telegram bot initialization timed out after 30s")
-        except Exception as e:
-            bot_logger.error(f"Failed to initialize Telegram bot: {e}")
 
     # Verify connections and print logs
     print("\n" + "=" * 50)
@@ -164,7 +78,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     except Exception as e:
         print(f"FAILED to connect to Redis: {e}")
 
-    print(f"Telegram bot active: {telegram_active}")
     print("=" * 50 + "\n")
 
     # Scheduler with industry-standard job management
@@ -173,7 +86,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
         from app.scheduler import (
             health_check_job,
             ride_reminder_job,
-            ride_alarm_job,
             promotional_notification_job,
             data_cleanup_job,
         )
@@ -204,19 +116,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
         scheduler.add_job(
             ride_reminder_job.execute,
             "interval",
-            minutes=5,
+            minutes=1,
             id="ride_reminder",
             name="Ride Reminder Job",
-            max_instances=1,
-            coalesce=True,
-        )
-
-        scheduler.add_job(
-            ride_alarm_job.execute,
-            "interval",
-            minutes=1,
-            id="ride_alarm",
-            name="Ride Alarm Job",
             max_instances=1,
             coalesce=True,
         )
@@ -233,9 +135,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
 
         scheduler.start()
         print(
-            "✓ Scheduler started with 5 jobs: "
+            "✓ Scheduler started with 4 jobs: "
             "Health Check (10m) | Promotions (30m) | "
-            "Reminders (5m) | Alarm (1m) | Cleanup (5m)"
+            "Reminders (1m) | Cleanup (5m)"
         )
     except Exception as e:
         print(f"✗ Failed to start scheduler: {e}")
@@ -247,25 +149,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
         scheduler.shutdown()
         print("Scheduler stopped")
 
-    if bot_app:
-        try:
-            if settings.telegram_webhook_url:
-                # In webhook mode: DON'T stop or shutdown the bot
-                # The library's shutdown() deletes the webhook internally
-                # Just let the process exit - webhook persists with Telegram
-                # Stop putting  fucking comments in my fucking  code bitch
-                bot_logger.info(
-                    "Webhook mode: skipping bot shutdown to preserve webhook"
-                )
-            else:
-                # Only stop updater in polling mode
-                if bot_app.updater and bot_app.updater.running:
-                    await bot_app.updater.stop()
-                await bot_app.stop()
-                await bot_app.shutdown()
-        except Exception as e:
-            bot_logger.error(f"Error shutting down bot: {e}")
-
     await close_db()
 
 
@@ -276,10 +159,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
 app = FastAPI(
     title="ORIX API",
     description="""
-    ORIX - College Ride Coordination Platform API
+    ORIX - Travel Coordination Platform API
 
     ## Features
-    - Firebase Authentication with college email verification
+    - Firebase Authentication with public registration
     - Ride request creation and matchmaking
     - Real-time group coordination
     - Safety reporting and moderation
@@ -325,7 +208,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
     SECURITY: In production, do not leak internal error details.
     """
-    # Log to Telegram
+    # Persist an audit event without returning internal details to the client
     try:
         audit = AuditService()
         context = f"{request.method} {request.url.path}"
@@ -401,32 +284,6 @@ app.include_router(scheduler.router, prefix="/api/v1", tags=["Scheduler"])
 
 
 # =============================================================================
-# Telegram Bot Webhook
-# =============================================================================
-
-bot_app = None
-
-
-@app.post("/api/v1/webhook")
-async def telegram_webhook(request: Request):
-    """Handle Telegram Webhook updates."""
-    if not bot_app:
-        bot_logger.warning("Webhook called but bot_app is None")
-        return {"status": "bot_not_initialized"}
-
-    try:
-        data = await request.json()
-        update_id = data.get("update_id", "unknown")
-        bot_logger.info(f"Webhook received update: {update_id}")
-        update = Update.de_json(data, bot_app.bot)
-        await bot_app.process_update(update)
-        return {"status": "ok"}
-    except Exception as e:
-        bot_logger.error(f"Webhook error: {e}", exc_info=True)
-        return {"status": "error", "message": str(e)}
-
-
-# =============================================================================
 # Health Check
 # =============================================================================
 
@@ -446,3 +303,7 @@ async def root():
         "docs": "/docs",
         "health": "/health",
     }
+
+
+from app.routers import places
+app.include_router(places.router, prefix="/api/v1/places", tags=["Places"])

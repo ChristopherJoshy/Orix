@@ -12,6 +12,7 @@ import '../../features/splash/splash_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/onboarding_screen.dart';
 import '../../features/home/home_screen.dart';
+import '../providers/ride_provider.dart';
 import '../../features/ride/create_ride_screen.dart';
 import '../../features/ride/matching_screen.dart';
 import '../../features/groups/group_detail_screen.dart';
@@ -31,11 +32,11 @@ import '../../features/profile/help_support/help_support_screen.dart';
 import '../../features/profile/help_support/create_ticket_screen.dart';
 import '../../features/profile/help_support/ticket_list_screen.dart';
 import '../../features/profile/help_support/ticket_chat_screen.dart';
+import '../../features/profile/help_support/report_thread_screen.dart';
 import '../../features/profile/help_support/faq_screen.dart';
 import '../../features/profile/terms_screen.dart';
 
 import '../../features/system/network_issue_screen.dart';
-import '../../features/system/unsupported_domain_screen.dart';
 import '../../features/groups/my_group_screen.dart';
 
 /// Route names
@@ -61,7 +62,6 @@ class Routes {
   static const banned = 'banned';
 
   static const networkIssue = 'networkIssue';
-  static const unsupportedDomain = 'unsupportedDomain';
   static const myGroup = 'myGroup';
   static const about = 'about';
   static const helpSupport = 'helpSupport';
@@ -69,6 +69,7 @@ class Routes {
   static const createTicket = 'createTicket';
   static const ticketList = 'ticketList';
   static const ticketChat = 'ticketChat';
+  static const reportThread = 'reportThread';
   static const termsAndConditions = 'termsAndConditions';
 }
 
@@ -97,13 +98,13 @@ class RoutePaths {
   static const banned = '/banned';
 
   static const networkIssue = '/network-issue';
-  static const unsupportedDomain = '/unsupported-domain';
   static const about = '/about';
   static const helpSupport = '/profile/support';
   static const faq = '/profile/support/faq';
   static const createTicket = '/profile/support/create';
   static const ticketList = '/profile/support/tickets';
   static const ticketChat = '/profile/support/tickets/:ticketId';
+  static const reportThread = '/profile/support/reports/:reportId';
   static const termsAndConditions = '/profile/terms';
 }
 
@@ -135,7 +136,7 @@ class AppRouter {
         GoRoute(
           name: Routes.login,
           path: RoutePaths.login,
-          pageBuilder: (context, state) => ScaleTransitionPage(
+          pageBuilder: (context, state) => FadeTransitionPage(
             key: state.pageKey,
             child: const LoginScreen(),
           ),
@@ -163,7 +164,13 @@ class AppRouter {
           path: RoutePaths.createRide,
           pageBuilder: (context, state) => SlideTransitionPage(
             key: state.pageKey,
-            child: const CreateRideScreen(),
+            child: CreateRideScreen(
+              initialMode: state.uri.queryParameters['mode'] ?? 'auto',
+              offerLift: state.uri.queryParameters['offer'] == 'true',
+              editRequest: state.extra is RideRequest
+                  ? state.extra as RideRequest
+                  : null,
+            ),
           ),
         ),
         GoRoute(
@@ -273,6 +280,16 @@ class AppRouter {
           ),
         ),
         GoRoute(
+          name: Routes.reportThread,
+          path: RoutePaths.reportThread,
+          pageBuilder: (context, state) => SlideTransitionPage(
+            key: state.pageKey,
+            child: ReportThreadScreen(
+              reportId: state.pathParameters['reportId']!,
+            ),
+          ),
+        ),
+        GoRoute(
           name: Routes.ticketChat,
           path: RoutePaths.ticketChat,
           pageBuilder: (context, state) {
@@ -303,7 +320,11 @@ class AppRouter {
           path: RoutePaths.locationPicker,
           pageBuilder: (context, state) => SlideUpTransitionPage(
             key: state.pageKey,
-            child: const LocationPickerScreen(),
+            child: LocationPickerScreen(
+              initial: state.extra is LocationResult
+                  ? state.extra as LocationResult
+                  : null,
+            ),
           ),
         ),
 
@@ -358,14 +379,6 @@ class AppRouter {
             child: const NetworkIssueScreen(),
           ),
         ),
-        GoRoute(
-          name: Routes.unsupportedDomain,
-          path: RoutePaths.unsupportedDomain,
-          pageBuilder: (context, state) => FadeTransitionPage(
-            key: state.pageKey,
-            child: const UnsupportedDomainScreen(),
-          ),
-        ),
       ],
       errorBuilder: (context, state) => Scaffold(
         body: Center(child: Text('Page not found: ${state.uri.path}')),
@@ -381,20 +394,13 @@ class AppRouter {
     if (path == RoutePaths.maintenance ||
         path == RoutePaths.suspended ||
         path == RoutePaths.banned ||
-        path == RoutePaths.networkIssue ||
-        path == RoutePaths.unsupportedDomain) {
+        path == RoutePaths.networkIssue) {
       return null;
     }
 
     // Still loading auth state
     if (auth.isLoading) {
       return null;
-    }
-
-    // Check for unsupported domain FIRST - applies even on login screen
-    // This must come before login path bypass so users see the unsupported domain screen
-    if (auth.isUnsupportedDomain) {
-      return RoutePaths.unsupportedDomain;
     }
 
     // Check for network error during auth verification

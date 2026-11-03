@@ -12,6 +12,7 @@ import 'package:go_router/go_router.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../services/websocket_service.dart';
+import '../services/notification_service.dart';
 import '../router/app_router.dart';
 import '../utils/error_helper.dart';
 import '../utils/time_utils.dart';
@@ -22,6 +23,7 @@ enum UserStatus { active, suspended, banned }
 
 /// Backend user data
 class BackendUser {
+  final String occupation;
   final String userId;
   final String email;
   final String displayName;
@@ -38,6 +40,7 @@ class BackendUser {
     required this.userId,
     required this.email,
     required this.displayName,
+    this.occupation = 'other',
     this.photoUrl,
     this.phone,
     this.gender,
@@ -62,6 +65,7 @@ class BackendUser {
       userId: json['user_id'] as String,
       email: json['email'] as String,
       displayName: json['display_name'] as String,
+      occupation: json['occupation'] as String? ?? 'other',
       photoUrl: photoUrl,
       phone: json['phone'] as String?,
       gender: json['gender'] as String?,
@@ -91,13 +95,14 @@ class BackendUser {
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService;
   final ApiService _apiService;
-  final WebSocketService _webSocketService; // NEW
+  final WebSocketService _webSocketService;
+  final NotificationService? _notificationService;
 
+  Future<void> Function()? beforeSignOut;
   StreamSubscription<User?>? _authSubscription;
 
   bool _isLoading = true;
   bool _isAuthenticated = false;
-  bool _isUnsupportedDomain = false;
   bool _hasNetworkError = false;
   // System Config
 
@@ -105,7 +110,12 @@ class AuthProvider extends ChangeNotifier {
   BackendUser? _backendUser;
   String? _error;
 
-  AuthProvider(this._authService, this._apiService, this._webSocketService) {
+  AuthProvider(
+    this._authService,
+    this._apiService,
+    this._webSocketService, [
+    this._notificationService,
+  ]) {
     _apiService.setAuthService(_authService);
     _initErrorHelper();
     _init();
@@ -133,7 +143,6 @@ class AuthProvider extends ChangeNotifier {
   // Getters
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _isAuthenticated;
-  bool get isUnsupportedDomain => _isUnsupportedDomain;
   bool get hasNetworkError => _hasNetworkError;
 
   bool get isOnboarded => _backendUser?.onboardingCompleted ?? false;
@@ -206,6 +215,13 @@ class AuthProvider extends ChangeNotifier {
 
   /// Handle auth state changes
   Future<void> _onAuthStateChanged(User? user) async {
+    if (_firebaseUser?.uid != user?.uid) {
+      _webSocketService.disconnect();
+      _isAuthenticated = false;
+      _backendUser = null;
+      _isLoading = true;
+      notifyListeners();
+    }
     _firebaseUser = user;
 
     if (user == null) {
@@ -222,11 +238,11 @@ class AuthProvider extends ChangeNotifier {
 
   /// Verify token with backend and get user data
   Future<void> _verifyWithBackend() async {
+    final identity = _authService.currentUser?.uid;
     try {
       final token = await _authService.getIdToken();
       if (token == null) {
         _isAuthenticated = false;
-        _isUnsupportedDomain = false;
         _hasNetworkError = false;
         return;
       }
@@ -237,42 +253,36 @@ class AuthProvider extends ChangeNotifier {
         withAuth: false,
       );
 
+      if (_authService.currentUser?.uid != identity) return;
       if (response.success && response.data != null) {
         _isAuthenticated = true;
-        _isUnsupportedDomain = false;
         _hasNetworkError = false;
-        debugPrint(
-          'AUTH: Backend verified. Photo: ${response.data!['photo_url']}',
-        );
-        _backendUser = BackendUser.fromJson(response.data!);
+
+        final verifiedUser = BackendUser.fromJson(response.data!);
+        if (_backendUser?.userId != verifiedUser.userId) {
+          _webSocketService.disconnect();
+        }
+        _backendUser = verifiedUser;
         _error = null;
 
-        // Connect WebSocket immediately after verification
-        _webSocketService.connect(token);
+        if (_backendUser!.onboardingCompleted) {
+          unawaited(
+            _webSocketService.connect(
+              token,
+              tokenProvider: () => _authService.getIdToken(forceRefresh: true),
+            ),
+          );
+        } else {
+          _webSocketService.disconnect();
+        }
       } else {
         _isAuthenticated = false;
         _error = response.error;
 
-        // Check for network error (status code 0 indicates connection failure)
-        if (response.statusCode == 0) {
-          _hasNetworkError = true;
-          _isUnsupportedDomain = false;
-        } else if (response.statusCode == 403) {
-          // Check for domain validation error using errorCode
-          _hasNetworkError = false;
-          if (response.errorCode == 'invalid_domain') {
-            _isUnsupportedDomain = true;
-          } else {
-            _isUnsupportedDomain = false;
-          }
-        } else {
-          _hasNetworkError = false;
-          _isUnsupportedDomain = false;
-        }
+        _hasNetworkError = response.statusCode == 0;
       }
     } catch (e) {
       _isAuthenticated = false;
-      _isUnsupportedDomain = false;
       _hasNetworkError = true;
       // Sanitize error for user
       _error = 'Connection failed. Please check your internet.';
@@ -289,10 +299,6 @@ class AuthProvider extends ChangeNotifier {
 
     if (!result.success) {
       _error = result.error;
-      // Check if domain validation failed in auth service
-      if (result.errorCode == 'invalid_domain') {
-        _isUnsupportedDomain = true;
-      }
       _isLoading = false;
       notifyListeners();
       return false;
@@ -308,11 +314,31 @@ class AuthProvider extends ChangeNotifier {
     return true;
   }
 
+  Future<bool> signInInternal(String email, String password) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    final result = await _authService.signInInternal(email, password);
+    if (result.success) {
+      _firebaseUser = result.user;
+      await _verifyWithBackend();
+    } else {
+      _error = result.error;
+    }
+    _isLoading = false;
+    notifyListeners();
+    return result.success && _isAuthenticated;
+  }
+
   /// Complete onboarding
   Future<bool> completeOnboarding({
     required String phone,
     required String? gender,
     required bool safetyConsent,
+    bool offerLifts = false,
+    bool photoClear = false,
+    int tourVersion = 0,
+    String occupation = 'other',
   }) async {
     _isLoading = true;
     _error = null;
@@ -320,7 +346,16 @@ class AuthProvider extends ChangeNotifier {
 
     final response = await _apiService.post<Map<String, dynamic>>(
       '/auth/onboard',
-      body: {'phone': phone, 'gender': gender, 'safety_consent': safetyConsent},
+      body: {
+        'phone': phone,
+        'gender': gender,
+        'safety_consent': safetyConsent,
+        'privacy_consent': true,
+        'offer_lifts': offerLifts,
+        'photo_clear': photoClear,
+        'tour_version': tourVersion,
+        'occupation': occupation,
+      },
     );
 
     if (response.success) {
@@ -339,14 +374,71 @@ class AuthProvider extends ChangeNotifier {
 
   /// Sign out
   Future<void> signOut() async {
+    var registrationSettled = true;
+    try {
+      await beforeSignOut?.call();
+    } catch (_) {
+      registrationSettled = false;
+    }
+    final token = _notificationService?.fcmToken;
+    if (registrationSettled &&
+        token != null &&
+        token.isNotEmpty &&
+        _apiService.authIdentity != null) {
+      try {
+        await _apiService
+            .post<Map<String, dynamic>>(
+              '/users/me/push-token/unregister',
+              body: {'token': token},
+            )
+            .timeout(const Duration(seconds: 5));
+      } catch (_) {
+        // Signing out remains possible offline; the token may remain registered.
+      }
+    }
     await _authService.signOut();
     _isAuthenticated = false;
-    _isUnsupportedDomain = false;
     _hasNetworkError = false;
     _backendUser = null;
     _error = null;
     _webSocketService.disconnect(); // Explicit disconnect
     notifyListeners();
+  }
+
+  bool _deletionInProgress = false;
+  Future<String?> requestAccountDeletion({String? emulatorPassword}) async {
+    if (_deletionInProgress)
+      return 'A deletion request is already in progress.';
+    _deletionInProgress = true;
+    try {
+      return await _requestAccountDeletion(emulatorPassword: emulatorPassword);
+    } finally {
+      _deletionInProgress = false;
+    }
+  }
+
+  Future<String?> _requestAccountDeletion({String? emulatorPassword}) async {
+    final identity = _apiService.authIdentity;
+    if (identity == null ||
+        !await _authService.reauthenticateGoogle(
+          emulatorPassword: emulatorPassword,
+        ) ||
+        _apiService.authIdentity != identity) {
+      return 'Google reauthentication did not complete. Please try again.';
+    }
+    final response = await _apiService.delete<Map<String, dynamic>>(
+      '/users/me',
+    );
+    if (_apiService.authIdentity != identity)
+      return 'The signed-in account changed. Please try again.';
+    if (!response.success)
+      return response.error ?? 'Could not confirm the deletion request.';
+    await _authService.signOut();
+    _isAuthenticated = false;
+    _backendUser = null;
+    _webSocketService.disconnect();
+    notifyListeners();
+    return null;
   }
 
   /// Refresh user data

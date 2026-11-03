@@ -53,7 +53,7 @@ class AuthService:
     Authentication service for Firebase token verification.
     
     SECURITY: All authentication flows go through this service.
-    The service verifies Firebase ID tokens and enforces domain restrictions.
+    The service verifies Firebase ID tokens for public registration.
     """
     
     def __init__(self):
@@ -94,51 +94,6 @@ class AuthService:
             return None
         except Exception:
             return None
-    
-    async def validate_college_domain(self, email: str) -> Tuple[bool, str]:
-        """
-        Validate that email is from an allowed college domain.
-        
-        SECURITY: This is the authoritative domain check.
-        Client-side validation is for UX only.
-        
-        Domain source priority:
-        1. MongoDB domain_names collection (primary)
-        2. Fallback to .env ALLOWED_COLLEGE_DOMAINS
-        
-        Args:
-            email: User's email address
-            
-        Returns:
-            (is_valid, message) tuple
-        """
-        if not email:
-            return False, "Email is required"
-        
-        email_lower = email.lower()
-        domain = email_lower.split("@")[-1] if "@" in email_lower else ""
-        
-        # Get allowed domains from MongoDB first
-        allowed_domains = []
-        try:
-            db = get_db()
-            cursor = db.domain_names.find({})
-            async for doc in cursor:
-                if doc.get("domain"):
-                    allowed_domains.append(doc["domain"].lower())
-        except Exception:
-            pass
-        
-        # Fallback to .env if MongoDB is empty
-        if not allowed_domains:
-            allowed_domains = settings.allowed_domains_list
-        
-        # Check for exact match or subdomain
-        for allowed in allowed_domains:
-            if domain == allowed or domain.endswith("." + allowed):
-                return True, "OK"
-        
-        return False, f"Email domain '{domain}' is not allowed. Use your college email."
     
     async def get_or_create_user(self, token_claims: dict) -> Tuple[User, bool]:
         """

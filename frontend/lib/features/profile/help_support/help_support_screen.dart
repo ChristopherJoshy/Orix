@@ -1,100 +1,103 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../../core/router/app_router.dart';
+import 'package:orix/core/widgets/pixel_ui.dart';
+import 'package:orix/core/router/app_router.dart';
+import 'blocked_users_screen.dart';
+import 'report_history_screen.dart';
 
 class HelpSupportScreen extends StatelessWidget {
   const HelpSupportScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Help & Support')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _buildSupportOption(
-            context,
-            icon: Icons.question_answer_outlined,
-            title: 'FAQs',
-            subtitle: 'Frequently asked questions',
-            onTap: () => context.push(RoutePaths.faq),
-          ),
-          const SizedBox(height: 16),
-          _buildSupportOption(
-            context,
-            icon: Icons.confirmation_number_outlined,
-            title: 'My Tickets',
-            subtitle: 'View status of your reports & requests',
-            onTap: () => context.push(RoutePaths.ticketList),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Contact Us',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildSupportOption(
-            context,
-            icon: Icons.bug_report_outlined,
-            title: 'Report an Issue',
-            subtitle: 'Something not working right?',
-            onTap: () => context.push(RoutePaths.createTicket, extra: 'issue'),
-          ),
-          const SizedBox(height: 12),
-          _buildSupportOption(
-            context,
-            icon: Icons.lightbulb_outline,
-            title: 'Suggest a Feature',
-            subtitle: 'Have an idea for Orix?',
-            onTap: () =>
-                context.push(RoutePaths.createTicket, extra: 'feature'),
-          ),
-          const SizedBox(height: 12),
-          _buildSupportOption(
-            context,
-            icon: Icons.flag_outlined,
-            title: 'Report a User',
-            subtitle: 'Report bad behavior',
-            onTap: () =>
-                context.push(RoutePaths.createTicket, extra: 'report_user'),
-          ),
-        ],
-      ),
+    Widget item(
+      String title,
+      String subtitle,
+      IconData icon,
+      VoidCallback tap,
+    ) => ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(icon),
+      title: Text(title),
+      subtitle: Text(subtitle),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: tap,
     );
-  }
-
-  Widget _buildSupportOption(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      elevation: 0,
-      color: AppColors.surfaceVariant.withAlphaValue(100),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(8),
+    return OrixPage(
+      title: 'Help and safety',
+      description: 'Find an answer or start a private conversation.',
+      children: [
+        PixelSection(
+          title: 'Safety',
+          child: Column(
+            children: [
+              item(
+                'Start a report',
+                'Contact the moderation team',
+                Icons.flag_outlined,
+                () =>
+                    context.push(RoutePaths.createTicket, extra: 'report_user'),
+              ),
+              const Divider(),
+              item(
+                'Report conversations',
+                'Read replies and add context',
+                Icons.chat_bubble_outline,
+                () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ReportHistoryScreen(),
+                  ),
+                ),
+              ),
+              const Divider(),
+              item(
+                'Blocked contacts',
+                'Manage your list by email',
+                Icons.block_outlined,
+                () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const BlockedUsersScreen(),
+                  ),
+                ),
+              ),
+            ],
           ),
-          child: Icon(icon, color: AppColors.primary),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(subtitle),
-        trailing: const Icon(
-          Icons.chevron_right,
-          color: AppColors.textTertiary,
+        PixelSection(
+          title: 'Support',
+          child: Column(
+            children: [
+              item(
+                'Your support conversations',
+                'Open tickets and previous replies',
+                Icons.forum_outlined,
+                () => context.push(RoutePaths.ticketList),
+              ),
+              const Divider(),
+              item(
+                'Something isn’t working',
+                'Send a message to support',
+                Icons.build_outlined,
+                () => context.push(RoutePaths.createTicket, extra: 'issue'),
+              ),
+              const Divider(),
+              item(
+                'Suggest a change',
+                'Share a product idea',
+                Icons.lightbulb_outline,
+                () => context.push(RoutePaths.createTicket, extra: 'feature'),
+              ),
+            ],
+          ),
         ),
-        onTap: onTap,
-      ),
+        OutlinedButton(
+          onPressed: () => context.push(RoutePaths.faq),
+          child: const Text('Common questions'),
+        ),
+        const SizedBox(height: 24),
+        const Text(
+          'For immediate danger, contact local emergency services. Orix reports are not an emergency channel.',
+        ),
+      ],
     );
   }
 }
