@@ -56,9 +56,10 @@ export function Notifications() {
       for (let page = 0; page < pageCount.current; page++) {
         if (owner !== useSession.getState().account?.user_id)
           throw new Error("Account changed");
-        const result = await apiRequestPage<InboxPage>(
-          `/notifications?limit=50${cursor ? `&before=${encodeURIComponent(cursor)}` : ""}`,
-        );
+        const result: { data: InboxPage; nextCursor: string | null } =
+          await apiRequestPage<InboxPage>(
+            `/notifications?limit=50${cursor ? `&before=${encodeURIComponent(cursor)}` : ""}`,
+          );
         if (owner !== useSession.getState().account?.user_id)
           throw new Error("Account changed");
         if (page === 0) unread = result.data.unread_count;

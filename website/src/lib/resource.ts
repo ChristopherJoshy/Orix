@@ -15,7 +15,13 @@ export function useResource<T>(
   const version = useRef(0);
   const pending = useRef(false);
   const queued = useRef(false);
-  const [data, setData] = useState<T | null>(null);
+  const [snapshot, setSnapshot] = useState<{
+    owner: string;
+    path: string;
+    value: T;
+  } | null>(null);
+  const data =
+    snapshot?.owner === owner && snapshot.path === path ? snapshot.value : null;
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const load = useCallback(
@@ -34,7 +40,7 @@ export function useResource<T>(
           revision === version.current &&
           owner === useSession.getState().account?.user_id
         ) {
-          setData(value);
+          setSnapshot({ owner, path, value });
           setError("");
         }
       } catch (problem) {
@@ -61,7 +67,7 @@ export function useResource<T>(
     version.current++;
     pending.current = false;
     queued.current = false;
-    setData(null);
+    setSnapshot(null);
     setError("");
     void load();
     const timer = pollMs

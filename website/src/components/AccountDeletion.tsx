@@ -28,7 +28,7 @@ export function AccountDeletion() {
       await apiRequest("/users/me", { method: "DELETE" });
       setRequested(true);
       setOpen(false);
-      await signOutAccount();
+      await signOutAccount({ accountDeleted: true });
     } catch (problem) {
       setError(friendlyError(problem));
     } finally {
@@ -39,10 +39,24 @@ export function AccountDeletion() {
     <section className="panel">
       <h2>{requested ? "Deletion requested." : "Request account deletion"}</h2>
       {requested ? (
-        <p>
-          Your request was accepted. Account cleanup continues in the
-          background; this is not a confirmation that deletion has finished.
-        </p>
+        <>
+          <p>
+            Your request was accepted. Account cleanup continues in the
+            background; this is not a confirmation that deletion has finished.
+          </p>
+          {account && (
+            <Button
+              variant="secondary"
+              onClick={() =>
+                void signOutAccount({ accountDeleted: true }).catch((problem) =>
+                  setError(friendlyError(problem)),
+                )
+              }
+            >
+              Finish signing out
+            </Button>
+          )}
+        </>
       ) : account ? (
         <>
           <p>

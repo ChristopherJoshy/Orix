@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -22,10 +24,27 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
   late String _type;
   bool _busy = false;
   String? _error;
+  String? _identity, _retryPayload, _retryId;
   @override
   void initState() {
     super.initState();
     _type = widget.type ?? 'issue';
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final identity = context.read<ApiService>().authIdentity;
+    if (identity != _identity) {
+      _identity = identity;
+      _subject.clear();
+      _message.clear();
+      _type = widget.type ?? 'issue';
+      _retryPayload = null;
+      _retryId = null;
+      _busy = false;
+      _error = null;
+    }
   }
 
   @override
@@ -40,6 +59,19 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
     final api = context.read<ApiService>();
     final identity = api.authIdentity;
     if (identity == null) return;
+    final payload = jsonEncode([
+      _type,
+      _subject.text.trim(),
+      _message.text.trim(),
+    ]);
+    if (_retryPayload != payload || _retryId == null) {
+      final random = Random.secure();
+      _retryId = List.generate(
+        16,
+        (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0'),
+      ).join();
+      _retryPayload = payload;
+    }
     setState(() {
       _busy = true;
       _error = null;
@@ -49,17 +81,20 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
         type: _type,
         subject: _subject.text.trim(),
         description: _message.text.trim(),
+        clientRequestId: _retryId!,
       );
       if (!mounted || api.authIdentity != identity) return;
       context.pushReplacement(
         '/profile/support/tickets/${Uri.encodeComponent(ticket.ticketId)}',
       );
     } catch (error) {
-      if (mounted && api.authIdentity == identity)
+      if (mounted && api.authIdentity == identity) {
         setState(() => _error = ErrorHelper.getUserFriendlyMessage(error));
+      }
     } finally {
-      if (mounted && api.authIdentity == identity)
+      if (mounted && api.authIdentity == identity) {
         setState(() => _busy = false);
+      }
     }
   }
 
@@ -164,13 +199,14 @@ class ReportUserScreenState extends State<ReportUserScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.userId != null)
+    if (widget.userId != null) {
       _person = UserSearchResult(
         userId: widget.userId!,
         displayName: widget.displayName ?? '',
         email: widget.email ?? '',
         photoUrl: widget.photoUrl,
       );
+    }
   }
 
   @override
@@ -218,14 +254,16 @@ class ReportUserScreenState extends State<ReportUserScreen> {
         '/profile/support/reports/${Uri.encodeComponent(id)}',
       );
     } catch (_) {
-      if (mounted && identity == api.authIdentity)
+      if (mounted && identity == api.authIdentity) {
         setState(
           () => _error =
               'Report not confirmed. Check your report history before retrying.',
         );
+      }
     } finally {
-      if (mounted && identity == api.authIdentity)
+      if (mounted && identity == api.authIdentity) {
         setState(() => _busy = false);
+      }
     }
   }
 

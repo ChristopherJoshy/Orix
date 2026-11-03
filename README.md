@@ -2,31 +2,33 @@
 
 # ORIX
 
-ORIX helps people coordinate shared autos, travel companions and lift offers.
-Travelers choose a starting point, destination, departure window and safety
-preferences; compatible requests are matched into groups. Group members can
-coordinate their pickup, confirm a plan or reject a group and resume matching.
+**Your route. Good company.**
 
-The project includes a Flutter app, a React website and an API backed by MongoDB.
-Google sign-in, onboarding, profile photos, support, blocking and reporting are
-part of the shared account experience. The website also includes administrative
-controls and Android release management.
+ORIX helps people going the same way coordinate shared autos, travel companions
+and lift offers. Choose your route, departure window and preferences; ORIX finds
+compatible people. Review your group, agree on a pickup, and decide whether to go.
 
-The Go backend migration remains in progress. The legacy Python backend is
-retained until the API, persistence, background jobs and client contracts have
-been verified. Recurring lift availability, background web push and further
-integration work are still outstanding; see the current progress document.
+<p align="center"><img src="website/public/art/orix-street-corner.png" alt="Travelers meeting beside an auto-rickshaw" width="420"></p>
 
-## Project directories
+## Explore the project
 
-- `frontend/` — Flutter mobile client.
-- `website/` — React website and server-side administrator proxy.
-- `backend/` — Python API and Go replacement under development.
-- `Docs/` — configuration, implementation notes and verification records.
+- [`frontend/`](frontend/) — Flutter app for planning and coordinating journeys.
+- [`website/`](website/) — web experience and administrator workspace.
+- [`backend/`](backend/) — Go API, matching and background services.
+- [`Docs/`](Docs/) — setup, contracts, progress and verification notes.
 
-Start the website locally with `npm ci` and `npm run dev` from `website/`. Configure
-services using the example environment files; keep real credentials in ignored
-local files or your deployment secret manager.
+Google sign-in connects the app and website to the API. Onboarding collects a
+profile and travel preferences; groups include chat, confirmation and safety
+controls. Moderators can review reports and support conversations.
 
-See [integration progress](Docs/integration-progress.md), [environment setup](Docs/environment-setup.md),
-[backend API](Docs/backend-api.md), [testing](Docs/testing.md) and [contributor instructions](AGENTS.md).
+## Get started
+
+Configure each service from its example environment file. Run the Go API with
+`go run .` inside `backend/`; run the website with `npm ci` and `npm run dev`
+inside `website/`; use Flutter tooling from `frontend/`. Keep credentials in
+ignored local files or a deployment secret manager.
+
+The Go transition, recurring lifts and some integration work are still in
+progress. [Current progress](Docs/integration-progress.md) records the exact
+status and unverified flows. See [environment setup](Docs/environment-setup.md)
+and [contributor instructions](AGENTS.md) for details.

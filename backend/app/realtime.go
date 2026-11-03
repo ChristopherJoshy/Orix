@@ -32,7 +32,7 @@ func (m mongoUsers) StreamEvents(ctx context.Context, publish func(RealtimeEvent
 	// as worker-produced outbox inserts. Only opaque invalidations leave this layer.
 	pipeline := bson.A{bson.M{"$match": bson.M{
 		"operationType": bson.M{"$in": bson.A{"insert", "update", "replace"}},
-		"ns.coll":       bson.M{"$in": bson.A{"notification_outbox", "ride_requests", "notifications", "support_tickets", m.collection.Name()}},
+		"ns.coll":       bson.M{"$in": bson.A{"notification_outbox", "ride_requests", "notifications", "support_tickets", "recurring_lifts", m.collection.Name()}},
 	}}}
 	stream, err := m.collection.Database().Watch(ctx, pipeline, options.ChangeStream().SetFullDocument(options.UpdateLookup))
 	if err != nil {
@@ -427,6 +427,8 @@ func resourceEventType(collection string) string {
 		return "notification_update"
 	case "support_tickets":
 		return "support_update"
+	case "recurring_lifts":
+		return "recurring_lift_update"
 	default:
 		return ""
 	}

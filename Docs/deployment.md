@@ -5,26 +5,14 @@ checks/tests, then supplying environment values and using the installed emulator
 No container builds, server starts, provider setup, browser tests or deployments
 were performed while writing this material. Python remains until verified cutover.
 
-## Backend image
+## Backend service
 
-backend/Dockerfile builds the existing Go source tree into a static executable.
-The final scratch image contains the binary and CA certificates, runs as UID/GID
-65532, and listens on 8080. No Python, shell, Redis client, env file or Firebase
-service-account file is copied into the image. backend/.dockerignore limits build
-context to Go sources/module locks/embedded public assets; no backup tree is used.
-
-Go minimum/compiler and builder are now 1.27.3, verified from the official sources
-below on 2026-11-02. Dependency versions remain locked in go.mod/go.sum; this change
-does not claim every frontend/platform dependency is upgraded yet. The image tag
-pins the compiler patch rather than a mutable latest tag. A final release should
-also record the built image digest and actual build/scan/test evidence.
-
-After the testing gate opens, build from backend with `docker build -t orix-go .`.
-Inject private environment values using the deployment secret mechanism. If using
-a credential file, mount it read-only and readable by UID 65532; never bake it into
-the image. Application default credentials are also supported. Configure a writable
-Mongo replica set/sharded cluster. A container's localhost is the container itself:
-use the proper service DNS/host for Mongo/routing, not the template's local address.
+Build the Go service from `backend/` with `go build -o orix .` using the Go
+version specified in `go.mod`. Run the binary as a dedicated unprivileged service
+account. Supply private values through the host's secret mechanism; keep credential
+files outside the repository and restrict their permissions. Application default
+credentials are also supported. Use a Mongo replica set or sharded cluster and
+configure the correct network addresses for MongoDB and routing services.
 
 Put HTTPS ingress in front of 8080. Forward WebSocket upgrades for /ws and allow
 its connection lifetime; avoid logging authorization headers or query tokens.
@@ -33,10 +21,9 @@ using /health for liveness and /readyz for transactional Mongo readiness; inspec
 /admin/jobs for worker state. Readiness does not validate Google OAuth/FCM/routing.
 Forward SIGTERM and allow at least the server's ten-second shutdown period.
 
-The image exposes the existing CLI subcommands too; they are not run automatically.
+The binary exposes the existing CLI subcommands too; they are not run automatically.
 Local emulator seed/removal commands intentionally reject nonloopback databases and
 cloud projects. Do not weaken those guards to make a remote deployment seed work.
-No bundled compose cluster or new parallel application folders were created.
 
 ## Public deletion page
 
@@ -104,7 +91,7 @@ redaction rather than treating the browser's accepted message as completion.
 Verify mobile in-app deletion separately. Confirm public page availability without
 app installation, support delivery/ownership review, final privacy retention text,
 all external-store cleanup and the Play Console URL. Review CSP on deployed HTTPS
-and Google sign-in on supported browsers. Container builds need ordinary Go race/
+and Google sign-in on supported browsers. The deployed service needs ordinary Go race/
 contract checks, multi-user database integration, graceful shutdown and deployment
 probe tests. All remain deferred; neither code presence nor policy references
 prove Google Play compliance.
@@ -117,11 +104,10 @@ Official references used for implementation:
 - Firebase CDN setup: https://firebase.google.com/docs/web/alt-setup
 - Firebase SDK releases: https://firebase.google.com/support/release-notes/js
 - Go releases: https://go.dev/dl/
-- Official Go container tags: https://github.com/docker-library/official-images/blob/master/library/golang
 
 ## Ownership-reviewed support deletion command
 
-`go run . support-account-deletion` (or the equivalent image subcommand) plans a
+`go run . support-account-deletion` (or the equivalent binary subcommand) plans a
 support request by default. This command is written but has not been run. Use it
 after the code/environment/testing gate, with server credentials held by an
 operator. It is not an HTTP endpoint and does not weaken Firebase token checks

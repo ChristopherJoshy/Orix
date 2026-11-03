@@ -471,7 +471,8 @@ func (m mongoUsers) deliverRecipients(ctx context.Context, event deliveryEvent) 
 		if err != nil || current.Token != user.Token || accountRestricted(User{Status: current.Status, SuspensionExpires: current.SuspensionExpires}) {
 			user.Token = ""
 		}
-		if user.Token != "" && m.push != nil && (!present || enabled) {
+		androidKey := "android_" + recipientKey
+		if user.Token != "" && m.push != nil && (!present || enabled) && !event.Delivered[androidKey] {
 			android := &messaging.AndroidConfig{Priority: "high", CollapseKey: id, Notification: &messaging.AndroidNotification{Icon: "ic_notification", Color: "#222222", ChannelID: "high_importance_channel", Tag: id}}
 			message := &messaging.Message{Token: user.Token, Data: recipientData, Notification: &messaging.Notification{Title: title, Body: body}, Android: android}
 			if reminder {
@@ -501,6 +502,84 @@ func (m mongoUsers) deliverRecipients(ctx context.Context, event deliveryEvent) 
 					}
 				} else {
 					return err
+				}
+			}
+		}
+		if user.Token != "" && m.push != nil && (!present || enabled) && !event.Delivered[androidKey] {
+			result, err := db.Collection("notification_outbox").UpdateOne(ctx, bson.M{"_id": event.ID, "lease_token": event.Lease}, bson.M{"$set": bson.M{"delivered." + androidKey: true}})
+			if err != nil {
+				return err
+			}
+			if result.MatchedCount != 1 {
+				return errors.New("notification lease expired")
+			}
+		}
+		if m.push != nil && (!present || enabled) && err == nil && !accountRestricted(User{Status: current.Status, SuspensionExpires: current.SuspensionExpires}) {
+			cursor, err := db.Collection("web_push_tokens").Find(ctx, bson.M{"user_id": user.ID, "updated_at": bson.M{"$gte": time.Now().UTC().Add(-30 * 24 * time.Hour)}}, options.Find().SetLimit(10))
+			if err != nil {
+				return err
+			}
+			var devices []struct {
+				ID    string `bson:"_id"`
+				Token string `bson:"token"`
+			}
+			err = cursor.All(ctx, &devices)
+			cursor.Close(ctx)
+			if err != nil {
+				return err
+			}
+			for _, device := range devices {
+				// Account state and preferences may change while another device
+				// is being sent; re-read before every individual delivery.
+				var latest struct {
+					Status            string          `bson:"status"`
+					SuspensionExpires *time.Time      `bson:"suspension_expires_at"`
+					Preferences       map[string]bool `bson:"notification_preferences"`
+				}
+				if err := m.collection.FindOne(ctx, bson.M{"user_id": user.ID}, options.FindOne().SetProjection(bson.M{"status": 1, "suspension_expires_at": 1, "notification_preferences": 1})).Decode(&latest); err != nil {
+					if errors.Is(err, mongo.ErrNoDocuments) {
+						break
+					}
+					return err
+				}
+				if accountRestricted(User{Status: latest.Status, SuspensionExpires: latest.SuspensionExpires}) {
+					break
+				}
+				if allowed, exists := latest.Preferences[preference]; exists && !allowed {
+					break
+				}
+				key := "web_" + device.ID
+				if event.Delivered[key] {
+					continue
+				}
+				// Recheck ownership immediately before delivery; no private
+				// route, message text or Firebase identifier enters the payload.
+				count, err := db.Collection("web_push_tokens").CountDocuments(ctx, bson.M{"_id": device.ID, "user_id": user.ID, "token": device.Token})
+				if err != nil {
+					return err
+				}
+				if count == 0 {
+					continue
+				}
+				message := &messaging.Message{Token: device.Token, Data: map[string]string{"notification_id": id, "type": "inbox_update"}}
+				sendCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+				_, sendErr := m.push.Send(sendCtx, message)
+				cancel()
+				if sendErr != nil {
+					if messaging.IsRegistrationTokenNotRegistered(sendErr) {
+						if err := m.UnregisterWebPush(ctx, user.ID, device.Token); err != nil {
+							return err
+						}
+					} else {
+						return sendErr
+					}
+				}
+				result, err := db.Collection("notification_outbox").UpdateOne(ctx, bson.M{"_id": event.ID, "lease_token": event.Lease}, bson.M{"$set": bson.M{"delivered." + key: true}})
+				if err != nil {
+					return err
+				}
+				if result.MatchedCount != 1 {
+					return errors.New("notification lease expired")
 				}
 			}
 		}

@@ -409,13 +409,188 @@ interface Maintenance {
 interface JobStatus {
   notification_outbox: Record<string, number>;
   account_deletions: Record<string, number>;
-  workers: Record<string, unknown>[];
+  workers: {
+    _id: string;
+    heartbeat_at?: string;
+    last_success_at?: string;
+    last_error?: string;
+    last_error_at?: string;
+  }[];
 }
 interface Failed {
   event_id: string;
   type: string;
   attempts: number;
   created_at: string;
+}
+interface VersionConfig {
+  current_version: string;
+  min_version: string;
+  update_title: string | null;
+  update_notes: string | null;
+  play_store_url: string | null;
+  app_store_url: string | null;
+  update_required: boolean;
+}
+function VersionControls() {
+  const owner = useSession((s) => s.account?.user_id);
+  const { data, error, loading, load } = useResource<VersionConfig>(
+    "/app/version",
+    30000,
+  );
+  const [draft, setDraft] = useState<VersionConfig | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [failure, setFailure] = useState("");
+  const [confirm, setConfirm] = useState(false);
+  const sending = useRef(false);
+  useEffect(() => {
+    setDraft(null);
+    setFailure("");
+    setConfirm(false);
+  }, [owner]);
+  async function save() {
+    if (!draft || sending.current) return;
+    sending.current = true;
+    setBusy(true);
+    setFailure("");
+    try {
+      await adminRequest("set-version", "PUT", draft);
+      if (owner === useSession.getState().account?.user_id) {
+        setConfirm(false);
+        setDraft(null);
+        await load();
+      }
+    } catch (problem) {
+      if (owner === useSession.getState().account?.user_id)
+        setFailure(friendlyError(problem));
+    } finally {
+      sending.current = false;
+      if (owner === useSession.getState().account?.user_id) setBusy(false);
+    }
+  }
+  return (
+    <section className="panel">
+      <h2>App version</h2>
+      <p>
+        Set the current version and the minimum supported version. Changes
+        affect real users.
+      </p>
+      <Failure error={error || failure} retry={() => void load()} />
+      {!data && !error ? (
+        <PixelStatus state="loading" label="Loading version settings" />
+      ) : data && !draft ? (
+        <>
+          <p>
+            Current: {data.current_version} · Minimum: {data.min_version}
+          </p>
+          <Button
+            variant="secondary"
+            disabled={loading}
+            onClick={() => setDraft({ ...data })}
+          >
+            Edit version settings
+          </Button>
+        </>
+      ) : null}
+      {draft && (
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            setConfirm(true);
+          }}
+        >
+          <Field label="Current version">
+            <input
+              required
+              value={draft.current_version}
+              onChange={(event) =>
+                setDraft({ ...draft, current_version: event.target.value })
+              }
+            />
+          </Field>
+          <Field label="Minimum supported version">
+            <input
+              required
+              value={draft.min_version}
+              onChange={(event) =>
+                setDraft({ ...draft, min_version: event.target.value })
+              }
+            />
+          </Field>
+          <Field label="Update title">
+            <input
+              maxLength={200}
+              value={draft.update_title ?? ""}
+              onChange={(event) =>
+                setDraft({ ...draft, update_title: event.target.value || null })
+              }
+            />
+          </Field>
+          <Field label="Update notes">
+            <textarea
+              maxLength={10000}
+              value={draft.update_notes ?? ""}
+              onChange={(event) =>
+                setDraft({ ...draft, update_notes: event.target.value || null })
+              }
+            />
+          </Field>
+          <Field label="Google Play URL">
+            <input
+              type="url"
+              value={draft.play_store_url ?? ""}
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  play_store_url: event.target.value || null,
+                })
+              }
+            />
+          </Field>
+          <Field label="App Store URL">
+            <input
+              type="url"
+              value={draft.app_store_url ?? ""}
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  app_store_url: event.target.value || null,
+                })
+              }
+            />
+          </Field>
+          <Button disabled={busy}>Review version settings</Button>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={busy}
+            onClick={() => setDraft(null)}
+          >
+            Cancel
+          </Button>
+        </form>
+      )}
+      <Modal
+        title="Update app version settings?"
+        description="The minimum version can prevent older app versions from accessing ORIX."
+        open={confirm}
+        onOpenChange={(value) => {
+          if (!busy) setConfirm(value);
+        }}
+      >
+        <Button disabled={busy} onClick={() => void save()}>
+          Save settings
+        </Button>
+        <Button
+          variant="secondary"
+          disabled={busy}
+          onClick={() => setConfirm(false)}
+        >
+          Keep editing
+        </Button>
+      </Modal>
+    </section>
+  );
 }
 export function Operations() {
   const owner = useSession((s) => s.account?.user_id);
@@ -457,7 +632,8 @@ export function Operations() {
         title="Operations."
         subtitle="Real service controls and delivery jobs"
       />
-      <AdminRelease />
+      <AdminRelease key={owner ?? "signed-out"} />
+      <VersionControls key={owner ?? "signed-out"} />
       <Failure
         error={error}
         retry={() => {
@@ -522,6 +698,38 @@ export function Operations() {
               ))}
             </div>
           ))}
+        {jobs.data && (
+          <div>
+            <h3>Worker heartbeats</h3>
+            {jobs.data.workers.length === 0 ? (
+              <p>No worker heartbeat has been recorded.</p>
+            ) : (
+              jobs.data.workers.map((worker) => (
+                <article key={worker._id}>
+                  <strong>{worker._id.replaceAll("_", " ")}</strong>
+                  <p>
+                    Last heartbeat:{" "}
+                    {worker.heartbeat_at
+                      ? new Date(worker.heartbeat_at).toLocaleString()
+                      : "Not recorded"}
+                  </p>
+                  <p>
+                    Last successful run:{" "}
+                    {worker.last_success_at
+                      ? new Date(worker.last_success_at).toLocaleString()
+                      : "Not recorded"}
+                  </p>
+                  {worker.last_error && (
+                    <p role="status">
+                      The last run reported a problem. Check service logs and
+                      retry the affected work.
+                    </p>
+                  )}
+                </article>
+              ))
+            )}
+          </div>
+        )}
       </section>
       <section className="panel">
         <h2>Failed notification deliveries</h2>

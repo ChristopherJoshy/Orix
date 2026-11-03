@@ -26,26 +26,28 @@ type TicketMessage struct {
 	RetryKey  string    `json:"-" bson:"retry_key,omitempty"`
 }
 type Ticket struct {
-	ID           string          `json:"ticket_id" bson:"ticket_id"`
-	UserID       string          `json:"user_id" bson:"user_id"`
-	Type         string          `json:"type" bson:"type"`
-	Subject      string          `json:"subject" bson:"subject"`
-	Description  string          `json:"description" bson:"description"`
-	Status       string          `json:"status" bson:"status"`
-	Priority     string          `json:"priority" bson:"priority"`
-	ReportedUser *string         `json:"reported_user_id" bson:"reported_user_id"`
-	Messages     []TicketMessage `json:"messages" bson:"messages"`
-	Created      time.Time       `json:"created_at" bson:"created_at"`
-	Updated      time.Time       `json:"updated_at" bson:"updated_at"`
-	Resolved     *time.Time      `json:"resolved_at" bson:"resolved_at"`
-	ResolvedBy   *string         `json:"-" bson:"resolved_by"`
+	CreateRetryKey string          `json:"-" bson:"create_retry_key,omitempty"`
+	ID             string          `json:"ticket_id" bson:"ticket_id"`
+	UserID         string          `json:"user_id" bson:"user_id"`
+	Type           string          `json:"type" bson:"type"`
+	Subject        string          `json:"subject" bson:"subject"`
+	Description    string          `json:"description" bson:"description"`
+	Status         string          `json:"status" bson:"status"`
+	Priority       string          `json:"priority" bson:"priority"`
+	ReportedUser   *string         `json:"reported_user_id" bson:"reported_user_id"`
+	Messages       []TicketMessage `json:"messages" bson:"messages"`
+	Created        time.Time       `json:"created_at" bson:"created_at"`
+	Updated        time.Time       `json:"updated_at" bson:"updated_at"`
+	Resolved       *time.Time      `json:"resolved_at" bson:"resolved_at"`
+	ResolvedBy     *string         `json:"-" bson:"resolved_by"`
 }
 type TicketInput struct {
-	Type         string  `json:"type"`
-	Subject      string  `json:"subject"`
-	Description  string  `json:"description"`
-	Priority     string  `json:"priority"`
-	ReportedUser *string `json:"reported_user_id"`
+	ClientRequestID string  `json:"client_request_id"`
+	Type            string  `json:"type"`
+	Subject         string  `json:"subject"`
+	Description     string  `json:"description"`
+	Priority        string  `json:"priority"`
+	ReportedUser    *string `json:"reported_user_id"`
 }
 type SupportRepository interface {
 	CreateTicket(context.Context, User, TicketInput) (Ticket, error)
@@ -80,6 +82,21 @@ func (m mongoUsers) CreateTicket(ctx context.Context, user User, input TicketInp
 		if current.Status == "deleting" || current.Status == "deleted" || accountRestricted(current) && input.Type != "appeal" {
 			return nil, ErrModerationConflict
 		}
+		retryKey := ""
+		if input.ClientRequestID != "" {
+			retryKey = stableID(user.ID + ":" + input.ClientRequestID)
+			var existing Ticket
+			err := db.Collection("support_tickets").FindOne(tx, bson.M{"user_id": user.ID, "create_retry_key": retryKey}).Decode(&existing)
+			if err == nil {
+				if existing.Type != input.Type || existing.Subject != input.Subject || existing.Description != input.Description || !sameOptionalString(existing.ReportedUser, input.ReportedUser) {
+					return nil, ErrModerationConflict
+				}
+				return existing, nil
+			}
+			if !errors.Is(err, mongo.ErrNoDocuments) {
+				return nil, err
+			}
+		}
 		open, err := db.Collection("support_tickets").CountDocuments(tx, bson.M{"user_id": user.ID, "status": bson.M{"$in": []string{"open", "in_progress"}}})
 		if err != nil {
 			return nil, err
@@ -96,7 +113,7 @@ func (m mongoUsers) CreateTicket(ctx context.Context, user User, input TicketInp
 				return nil, err
 			}
 		}
-		ticket := Ticket{ID: id, UserID: user.ID, Type: input.Type, Subject: input.Subject, Description: input.Description, Status: "open", Priority: "normal", ReportedUser: input.ReportedUser, Created: now, Updated: now, Messages: []TicketMessage{{Sender: user.ID, Name: user.Name, Content: input.Description, Timestamp: now, Admin: false}}}
+		ticket := Ticket{CreateRetryKey: retryKey, ID: id, UserID: user.ID, Type: input.Type, Subject: input.Subject, Description: input.Description, Status: "open", Priority: "normal", ReportedUser: input.ReportedUser, Created: now, Updated: now, Messages: []TicketMessage{{Sender: user.ID, Name: user.Name, Content: input.Description, Timestamp: now, Admin: false}}}
 		if _, err = db.Collection("support_tickets").InsertOne(tx, ticket); err != nil {
 			return nil, err
 		}
@@ -111,6 +128,12 @@ func (m mongoUsers) CreateTicket(ctx context.Context, user User, input TicketInp
 		return Ticket{}, errors.New("missing ticket result")
 	}
 	return ticket, nil
+}
+func sameOptionalString(a, b *string) bool {
+	if a == nil || b == nil {
+		return a == nil && b == nil
+	}
+	return *a == *b
 }
 func (m mongoUsers) Tickets(ctx context.Context, user, id string, admin bool) ([]Ticket, error) {
 	query := bson.M{"user_id": user}
@@ -310,6 +333,10 @@ func (a *AuthDependencies) support(action string, admin bool) func(http.Response
 			}
 			input.Subject = strings.TrimSpace(input.Subject)
 			input.Description = strings.TrimSpace(input.Description)
+			if len(input.ClientRequestID) > 100 || strings.ContainsAny(input.ClientRequestID, " \t\r\n:") {
+				writeJSON(w, 422, map[string]string{"detail": "Invalid request identifier"})
+				return
+			}
 			if input.Subject == "" || utf8.RuneCountInString(input.Subject) > 150 || input.Description == "" || utf8.RuneCountInString(input.Description) > 4000 || input.ReportedUser != nil && (*input.ReportedUser == "" || len(*input.ReportedUser) > 100) {
 				writeJSON(w, 422, map[string]string{"detail": "Provide a subject and description within the length limits"})
 				return

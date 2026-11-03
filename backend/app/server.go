@@ -200,6 +200,8 @@ func New(config Config, logger *slog.Logger) http.Handler {
 	}
 	mux.HandleFunc("POST /api/v1/rides/{request_id}/group", config.Auth.authenticated(config.Auth.assignGroup))
 	mux.HandleFunc("GET /api/v1/rides/{request_id}", config.Auth.authenticated(config.Auth.getRide))
+	mux.HandleFunc("GET /api/v1/lifts/recurring", config.Auth.authenticated(config.Auth.recurringLift))
+	mux.HandleFunc("PUT /api/v1/lifts/recurring", config.Auth.authenticated(config.Auth.recurringLift))
 	mux.HandleFunc("GET /api/v1/rides/status", config.Auth.authenticated(config.Auth.matchingStatus))
 	mux.HandleFunc("GET /api/v1/rides/{request_id}/suggestions", config.Auth.authenticated(config.Auth.suggestions))
 	mux.HandleFunc("POST /api/v1/rides", config.Auth.authenticated(config.Auth.createRide))
@@ -209,6 +211,8 @@ func New(config Config, logger *slog.Logger) http.Handler {
 	mux.HandleFunc("POST /api/v1/auth/onboard", config.Auth.authenticated(config.Auth.onboard))
 	mux.HandleFunc("GET /api/v1/users/me", config.Auth.authenticated(config.Auth.getProfile))
 	mux.HandleFunc("PUT /api/v1/users/me", config.Auth.authenticated(config.Auth.updateProfile))
+	mux.HandleFunc("POST /api/v1/users/me/web-push-token", config.Auth.authenticated(config.Auth.webPushToken))
+	mux.HandleFunc("DELETE /api/v1/users/me/web-push-token", config.Auth.authenticated(config.Auth.webPushToken))
 	mux.HandleFunc("POST /api/v1/users/me/push-token/unregister", config.Auth.authenticated(config.Auth.unregisterPushToken))
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 200, map[string]string{"status": "healthy", "version": Version})

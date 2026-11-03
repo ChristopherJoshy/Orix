@@ -13,7 +13,8 @@
 - Website dashboard, create/edit/detail/history/matching, groups/chat, messages,
   notifications, profile/photo, account preferences, blocks/reports, support and
   administrative controls call the actual API. One-time lift registration uses a
-  real driver ride request. Recurring availability remains unfinished.
+  real driver ride request. Recurring availability is staged in Go and both
+  clients; concurrency, scheduling and account-switch behavior still need tests.
 - Admin BFF allowlists stats, account/group lookup, role/restoration/cancellation,
   maintenance/jobs/delivery retry/audit, support, reports and release controls.
   Shared admin secret stays server-side. Every privileged API rechecks authority.
@@ -42,10 +43,9 @@
 
 ## Remaining required work
 
-1. Complete recurring lift registration/always-active scheduling and wire both
-   clients to its real server lifecycle. One-time registration is connected.
-2. Complete inbox/support/group-chat pagination (some views currently show only
-   their first bounded batch), support retry deduplication and the rest of the
+1. Verify recurring lift registration and always-active scheduling, including
+   concurrent edits, retries, worker restarts and account changes in staging.
+2. Verify inbox/support/group-chat pagination, support retry deduplication and
    reconnect/concurrent-state edge cases. Verify web push background delivery;
    permission alone does not register a functioning web push service.
 3. Complete legacy Python rejection/matching/realtime parity or verify the whole Go

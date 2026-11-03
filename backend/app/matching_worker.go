@@ -21,12 +21,13 @@ func (m mongoUsers) RunMatchmaking(ctx context.Context) {
 			return
 		case <-tick.C:
 			work, cancel := context.WithTimeout(ctx, 30*time.Second)
+			scheduleErr := m.scheduleRecurringLifts(work)
 			requestErr := m.matchWaitingRequests(work)
 			var groupErr error
 			if work.Err() == nil {
 				groupErr = m.mergeWaitingGroups(work)
 			}
-			err := errors.Join(requestErr, groupErr)
+			err := errors.Join(scheduleErr, requestErr, groupErr)
 			cancel()
 			m.recordWorker(ctx, "matching", err)
 		}

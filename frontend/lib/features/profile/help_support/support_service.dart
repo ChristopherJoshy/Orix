@@ -77,6 +77,7 @@ class SupportService {
     required String type,
     required String subject,
     required String description,
+    required String clientRequestId,
     String? reportedUserId,
   }) async {
     final response = await _apiService.post(
@@ -85,6 +86,7 @@ class SupportService {
         'type': type,
         'subject': subject,
         'description': description,
+        'client_request_id': clientRequestId,
         'reported_user_id': reportedUserId,
       },
     );

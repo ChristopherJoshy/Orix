@@ -1,5 +1,6 @@
+import { enableWebPush, disableWebPush } from "../lib/webPush";
 import { friendlyError } from "../lib/errors";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   apiRequest,
@@ -55,6 +56,15 @@ export function Profile() {
   const [failure, setFailure] = useState("");
   const [saved, setSaved] = useState(false);
   const sending = useRef(false);
+  useEffect(() => {
+    setEditing(false);
+    setName("");
+    setOccupation("other");
+    setBusy(false);
+    setFailure("");
+    setSaved(false);
+    sending.current = false;
+  }, [owner]);
   async function update(
     body: FormData | { display_name: string; occupation: string },
   ) {
@@ -81,8 +91,10 @@ export function Profile() {
       if (owner === useSession.getState().account?.user_id)
         setFailure(friendlyError(problem));
     } finally {
-      sending.current = false;
-      if (owner === useSession.getState().account?.user_id) setBusy(false);
+      if (owner === useSession.getState().account?.user_id) {
+        sending.current = false;
+        setBusy(false);
+      }
     }
   }
   return (
@@ -247,6 +259,12 @@ export function Settings() {
   const [failure, setFailure] = useState("");
   const [saved, setSaved] = useState("");
   const sending = useRef(false);
+  useEffect(() => {
+    setBusy(false);
+    setFailure("");
+    setSaved("");
+    sending.current = false;
+  }, [owner]);
   async function change(key: keyof Preferences, value: boolean) {
     if (sending.current) return;
     sending.current = true;
@@ -267,8 +285,10 @@ export function Settings() {
       if (owner === useSession.getState().account?.user_id)
         setFailure(friendlyError(problem));
     } finally {
-      sending.current = false;
-      if (owner === useSession.getState().account?.user_id) setBusy(false);
+      if (owner === useSession.getState().account?.user_id) {
+        sending.current = false;
+        setBusy(false);
+      }
     }
   }
   return (
@@ -312,6 +332,59 @@ export function Settings() {
           These preferences are saved to your account. Delivery also depends on
           your device and browser permissions.
         </p>
+      </section>
+      <section className="panel">
+        <h2>Browser notifications</h2>
+        <p>
+          Enable notifications on this browser to receive an alert when an
+          update arrives.
+        </p>
+        <div className="intro-actions">
+          <Button
+            variant="secondary"
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              setFailure("");
+              setSaved("");
+              try {
+                await enableWebPush();
+                if (owner === useSession.getState().account?.user_id)
+                  setSaved("Browser notifications enabled.");
+              } catch (problem) {
+                if (owner === useSession.getState().account?.user_id)
+                  setFailure(friendlyError(problem));
+              } finally {
+                if (owner === useSession.getState().account?.user_id)
+                  setBusy(false);
+              }
+            }}
+          >
+            Enable on this browser
+          </Button>
+          <Button
+            variant="secondary"
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              setFailure("");
+              setSaved("");
+              try {
+                await disableWebPush();
+                if (owner === useSession.getState().account?.user_id)
+                  setSaved("Browser notifications disabled.");
+              } catch (problem) {
+                if (owner === useSession.getState().account?.user_id)
+                  setFailure(friendlyError(problem));
+              } finally {
+                if (owner === useSession.getState().account?.user_id)
+                  setBusy(false);
+              }
+            }}
+          >
+            Disable on this browser
+          </Button>
+        </div>
       </section>
       <section className="panel">
         <h2>Motion</h2>

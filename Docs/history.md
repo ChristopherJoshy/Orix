@@ -1107,3 +1107,71 @@ No checks run under the current verification hold.
 /api so admin functions retain their own routing. Vercel project root must be
 set to website/. Reviewed Vercel's official Vite and project-configuration docs.
 Deployment routing has not been verified; broad testing remains on hold.
+2026-11-03 — Scoped web resource snapshots to their authenticated owner and path
+to avoid stale private data during account changes. Verification remains paused.
+2026-11-03 — Added an initial pure daily lift schedule calculation with IANA
+zone and DST-gap validation. Persistence, concurrency and UI remain outstanding;
+no tests run under the verification hold.
+2026-11-03 — Added recurring-lift cleanup to account deletion and rejected
+clock-transition windows in the schedule calculation to prevent an inaccurate
+fixed-offset ride. No checks run under the verification hold.
+2026-11-03 — Added staged Go recurring-lift account-scoped persistence and API.
+No scheduler or client wiring yet; no verification under the current hold.
+2026-11-03 — Added staged recurring-lift worker and transaction-scoped account,
+schedule and active-journey checks. No runtime or race verification under hold;
+client wiring remains outstanding.
+2026-11-03 — Added web recurring lift form and pause/resume actions against the
+staged Go API. No verification under the current hold; Android UI remains pending.
+2026-11-03 — Added Android recurring lift controls using shared place search and
+staged Go endpoints. No checks run under the current hold.
+2026-11-03 — Refreshed root and backend READMEs, removed Docker from their
+workflow, and preserved the last recurring occurrence across schedule edits.
+Implementation continues; testing deferred until the requested pass is complete.
+2026-11-03 — Cleared recurring-offer drafts across account switches and retained
+last occurrence on schedule saves to reduce duplicate departures. Tests deferred
+until implementation is complete per owner request.
+2026-11-03 — Hardened recurring-lift rescheduling against duplicate departures
+after same-day edits and reduced maintenance-mode scheduler churn. Testing is
+deferred until the implementation pass ends.
+2026-11-03 — Connected recurring-offer changes to the realtime invalidation
+stream and Android screen refresh. Testing remains deferred.
+2026-11-03 — Added optimistic concurrency to recurring-offer saves and wired both
+clients to send their loaded revision. No tests run during the implementation pass.
+2026-11-03 — Connected admin app-version settings to the Go API through the
+server-only BFF. Testing remains deferred until implementation is complete.
+2026-11-03 — Added staged authenticated web-push token registration/removal with
+account-scoped ownership and a device limit. Delivery/client wiring not yet done;
+no tests run in the implementation pass.
+2026-11-03 — Added staged per-device web-push delivery and outbox checkpoints;
+provider acceptance/checkpoint crash window remains an at-least-once limitation.
+No tests run during the implementation pass.
+2026-11-03 — Added staged browser push registration controls and service worker.
+No runtime verification; Firebase VAPID setup and account-transfer handling remain.
+2026-11-03 — Added web-push sign-out cleanup, same-account re-registration and
+foreground refresh lifecycle. No testing during this implementation pass.
+2026-11-03 — Added browser push registration expiry and local token retirement on
+external authentication changes. No tests run during the implementation pass.
+2026-11-03 — Added per-device push preference/account checks and documented web
+push configuration and unverified delivery limitations. Tests remain deferred.
+2026-11-03 — Exposed existing worker heartbeat and last-success data in the admin
+operations panel. Testing deferred during the implementation pass.
+2026-11-03 — Hardened browser push registration against account changes within a
+tab and made restoration failures visible with Retry. Tests remain deferred.
+2026-11-03 — Preserved recurring-offer activation state while editing, resumed
+deferred Flutter refreshes and cleared account-scoped profile/settings state on
+account changes. Tests remain deferred.
+2026-11-03 — Hardened recurring-offer transaction retries, safe edit replays and
+worker fairness; preserve retryable failures instead of pausing the offer. No tests
+run during the implementation pass.
+2026-11-03 — Added deduplicated support-ticket creation, account-aware APK upload
+cancellation and release-settings refresh; retired the local push subscription
+when signing out after deletion. Removed unused Docker build files and updated
+current deployment guidance. Testing remains deferred for the implementation pass.
+2026-11-03 — Hardened browser push against cross-tab subscription races and
+revoked permission; removed unused demo avatar assets. Added scheduling/replay
+regression checks, not yet executed.
+2026-11-03 — Ran Go race suite, website build/error-copy tests, focused Flutter
+analysis and 12 Flutter tests successfully. Initial Go run exposed a DST schedule
+search bound error and a missing/unused import; initial website build exposed
+TypeScript pagination annotations; fixed and reran. Sandboxed Go HTTP tests could
+not bind a socket; the approved retry passed. No production data was used.

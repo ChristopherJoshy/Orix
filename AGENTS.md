@@ -18,8 +18,8 @@ reporting and moderation intact throughout the migration.
   server.go; domain matching stays in backend/internal/matching. See the current
   route/replacement inventory in Docs/backend-api.md.
 - Go serves the staged public /account-deletion page using embedded assets and
-  explicit Firebase WEB/support/privacy configuration. backend/Dockerfile is a
-  staged Go-only runtime image. Neither page nor image has been runtime-verified.
+  explicit Firebase WEB/support/privacy configuration. The page has not been
+  runtime-verified. Deploy the Go binary directly; this project does not use Docker.
 - backend/app/places.go is the staged authenticated place-search adapter. Use
   an explicitly configured private/contracted provider; public OSMF Nominatim
   is excluded. Flutter picker state and network/GPS adapters live in existing

@@ -155,9 +155,10 @@ export function GroupDetail() {
             request !== version.current
           )
             throw new Error("Account changed");
-          const result = await apiRequestPage<Message[]>(
-            `/groups/${encodeURIComponent(id)}/chat?limit=50${cursor ? `&before=${encodeURIComponent(cursor)}` : ""}`,
-          );
+          const result: { data: Message[]; nextCursor: string | null } =
+            await apiRequestPage<Message[]>(
+              `/groups/${encodeURIComponent(id)}/chat?limit=50${cursor ? `&before=${encodeURIComponent(cursor)}` : ""}`,
+            );
           combined = [...result.data, ...combined];
           cursor = result.nextCursor;
           if (!cursor) break;

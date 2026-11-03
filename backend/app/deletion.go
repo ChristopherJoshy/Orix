@@ -170,7 +170,7 @@ func (m mongoUsers) eraseAccountData(ctx context.Context, user, firebaseUID stri
 			return err
 		}
 	}
-	for _, name := range []string{"ride_requests", "notifications", "support_tickets", "user_logs", "user_avatars", "push_token_claims"} {
+	for _, name := range []string{"ride_requests", "notifications", "support_tickets", "user_logs", "user_avatars", "push_token_claims", "recurring_lifts", "web_push_tokens"} {
 		if _, err := db.Collection(name).DeleteMany(ctx, bson.M{"user_id": user}); err != nil {
 			return err
 		}

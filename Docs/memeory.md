@@ -683,3 +683,115 @@ the owner's current testing hold.
 excluded. Set Vercel project root to website/. Deployment verification remains
 pending under the testing hold; production API origin and server-only admin secret
 must be configured in Vercel before use.
+2026-11-03 — Scoped website resource snapshots to account ID and request path at
+render time, preventing a previous account's data appearing for one render after
+an account or route change. No tests run under the verification hold.
+2026-11-03 — Began recurring lift scheduling with a pure bounded local-calendar
+calculation in backend/internal/liftschedule. It validates timezone, weekdays and
+window, skips nonexistent local times, and returns UTC. This is not yet connected
+to persistence, workers or clients; recurring lifts remain unavailable. No checks
+run under the current verification hold.
+2026-11-03 — Recurring lift calculations now skip windows spanning a timezone
+offset transition because existing ride contracts store a single offset. Account
+cleanup includes the planned recurring_lifts collection. Persistence, scheduling,
+clients and verification remain incomplete; no test run under the hold.
+2026-11-03 — Added initial Go recurring-offer storage and authenticated GET/PUT
+routes; each account has at most one stored schedule, checked against current
+profile and ride validation. Worker, client controls and verification remain
+outstanding. This API is staged and must not be advertised as active scheduling.
+2026-11-03 — Added a staged transactional recurring-lift materializer to the Go
+matching worker. It checks the current account and maintenance state, observes the
+one-active-journey limit, retries while an account is busy, and advances missed
+occurrences. Client controls, runtime and concurrency verification remain pending;
+no tests run under the verification hold.
+2026-11-03 — Added website recurring lift route/day/time/seats/timezone form and
+pause/resume controls, backed by the staged API. Existing one-time form remains.
+The app controls, validation of live scheduling, races and deployment remain
+unfinished. No tests run under the verification hold.
+2026-11-03 — Added Android recurring lift route, weekday, timezone, time and seats
+form with pause/resume against the staged API. Existing one-time flow retained.
+No build or tests run under the owner verification hold; runtime and concurrency
+correctness remain unproven.
+2026-11-03 — User requested a single implementation pass, tests afterward, no
+Docker workflow, organized utility scripts, refreshed READMEs and complete Go/
+app/web/admin integration. Recurring-offer persistence now retains the last
+materialized occurrence when editing or resuming, reducing duplicate departures.
+Work remains incomplete; no tests run during this implementation pass.
+2026-11-03 — Recurring-lift forms clear private route fields on account changes;
+place-picker text also clears when an existing selection is removed. The worker
+retains its last materialized departure across offer edits and pause/resume.
+Implementation pass continues. No verification run yet by owner request.
+2026-11-03 — Recurring-offer edits preserve the last created local calendar day
+when calculating the next occurrence, preventing a time edit from scheduling a
+second departure on that day. Maintenance now postpones scheduler rechecks rather
+than repeatedly scanning the same offers. No tests run in the implementation pass.
+2026-11-03 — Added owner-scoped recurring-lift realtime invalidations and app
+refresh handling; edits retain their draft and refresh after completion. This is
+unverified until the requested implementation pass finishes.
+2026-11-03 — Recurring offers carry a server revision; saves check the last
+loaded revision inside the transaction and reject stale updates. Web and Android
+capture the edit revision so a background refresh cannot silently overwrite a
+change from another device. This is staged and untested during implementation.
+2026-11-03 — Added admin app-version controls through the allowlisted server-only
+BFF; operators can edit current/minimum versions and store links after a review
+prompt. Backend remains authoritative for validation and authorization. No tests
+run during the implementation pass.
+2026-11-03 — Researched official Firebase Web Messaging setup and added a staged,
+account-scoped web push token registry separate from Android's single token.
+Registration is bounded and serialized; account deletion includes the registry.
+Delivery, browser registration, worker handling and tests remain outstanding.
+2026-11-03 — Staged browser push delivery in the Go notification worker using
+separate web tokens and per-device outbox checkpoints. Browser payloads contain
+only an inbox identifier and type. Provider acceptance followed by a process crash
+before checkpointing can still duplicate delivery; clients must deduplicate.
+Browser worker and registration remain outstanding. No tests run in this pass.
+2026-11-03 — Added opt-in browser push registration/settings, a data-only worker
+with generic notification tags, and a public VAPID configuration placeholder.
+Firebase setup guidance consulted. Sign-out/account-transfer handling and runtime
+verification remain outstanding; no tests run in this implementation pass.
+2026-11-03 — Browser push now unregisters on ordinary sign-out, restores an
+explicitly opted-in registration for the same signed-in account, and listens for
+foreground invalidations. Account deletion clears its local marker after server
+acceptance. External account switches and stale server tokens still need review;
+no testing during implementation pass.
+2026-11-03 — Staged web push registration expiry after 30 days of inactivity and
+local subscription retirement when Firebase auth changes outside normal sign-out.
+This limits stale delivery after account switching; live browser/provider behavior
+and sign-out failure recovery still require verification after implementation.
+2026-11-03 — Browser push worker now rechecks account restrictions and notification
+preferences immediately before each device delivery; documented public VAPID
+configuration and at-least-once delivery limitations. No tests run in the
+implementation pass.
+2026-11-03 — Admin operations now shows recorded worker heartbeat and last-success
+times alongside queue counts, with a safe message for failed work. These are raw
+recorded timestamps, not a claim that workers are currently healthy. Untested in
+this implementation pass.
+2026-11-03 — Serialized browser subscription changes within a tab, recorded
+subscription ownership before registration, and added an actionable retry for
+failed restoration. Settings feedback is scoped to the signed-in account.
+Cross-tab behavior and live push delivery still need verification; no tests run.
+2026-11-03 — Editing an existing recurring offer now preserves its paused or
+active state in both clients. Flutter also schedules deferred refresh after an
+edit ends. Profile and settings transient state is cleared on account changes.
+These implementation changes have not yet been tested.
+2026-11-03 — Recurring-offer transactions now reset their candidate on MongoDB
+callback retries, accept an exact replay of the immediately preceding edit,
+and defer failed worker records so other offers can progress. Non-validation
+ride creation failures no longer silently pause an offer. These changes require
+focused and concurrent staging verification; no tests run in this pass.
+2026-11-03 — Added account-scoped idempotency for support ticket creation across
+Go, Flutter and web, and bound APK uploads to the initiating account. Release
+settings can be refreshed after an uncertain upload; account-deletion sign-out
+retires the local push subscription. Removed the unused Docker build files and
+updated current deployment guidance for direct Go binaries. No tests run yet.
+2026-11-03 — Browser push subscription changes now use browser-wide Web Locks;
+new opt-in requires that capability. Revoked notification permission can be
+retired without trapping sign-out, and queued auth changes are checked before
+touching another account's subscription. Removed unused demo avatars. Added
+focused schedule/replay regression checks; not yet executed.
+2026-11-03 — Verification after the implementation batch: Go race suite passed
+(local HTTP test sockets required sandbox escalation), website production build
+and error-copy tests passed, focused Flutter analysis passed, and 12 Flutter
+tour/notification/design/art tests passed. The new DST-gap test exposed a search
+bound error, now corrected. These checks do not verify real multi-account Mongo,
+Firebase/FCM delivery, provider services, release publication or deployed flows.

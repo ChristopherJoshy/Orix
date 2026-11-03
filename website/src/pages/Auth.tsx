@@ -351,7 +351,7 @@ export function Onboarding({ embedded = false }: { embedded?: boolean }) {
                     const result = await Notification.requestPermission();
                     setPermission(
                       result === "granted"
-                        ? "Notification permission enabled."
+                        ? "Permission enabled. After setup, enable this browser in Settings to receive alerts."
                         : "Notifications are off. You can change this in browser settings.",
                     );
                   } catch {

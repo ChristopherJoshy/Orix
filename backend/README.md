@@ -1,26 +1,22 @@
-# ORIX backend
+# ORIX API
 
-Go replacement source lives in this existing backend tree: main.go for HTTP/CLI,
-app/*.go for transport/repositories and domain modules, and internal/matching for
-storage-independent route matching. Go minimum is declared in go.mod. Mongo must
-support transactions and change streams. Firebase handles verified identity;
-registration accepts any email domain.
+The Go service handles accounts, matching, groups, chat, notifications,
+safety, moderation and support. MongoDB stores the service data and Firebase
+verifies sign-ins. A MongoDB deployment with transactions and change streams
+is required.
 
-Legacy Python remains until the complete transition passes final testing. The
-Go-only Dockerfile is staged; it has not been built or deployed. Do not start
-checks/services while the owner's code-completion gate is active.
+## Run locally
 
-See the canonical documentation in Docs:
+1. Copy `example.env` to `.env` and supply the required local values.
+2. Configure Firebase credentials outside Git and provide the credential path.
+3. Run `go run .` from this directory.
 
-- [API and changed legacy contracts](../Docs/backend-api.md)
-- [Configuration and example.env](../Docs/configuration.md)
-- [Deployment and public/support deletion workflows](../Docs/deployment.md)
-- [Migration details](../Docs/migration.md)
-- [Data lifecycle](../Docs/data-lifecycle.md)
-- [Deferred test plan](../Docs/testing.md)
-- [Current state](../Docs/memeory.md) and [history](../Docs/history.md)
+The sample environment file describes provider and operational settings. A
+contracted place-search provider and road-routing service are needed for the
+corresponding live features. Administrative secrets belong only on the server.
 
-example.env is canonical; .env.example mirrors it. Keep private values out of
-version control. No Telegram credentials, college domain list or Redis service
-are required by the Go replacement. Python-only settings are marked separately
-while that source remains available for the final transition.
+See [configuration](../Docs/configuration.md), [API reference](../Docs/backend-api.md),
+[environment setup](../Docs/environment-setup.md) and [current progress](../Docs/integration-progress.md).
+The legacy Python implementation remains in this tree while its contracts and
+background jobs are being migrated and verified. Do not treat the Go transition
+as complete until those checks pass.

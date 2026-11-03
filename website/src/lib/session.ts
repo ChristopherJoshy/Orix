@@ -160,8 +160,11 @@ export function initializeSession() {
   const stop = onAuthStateChanged(firebaseAuth, async (user) => {
     const current = ++revision;
     useSession.setState({ account: null, loading: !!user, error: null });
-    if (!user) return;
     try {
+      const { reconcileWebPushOwner } = await import("./webPush");
+      await reconcileWebPushOwner(user?.uid ?? null);
+      if (current !== revision) return;
+      if (!user) return;
       await verifyAccount();
     } catch (error) {
       if (current === revision)
@@ -198,7 +201,20 @@ export async function signInGoogle() {
   }
   return verifyAccount();
 }
-export async function signOutAccount() {
+export async function signOutAccount(
+  options: { accountDeleted?: boolean } = {},
+) {
+  const user = firebaseAuth.currentUser;
+  if (!user) return;
+  if (!options.accountDeleted) {
+    const { disableWebPush } = await import("./webPush");
+    await disableWebPush();
+  } else {
+    const { reconcileWebPushOwner } = await import("./webPush");
+    await reconcileWebPushOwner(null, user.uid);
+  }
+  if (firebaseAuth.currentUser?.uid !== user.uid)
+    throw new PublicError("Your account changed. Please try again.");
   await firebaseSignOut(firebaseAuth);
   useSession.setState({ account: null, loading: false, error: null });
 }

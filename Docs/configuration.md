@@ -64,7 +64,7 @@ remaining Python-only settings separately; .env.example mirrors it. Use a privat
 HTTPS deployment origin and independently generated secrets after environment
 setup. Data stores/deletion boundaries are recorded in data-lifecycle.md.
 
-## Public web deletion configuration and staged container
+## Public web deletion configuration
 
 The new public web flow uses FIREBASE_WEB_API_KEY, FIREBASE_WEB_AUTH_DOMAIN and
 FIREBASE_WEB_APP_ID with the existing FIREBASE_PROJECT_ID. These are public Firebase
@@ -73,11 +73,8 @@ and PRIVACY_POLICY_URL must be real and are required when web sign-in is enabled
 Partial configuration fails startup. Authorize the page hostname in Firebase Auth,
 enable Google provider and add the exact page origin to CORS_ORIGINS. Settings are
 optional/disabled in example.env until the user supplies values. See deployment.md
-for the Google web flow, support ownership, CSP, container and final QA boundaries.
-
-backend/Dockerfile targets Go 1.27.3 with a nonroot scratch runtime and CA bundle.
-Its build context excludes secrets/Python, while source Python remains untouched
-pending tested cutover. No image build or runtime check has run.
+for the Google web flow, support ownership, CSP and final QA boundaries. The Go
+service is deployed as a binary; Python remains until the cutover is verified.
 
 The support-account-deletion CLI adds explicit DELETION_DATABASE, admin/target
 Firebase UIDs and an opaque DELETION_CASE_ID. Default planning is read-only;

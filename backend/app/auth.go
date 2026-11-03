@@ -225,6 +225,7 @@ func OpenAuth(ctx context.Context, project, credentialsPath, credentialsJSON, ur
 	}
 	supportIndexes := []mongo.IndexModel{
 		{Keys: bson.D{{Key: "ticket_id", Value: 1}}, Options: options.Index().SetUnique(true)},
+		{Keys: bson.D{{Key: "user_id", Value: 1}, {Key: "create_retry_key", Value: 1}}, Options: options.Index().SetUnique(true).SetPartialFilterExpression(bson.M{"create_retry_key": bson.M{"$type": "string"}})},
 		{Keys: bson.D{{Key: "user_id", Value: 1}, {Key: "created_at", Value: -1}}},
 		{Keys: bson.D{{Key: "status", Value: 1}, {Key: "updated_at", Value: -1}}},
 	}

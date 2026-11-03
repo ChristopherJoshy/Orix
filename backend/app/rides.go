@@ -92,6 +92,7 @@ type Ride struct {
 }
 
 var ErrActiveRide = errors.New("active ride already exists")
+var errInvalidRide = errors.New("Provide valid locations, travel mode and a future time window")
 
 type RideRepository interface {
 	CreateRide(context.Context, Ride) error
@@ -143,7 +144,7 @@ func (m mongoUsers) CancelRide(ctx context.Context, user, id string) (bool, erro
 	return result.ModifiedCount == 1, nil
 }
 func buildRide(input RideInput, user User, now time.Time) (Ride, error) {
-	invalid := errors.New("Provide valid locations, travel mode and a future time window")
+	invalid := errInvalidRide
 	if input.Offset == nil || *input.Offset < -720 || *input.Offset > 840 {
 		return Ride{}, invalid
 	}

@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { useResource } from "../lib/resource";
 import type { InboxPage } from "../pages/Inbox";
 import { useSession, signOutAccount } from "../lib/session";
@@ -58,7 +59,9 @@ export default function Layout({ admin = false }: { admin?: boolean }) {
     email: account?.email ?? "",
   };
   const signOut = () => {
-    void signOutAccount();
+    void signOutAccount().catch(() =>
+      toast.error("Could not sign out. Check your connection and try again."),
+    );
   };
   const location = useLocation();
   const [menu, setMenu] = useState(false);

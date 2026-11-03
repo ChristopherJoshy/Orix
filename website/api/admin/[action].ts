@@ -25,6 +25,7 @@ export default async function handler(
   const validID = (value: string | null): value is string =>
     value !== null && /^[A-Za-z0-9_-]{1,100}$/.test(value);
   const routes: Record<string, { method: string; path: string }> = {
+    "set-version": { method: "PUT", path: "/api/v1/admin/app/version" },
     stats: { method: "GET", path: "/api/v1/admin/stats" },
     lookup: { method: "GET", path: "/api/v1/admin/users/lookup" },
     logs: { method: "GET", path: "/api/v1/admin/logs" },

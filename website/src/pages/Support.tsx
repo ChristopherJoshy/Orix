@@ -46,7 +46,7 @@ export function Support({ admin = false }: { admin?: boolean }) {
       for (let page = 0; page < pageCount.current; page++) {
         if (owner !== useSession.getState().account?.user_id)
           throw new Error("Account changed");
-        const result = admin
+        const result: { data: Ticket[]; nextCursor: string | null } = admin
           ? await adminRequestPage<Ticket[]>(
               "support-tickets",
               "GET",
@@ -80,10 +80,36 @@ export function Support({ admin = false }: { admin?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState("");
   const sending = useRef(false);
+  const createRetry = useRef<{
+    owner: string;
+    payload: string;
+    id: string;
+  } | null>(null);
+  useEffect(() => {
+    setOpen(false);
+    setSubject("");
+    setDescription("");
+    setType("issue");
+    setBusy(false);
+    setFailure("");
+    sending.current = false;
+    createRetry.current = null;
+  }, [owner]);
   const navigate = useNavigate();
   async function create(event: React.FormEvent) {
     event.preventDefault();
-    if (sending.current) return;
+    if (sending.current || !owner) return;
+    const payload = JSON.stringify({
+      type,
+      subject: subject.trim(),
+      description: description.trim(),
+      priority: "normal",
+    });
+    if (
+      createRetry.current?.owner !== owner ||
+      createRetry.current?.payload !== payload
+    )
+      createRetry.current = { owner, payload, id: crypto.randomUUID() };
     sending.current = true;
     setBusy(true);
     setFailure("");
@@ -91,10 +117,8 @@ export function Support({ admin = false }: { admin?: boolean }) {
       const ticket = await apiRequest<Ticket>("/support/tickets", {
         method: "POST",
         body: JSON.stringify({
-          type,
-          subject: subject.trim(),
-          description: description.trim(),
-          priority: "normal",
+          ...JSON.parse(payload),
+          client_request_id: createRetry.current.id,
         }),
       });
       if (owner === useSession.getState().account?.user_id) {
@@ -105,8 +129,10 @@ export function Support({ admin = false }: { admin?: boolean }) {
       if (owner === useSession.getState().account?.user_id)
         setFailure(friendlyError(problem));
     } finally {
-      sending.current = false;
-      if (owner === useSession.getState().account?.user_id) setBusy(false);
+      if (owner === useSession.getState().account?.user_id) {
+        sending.current = false;
+        setBusy(false);
+      }
     }
   }
   return (

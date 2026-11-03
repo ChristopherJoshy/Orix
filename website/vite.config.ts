@@ -30,6 +30,7 @@ export default defineConfig(({ mode }) => {
                 "/jobs",
                 "/failed",
                 "/set-maintenance",
+                "/set-version",
                 "/user-role",
                 "/restore-account",
                 "/group",

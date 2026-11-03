@@ -1,3 +1,4 @@
+import { listenForWebPush, restoreWebPush } from "./lib/webPush";
 import { useResource } from "./lib/resource";
 import type { InboxPage } from "./pages/Inbox";
 import { ConnectionStatus } from "./components/ConnectionStatus";
@@ -14,9 +15,9 @@ import {
   AnimatePresence,
   useReducedMotion,
 } from "motion/react";
-import { Toaster } from "sonner";
+import { Toaster, toast } from "sonner";
 import { useStore } from "./lib/store";
-import { initializeSession } from "./lib/session";
+import { initializeSession, useSession } from "./lib/session";
 import { Button, Logo } from "./components/ui";
 import { PixelMark } from "./components/PixelArt";
 import { PixelStatus, LifecycleFeedback } from "./components/PixelStatus";
@@ -207,6 +208,38 @@ class ErrorBoundary extends Component<
     return this.props.children;
   }
 }
+function WebPushLifecycle() {
+  const account = useSession((s) => s.account);
+  useEffect(() => {
+    if (!account?.onboarding_completed) return;
+    let alive = true;
+    let stop: undefined | (() => void);
+    void listenForWebPush()
+      .then((unsubscribe) => {
+        if (alive) stop = unsubscribe;
+        else unsubscribe();
+      })
+      .catch(() => {});
+    const restore = () => {
+      void restoreWebPush().catch(() => {
+        if (
+          !alive ||
+          useSession.getState().account?.user_id !== account.user_id
+        )
+          return;
+        toast.error("Browser notifications couldn't reconnect.", {
+          action: { label: "Retry", onClick: restore },
+        });
+      });
+    };
+    restore();
+    return () => {
+      alive = false;
+      stop?.();
+    };
+  }, [account?.user_id, account?.onboarding_completed]);
+  return null;
+}
 export default function App() {
   useEffect(() => initializeSession(), []);
   const motion = useStore((s) => s.motion);
@@ -218,6 +251,7 @@ export default function App() {
       <AndroidDownload />
       <ConnectionStatus />
       <RealtimeBridge />
+      <WebPushLifecycle />
       <LazyMotion features={domAnimation}>
         <MotionConfig
           reducedMotion={motion ? "user" : "always"}

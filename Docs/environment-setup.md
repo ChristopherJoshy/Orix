@@ -112,3 +112,20 @@ Reverse proxies must support the documented upload size and five-minute timeout.
 - https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html
 - https://www.mongodb.com/docs/drivers/go/current/crud/gridfs/
 - https://github.com/grpc/grpc-node/releases
+
+## Browser push configuration (staged)
+
+Set `VITE_FIREBASE_VAPID_KEY` to the public Web Push certificate key from the
+Firebase project's Cloud Messaging settings. Configure the matching Firebase
+project for the deployed HTTPS origin and authorize that origin for sign-in.
+The key is public configuration; keep Firebase Admin credentials and the admin
+API secret server-side. Browser permission alone is insufficient: users opt in
+from Settings, which registers the browser with the API.
+
+The implementation sends a generic notification with an inbox identifier. The
+service worker opens the inbox; it does not include private journey or message
+content. Tokens are separate from Android and expire after 30 days without a
+registration refresh. Delivery is at least once: a crash between provider
+acceptance and the outbox checkpoint can result in duplicate provider sends.
+Browser/FCM registration, permission revocation, multi-account transitions,
+background delivery and token expiry have not yet been verified end to end.
