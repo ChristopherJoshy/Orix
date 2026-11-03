@@ -7,7 +7,7 @@ is required.
 
 ## Run locally
 
-1. Copy `example.env` to `.env` and supply the required local values.
+1. Copy `.env.example` to `.env` and supply the required local values.
 2. Configure Firebase credentials outside Git and provide the credential path.
 3. Run `go run .` from this directory.
 

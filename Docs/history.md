@@ -1187,3 +1187,6 @@ with eight Firebase Auth Emulator personas and a temporary localhost MongoDB
 8.0.34 replica set. Both checks passed, including another account's empty schedule
 and a conflicting support replay. Temporary services were stopped; no production
 database was used. Real provider and broader multi-account scenarios remain.
+2026-11-03 — At the owner's request, stopped further testing, corrected the
+backend README environment-template instruction and added app/website setup
+READMEs. No tests were run for this documentation change.

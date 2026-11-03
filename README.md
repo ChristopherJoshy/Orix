@@ -12,9 +12,9 @@ compatible people. Review your group, agree on a pickup, and decide whether to g
 
 ## Explore the project
 
-- [`frontend/`](frontend/) — Flutter app for planning and coordinating journeys.
-- [`website/`](website/) — web experience and administrator workspace.
-- [`backend/`](backend/) — Go API, matching and background services.
+- [`frontend/`](frontend/README.md) — Flutter app for planning and coordinating journeys.
+- [`website/`](website/README.md) — web experience and administrator workspace.
+- [`backend/`](backend/README.md) — Go API, matching and background services.
 - [`Docs/`](Docs/) — setup, contracts, progress and verification notes.
 
 Google sign-in connects the app and website to the API. Onboarding collects a
@@ -28,7 +28,7 @@ Configure each service from its example environment file. Run the Go API with
 inside `website/`; use Flutter tooling from `frontend/`. Keep credentials in
 ignored local files or a deployment secret manager.
 
-The Go transition, recurring lifts and some integration work are still in
-progress. [Current progress](Docs/integration-progress.md) records the exact
-status and unverified flows. See [environment setup](Docs/environment-setup.md)
-and [contributor instructions](AGENTS.md) for details.
+Recurring offers are connected in both clients. Some integration and deployment
+flows still need verification; [current progress](Docs/integration-progress.md)
+records their status. See [environment setup](Docs/environment-setup.md) and
+[contributor instructions](AGENTS.md) for details.

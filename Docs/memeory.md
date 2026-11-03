@@ -812,3 +812,7 @@ replays produced one departure; another account had no schedule. Concurrent
 support retries produced one ticket and changed-content replay conflicted. Stopped
 the isolated services afterward. This does not verify Google sign-in, FCM, every
 race, external providers or deployed behavior; no production data was used.
+2026-11-03 — The owner paused further testing and will report issues found in
+their own checks. Stopped the temporary test services, corrected the backend
+environment-template instruction and added app and website README setup notes.
+No tests were run for this documentation change.
