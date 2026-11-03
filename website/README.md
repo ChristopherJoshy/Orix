@@ -19,3 +19,7 @@ admin secret and Firebase Admin credentials server-side; never expose them as
 `VITE_` variables. For Vercel, use this directory as the project root and set
 the production environment values there. See [environment setup](../Docs/environment-setup.md)
 and [current integration status](../Docs/integration-progress.md).
+
+The production API origin must use HTTPS and be reachable from browsers. The
+admin proxy uses the same API origin and a separately configured server-only
+secret. Vercel's Git integration deploys the production branch from this folder.
