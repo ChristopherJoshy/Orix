@@ -879,3 +879,11 @@ Added permission-based current-city lookup via private Geoapify reverse geocodin
 without location-history persistence, replacing the fixed city. Header/sidebar
 now reuse the authenticated upload/Google photo loader with retry states. Website
 build and Go race suite passed.
+
+2026-11-03 — Redesigned group conversation as a bounded 840px chat surface
+with a compact header, deliberate empty state, readable message text and subtle
+author/time metadata. Composer grows from one line and preserves Enter/Shift+Enter
+behavior. New messages follow the bottom only while the reader is near it. Mobile
+uses larger body text and tighter gutters. Website build passed. Research: Material
+Web text-field guidance and Carbon chat layout customization; no authenticated
+production chat fixtures were created for this design change.

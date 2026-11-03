@@ -3,10 +3,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { apiRequest, apiRequestPage, useSession } from "../lib/session";
 import { useRealtimeRefresh } from "../lib/realtime";
-import { Badge, Button, Field, PageHead } from "../components/ui";
+import { Badge, Button, PageHead } from "../components/ui";
 import { Modal } from "../components/Modal";
 import { PersonIdentity } from "../components/EmailPersonPicker";
 import { PixelStatus } from "../components/PixelStatus";
+import { MessageSquare, ArrowUp } from "lucide-react";
 interface Member {
   user_id: string;
   display_name: string;
@@ -141,6 +142,20 @@ export function GroupDetail() {
   const [draft, setDraft] = useState("");
   const [reject, setReject] = useState(false);
   const retry = useRef<{ text: string; id: string } | null>(null);
+  const messageLog = useRef<HTMLDivElement>(null);
+  const composer = useRef<HTMLTextAreaElement>(null);
+  const followMessages = useRef(true);
+  const lastMessage = messages.at(-1)?.message_id;
+  useEffect(() => {
+    const log = messageLog.current;
+    if (log && followMessages.current) log.scrollTop = log.scrollHeight;
+  }, [lastMessage]);
+  useEffect(() => {
+    const input = composer.current;
+    if (!input) return;
+    input.style.height = "0px";
+    input.style.height = `${Math.min(144, Math.max(44, input.scrollHeight))}px`;
+  }, [draft]);
   const load = useCallback(async () => {
     if (!id) return;
     const request = ++version.current;
@@ -360,8 +375,20 @@ export function GroupDetail() {
           ))}
         </section>
       </div>
-      <section className="panel group-conversation">
-        <h2>Group conversation</h2>
+      <section
+        className="group-conversation"
+        aria-labelledby="group-chat-title"
+      >
+        <header className="group-chat-header">
+          <div>
+            <h2 id="group-chat-title">Group conversation</h2>
+            <p>Pickup plans. Quick hellos. All in one place.</p>
+          </div>
+          <span className="group-chat-member-count">
+            {group.members.length}{" "}
+            {group.members.length === 1 ? "traveller" : "travellers"}
+          </span>
+        </header>
         {chatError && (
           <p role="alert">
             {chatError}{" "}
@@ -384,13 +411,27 @@ export function GroupDetail() {
           </Button>
         )}
         <div
+          ref={messageLog}
           className="group-message-log"
           role="log"
           aria-label="Group messages"
           tabIndex={0}
+          onScroll={(event) => {
+            const log = event.currentTarget;
+            followMessages.current =
+              log.scrollHeight - log.scrollTop - log.clientHeight < 80;
+          }}
         >
           {messages.length === 0 ? (
-            <p>No messages yet.</p>
+            <div className="group-chat-empty">
+              <MessageSquare size={28} strokeWidth={1.5} aria-hidden="true" />
+              <p>A good journey starts with hello.</p>
+              <span>
+                {group.members.length < 2
+                  ? "Your conversation will be here when a travel partner joins."
+                  : "Say hello or share a detail about your pickup."}
+              </span>
+            </div>
           ) : (
             messages.map((message) => (
               <article
@@ -435,6 +476,7 @@ export function GroupDetail() {
                 if (owner !== useSession.getState().account?.user_id) return;
                 setDraft("");
                 retry.current = null;
+                followMessages.current = true;
                 await load();
               } catch (problem) {
                 if (owner === useSession.getState().account?.user_id)
@@ -445,10 +487,14 @@ export function GroupDetail() {
               }
             }}
           >
-            <Field label="Message your group">
+            <label className="group-chat-input">
+              <span className="group-chat-input-label">Message your group</span>
               <textarea
+                ref={composer}
                 maxLength={1000}
-                rows={2}
+                rows={1}
+                placeholder="Write a message…"
+                aria-describedby="group-chat-keyboard"
                 required
                 disabled={busy}
                 value={draft}
@@ -465,12 +511,23 @@ export function GroupDetail() {
                   }
                 }}
               />
-            </Field>
-            <Button disabled={busy || !draft.trim()}>Send message</Button>
-            <small className="group-chat-keyboard">
+            </label>
+            <Button
+              className="group-chat-send"
+              aria-label={busy ? "Sending message" : "Send message"}
+              disabled={busy || !draft.trim()}
+            >
+              <ArrowUp size={20} aria-hidden="true" />
+            </Button>
+            <small className="group-chat-keyboard" id="group-chat-keyboard">
               Enter to send · Shift + Enter for a new line
             </small>
           </form>
+        )}
+        {!canChat && (
+          <p className="group-chat-closed">
+            This journey has ended. You can still read the conversation.
+          </p>
         )}
       </section>
       <Modal
