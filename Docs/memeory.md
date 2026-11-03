@@ -1009,3 +1009,10 @@ fit. Mobile example card measured 383px; screenshots under /tmp/orix-route-*.
 This is layout verification, not authenticated page/API QA. Existing unrelated
 Flutter edits were left untouched. No app changes, production fixtures or auth
 bypass. Private screens remain unverified; not deployed by this change.
+
+2026-11-03 — Owner preferred the previous web font/design. Reversed the web-only
+compact route/card treatment from 28443b9, restoring full address headings,
+previous typography, spacing, date formatting and journey illustration sizing.
+Removed the now-unused JourneyRoute web component. Earlier chat and desktop
+navigation fixes remain. No Flutter changes. Website build verification recorded
+in the corresponding history entry.

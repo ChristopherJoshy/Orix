@@ -1381,3 +1381,12 @@ plus 200% text/spacing overrides, without horizontal document overflow. Actual
 component was server-rendered into an isolated local harness; its Vite HMR socket
 reported sandbox EPERM but rendering succeeded. This does not verify signed-in
 screens or service flows. No production data was created and no auth bypass used.
+
+## 2026-11-03 — Restore preferred web typography and journey design
+
+At the owner's request, reversed the website changes from 28443b9. Restored
+previous pixel address headings and card design, spacing, date formatting and
+journey illustration size; removed the unused compact-route component. Kept
+chat and desktop navigation improvements. No Flutter changes.
+Verification: website production build and git diff whitespace check passed.
+No authenticated UI or device checks were run for this restoration.

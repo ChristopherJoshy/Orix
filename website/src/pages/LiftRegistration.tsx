@@ -1,4 +1,3 @@
-import { JourneyRoute } from "../components/JourneyRoute";
 import { useEffect, useRef, useState } from "react";
 import { useSession, apiRequest } from "../lib/session";
 import { useResource } from "../lib/resource";
@@ -218,10 +217,9 @@ export default function LiftRegistration() {
           <PixelStatus state="loading" label="Loading recurring offer" />
         ) : data?.offer && !editing ? (
           <>
-            <JourneyRoute
-              from={data.offer.route.pickup_label}
-              to={data.offer.route.drop_label}
-            />
+            <p>
+              {data.offer.route.pickup_label} → {data.offer.route.drop_label}
+            </p>
             <p>
               {data.offer.schedule.weekdays.map((day) => names[day]).join(", ")}{" "}
               · {hhmm(data.offer.schedule.start_minute)}–
