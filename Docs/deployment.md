@@ -203,3 +203,8 @@ service. Source deletion remains explicitly gated on finished transition testing
 No backup folders/files are created. Final QA needs plan side-effect checks,
 allowlist/non-target preservation, role races, interrupted retry and actual retired
 record removal before using this operator action on the selected environment.
+
+The production HTTPS proxy must allow uploads up to 256 MB for the exact
+`/api/v1/admin/android-apk` endpoint. Keep the smaller general request limit on
+other routes and disable request buffering for this upload. Validate nginx's
+configuration before reloading it.

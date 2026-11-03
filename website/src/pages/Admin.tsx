@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { adminRequest, adminRequestPage } from "../lib/admin";
 import { friendlyError } from "../lib/errors";
-import { useSession } from "../lib/session";
+import { firebaseAuth, useSession } from "../lib/session";
 import { useResource } from "../lib/resource";
 import { refreshJourneys } from "../lib/journeys";
 import { Badge, Button, Empty, Field, PageHead } from "../components/ui";
@@ -89,9 +89,54 @@ interface Person {
   role: string;
   status: string;
   occupation?: string;
+  photo_url?: string | null;
+  phone?: string | null;
+  gender?: string | null;
+}
+function AdminPhoto({ url, name, userID }: { url?: string | null; name: string; userID: string }) {
+  const owner = useSession(s => s.account?.user_id);
+  const [src, setSrc] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0); const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    setSrc(null); setFailed(false); if (!url || !owner) return;
+    const controller = new AbortController(); let objectURL: string | undefined;
+    if (url.startsWith("/api/v1/users/")) {
+      const user = firebaseAuth.currentUser; if (!user) return;
+      void user.getIdToken().then(token => fetch(`/api/admin/avatar?${new URLSearchParams({user_id:userID})}`, {headers:{Authorization:`Bearer ${token}`},signal:controller.signal,credentials:"omit"})).then(response => {if (!response.ok) throw new Error(); return response.blob();}).then(blob => { if (controller.signal.aborted || firebaseAuth.currentUser?.uid !== user.uid) return; objectURL=URL.createObjectURL(blob); setSrc(objectURL); }).catch(() => {if (!controller.signal.aborted) setFailed(true);});
+    } else { try { const parsed = new URL(url); if (parsed.protocol === "https:" && !parsed.username && !parsed.password) setSrc(parsed.href); else setFailed(true); } catch { setFailed(true); } }
+    return () => {controller.abort(); if (objectURL) URL.revokeObjectURL(objectURL);};
+  }, [url,userID,owner,attempt]);
+  if (src && !failed) return <img className="admin-person-photo" src={src} alt={`${name}'s profile`} referrerPolicy="no-referrer" onError={() => setFailed(true)} />;
+  if (url && failed) return <button type="button" className="admin-person-photo admin-photo-empty" aria-label={`Retry photo for ${name}`} onClick={event => {event.stopPropagation();setAttempt(value => value+1);}}>Retry</button>;
+  return <span className="admin-person-photo admin-photo-empty" aria-label={url ? "Loading photo" : "No profile photo"}>{url ? "…" : (name?.charAt(0).toUpperCase() || "?")}</span>;
+}
+function useAdminPages<T>(action: string, owner: string | undefined, groupId?: string | null) {
+  const [rows, setRows] = useState<T[] | null>(null);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const version = useRef(0);
+  const scope = useRef({owner, groupId});
+  const load = useCallback(async (before?: string) => {
+    if (!owner || (action === "group-chat" && !groupId)) return;
+    const current = ++version.current;
+    setLoading(true); setError("");
+    try {
+      const page = await adminRequestPage<T[]>(action, "GET", undefined, { ...(groupId ? {group_id: groupId} : {}), ...(before ? {before} : {}) });
+      if (!Array.isArray(page.data)) throw new Error("Invalid list response");
+      if (current === version.current && owner === useSession.getState().account?.user_id) {
+        setRows(previous => before ? [...(previous ?? []), ...page.data] : page.data); setCursor(page.nextCursor);
+      }
+    } catch (problem) { if (current === version.current) setError(friendlyError(problem)); }
+    finally { if (current === version.current) setLoading(false); }
+  }, [action, groupId, owner]);
+  useEffect(() => { scope.current = {owner, groupId}; setRows(null); setCursor(null); setError(""); void load(); return () => { version.current++; }; }, [load, owner, groupId]);
+  const sameScope = scope.current.owner === owner && scope.current.groupId === groupId;
+  return {rows: sameScope ? rows : null, cursor: sameScope ? cursor : null, error: sameScope ? error : "", loading, load};
 }
 export function AdminPeople() {
   const owner = useSession((s) => s.account?.user_id);
+  const directory = useAdminPages<Person>("people", owner);
   const [query, setQuery] = useState("");
   const [person, setPerson] = useState<Person | null>(null);
   const [role, setRole] = useState("user");
@@ -168,7 +213,7 @@ export function AdminPeople() {
     <>
       <PageHead
         title="People."
-        subtitle="Find an account by its exact email or user ID"
+        subtitle="Browse accounts or find someone by email or user ID"
       />
       <form className="panel" onSubmit={lookup}>
         <Field label="Email or user ID">
@@ -184,11 +229,21 @@ export function AdminPeople() {
           {busy ? "Searching…" : "Find account"}
         </Button>
       </form>
+      <Failure error={directory.error} retry={() => void directory.load()} />
+      <section className="panel admin-directory">
+        <div className="admin-directory-heading"><h2>All people</h2><Button variant="secondary" disabled={directory.loading} onClick={() => void directory.load()}>Refresh</Button></div>
+        {directory.rows === null && directory.loading && <PixelStatus state="loading" label="Loading people" />}
+        {directory.rows?.length === 0 && <p>No accounts yet.</p>}
+        {directory.rows?.map(item => <div className="admin-directory-row" key={item.user_id}><AdminPhoto url={item.photo_url} name={item.display_name} userID={item.user_id}/><button type="button" className="admin-directory-select" onClick={() => {setPerson(item);setQuery(item.user_id);setRole(item.role);setError("");}}><strong>{item.display_name || "Name unavailable"}</strong><small>{item.email}</small></button><Badge>{item.status}</Badge></div>)}
+        {directory.cursor && <Button variant="secondary" disabled={directory.loading} onClick={() => void directory.load(directory.cursor!)}>Load more people</Button>}
+      </section>
       <Failure error={error} retry={() => void lookup()} />
       {person && (
         <section className="panel">
+          <AdminPhoto url={person.photo_url} name={person.display_name} userID={person.user_id} />
           <h2>{person.display_name}</h2>
           <p>{person.email}</p>
+          <p>{person.phone || "Phone not provided"} · {person.gender || "Gender not provided"}</p>
           <Badge>{person.status}</Badge>
           <p>
             {person.user_id} · {person.role} · {person.occupation}
@@ -265,6 +320,14 @@ interface Group {
   departure_start: string;
   members: {
     user_id: string;
+    display_name: string;
+    email: string;
+    photo_url?: string | null;
+    occupation: string;
+    phone?: string | null;
+    gender?: string | null;
+    status: string;
+    role: string;
     readiness_confirmed: boolean;
     is_here: boolean;
     finished: boolean;
@@ -272,6 +335,7 @@ interface Group {
 }
 export function AdminRides() {
   const owner = useSession((s) => s.account?.user_id);
+  const directory = useAdminPages<Group>("groups", owner);
   const [id, setID] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const {
@@ -317,7 +381,7 @@ export function AdminRides() {
     <>
       <PageHead
         title="Journey groups."
-        subtitle="Inspect a group using its recorded ID"
+        subtitle="Browse journeys and review their members and conversations"
       />
       <form
         className="panel"
@@ -338,6 +402,14 @@ export function AdminRides() {
         </Field>
         <Button>Open group</Button>
       </form>
+      <Failure error={directory.error} retry={() => void directory.load()} />
+      <section className="panel admin-directory">
+        <div className="admin-directory-heading"><h2>All journey groups</h2><Button variant="secondary" disabled={directory.loading} onClick={() => void directory.load()}>Refresh</Button></div>
+        {directory.rows === null && directory.loading && <PixelStatus state="loading" label="Loading groups" />}
+        {directory.rows?.length === 0 && <p>No journey groups yet.</p>}
+        {directory.rows?.map(item => <div className="admin-directory-row" key={item.group_id}><span className="admin-group-photos">{item.members.slice(0, 4).map(member => <AdminPhoto key={member.user_id} url={member.photo_url} name={member.display_name} userID={member.user_id}/>)}</span><button type="button" className="admin-directory-select" onClick={() => {setID(item.group_id);setSelected(item.group_id);setFailure("");}}><strong>{item.pickup_summary} → {item.drop_summary}</strong><small>{new Date(item.departure_start).toLocaleString()} · {item.members.length} members</small></button><Badge>{item.status}</Badge></div>)}
+        {directory.cursor && <Button variant="secondary" disabled={directory.loading} onClick={() => void directory.load(directory.cursor!)}>Load more groups</Button>}
+      </section>
       <Failure error={failure || error} retry={() => void load()} />
       {group && (
         <section className="panel">
@@ -346,18 +418,9 @@ export function AdminRides() {
             {group.pickup_summary} → {group.drop_summary}
           </h2>
           <p>{new Date(group.departure_start).toLocaleString()}</p>
-          {group.members.map((member) => (
-            <p key={member.user_id}>
-              {member.user_id} ·{" "}
-              {member.finished
-                ? "Finished"
-                : member.is_here
-                  ? "At pickup"
-                  : member.readiness_confirmed
-                    ? "Confirmed"
-                    : "Awaiting confirmation"}
-            </p>
-          ))}
+          <h3>Members</h3>
+          {group.members.map(member => <div className="admin-directory-row admin-member" key={member.user_id}><AdminPhoto url={member.photo_url} name={member.display_name} userID={member.user_id}/><span><strong>{member.display_name || "Name unavailable"}</strong><small>{member.email || "Email unavailable"} · {member.occupation || "Occupation not provided"} · {member.role || "Member"}</small><small>{member.phone || "Phone not provided"} · {member.gender || "Gender not provided"}</small><small>{member.finished ? "Finished" : member.is_here ? "At pickup" : member.readiness_confirmed ? "Confirmed" : "Awaiting confirmation"} · {member.status}</small></span></div>)}
+          <AdminGroupChat key={`${owner}:${group.group_id}`} group={group} owner={owner} />
           {!["completed", "cancelled", "expired"].includes(group.status) && (
             <>
               <Field label="Cancellation review note">
@@ -401,6 +464,29 @@ export function AdminRides() {
       </Modal>
     </>
   );
+}
+interface AdminMessage { message_id: string; user_display_name: string; content: string; created_at: string; is_mine: boolean }
+function AdminGroupChat({group, owner}: {group: Group; owner?: string}) {
+  const chat = useAdminPages<AdminMessage>("group-chat", owner, group.group_id);
+  const [draft, setDraft] = useState(""); const [error, setError] = useState(""); const [busy, setBusy] = useState(false);
+  const sending = useRef(false); const clientID = useRef<string | null>(null);
+  async function send(event: React.FormEvent) {
+    event.preventDefault(); if (sending.current || !draft.trim()) return;
+    sending.current = true; setBusy(true); setError("");
+    const content = draft.trim(); const id = clientID.current ?? crypto.randomUUID(); clientID.current = id;
+    try { await adminRequest("send-group-chat", "POST", {content, client_message_id:id}, {group_id:group.group_id});
+      if (owner === useSession.getState().account?.user_id) { setDraft(""); clientID.current = null; await chat.load(); }
+    } catch (problem) { if (owner === useSession.getState().account?.user_id) setError(friendlyError(problem)); }
+    finally { sending.current = false; if (owner === useSession.getState().account?.user_id) setBusy(false); }
+  }
+  return <section className="admin-chat"><div className="admin-directory-heading"><h3>Group conversation</h3><Button variant="secondary" disabled={chat.loading} onClick={() => void chat.load()}>Refresh</Button></div>
+    <p className="muted">Messages sent here are visible to group members as ORIX admin.</p>
+    <Failure error={chat.error} retry={() => void chat.load()} />
+    {chat.cursor && <Button variant="secondary" disabled={chat.loading} onClick={() => void chat.load(chat.cursor!)}>Load older messages</Button>}
+    <div className="admin-chat-messages">{chat.rows === null && chat.loading && <PixelStatus state="loading" label="Loading messages" />}{chat.rows?.length === 0 && <p>No messages yet.</p>}{chat.rows && [...chat.rows].reverse().map(message => <article className="admin-chat-message" key={message.message_id}><strong>{message.user_display_name}</strong><time>{new Date(message.created_at).toLocaleString()}</time><p>{message.content}</p></article>)}</div>
+    {!["completed", "cancelled", "expired"].includes(group.status) && <form onSubmit={send}><Field label="Message the group as an administrator"><textarea value={draft} maxLength={1000} disabled={busy} onChange={event => {setDraft(event.target.value); clientID.current = null;}} /></Field><Button disabled={busy || !draft.trim()}>{busy ? "Sending…" : "Send message"}</Button></form>}
+    <Failure error={error} retry={() => void send({preventDefault(){}} as React.FormEvent)} />
+  </section>;
 }
 interface Maintenance {
   maintenance_mode: boolean;

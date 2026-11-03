@@ -26,6 +26,8 @@ export default async function handler(
     value !== null && /^[A-Za-z0-9_-]{1,100}$/.test(value);
   const routes: Record<string, { method: string; path: string }> = {
     "set-version": { method: "PUT", path: "/api/v1/admin/app/version" },
+    people: { method: "GET", path: "/api/v1/admin/people" },
+    groups: { method: "GET", path: "/api/v1/admin/groups" },
     stats: { method: "GET", path: "/api/v1/admin/stats" },
     lookup: { method: "GET", path: "/api/v1/admin/users/lookup" },
     logs: { method: "GET", path: "/api/v1/admin/logs" },
@@ -35,6 +37,7 @@ export default async function handler(
     "set-maintenance": { method: "POST", path: "/api/v1/admin/maintenance" },
     ...(validID(userID)
       ? {
+          avatar: { method: "GET", path: `/api/v1/admin/users/${encodeURIComponent(userID)}/avatar` },
           "user-role": {
             method: "PUT",
             path: `/api/v1/admin/users/${encodeURIComponent(userID)}/role`,
@@ -47,6 +50,8 @@ export default async function handler(
       : {}),
     ...(validID(groupID)
       ? {
+          "group-chat": { method: "GET", path: `/api/v1/admin/groups/${encodeURIComponent(groupID)}/chat` },
+          "send-group-chat": { method: "POST", path: `/api/v1/admin/groups/${encodeURIComponent(groupID)}/chat` },
           group: {
             method: "GET",
             path: `/api/v1/admin/groups/${encodeURIComponent(groupID)}`,
@@ -148,6 +153,7 @@ export default async function handler(
     }
     let path = route.path;
     if (
+      action === "people" || action === "groups" || action === "group-chat" ||
       action === "reports" ||
       action === "support-tickets" ||
       action === "logs"
@@ -180,11 +186,12 @@ export default async function handler(
       redirect: "error",
       signal: AbortSignal.timeout(30000),
     });
-    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Content-Type", action === "avatar" && response.ok ? (response.headers.get("content-type") || "application/octet-stream") : "application/json");
     const nextCursor = response.headers.get("X-Next-Cursor");
     if (nextCursor) res.setHeader("X-Next-Cursor", nextCursor);
     res.writeHead(response.status);
-    res.end(await response.text());
+    if (action === "avatar" && response.ok) res.end(Buffer.from(await response.arrayBuffer()));
+    else res.end(await response.text());
   } catch {
     res.writeHead(502);
     res.end(

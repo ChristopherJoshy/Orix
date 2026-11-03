@@ -904,3 +904,13 @@ remains outstanding.
 actors, and the website displays the name and recorded action. Go and website
 builds passed; the backend was updated and its service is active. The live
 signed-in log still needs owner verification.
+
+2026-11-03 — Admin people and group directories, profile images and member
+information, and audited group chat access are implemented. Android prompt
+suppression is release-specific and release-setting reads retry. Go and website
+builds passed; signed-in chat, pagination and Android device flows need owner
+verification. Live public settings reported no published APK metadata; publish
+and confirm a release before expecting an APK download link.
+Production nginx permits up to 256 MB on /api/v1/admin/android-apk while keeping
+its normal 2 MB limit elsewhere. The owner needs to republish the APK because
+the live settings had no published release after the earlier upload attempt.

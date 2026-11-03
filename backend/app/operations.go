@@ -140,10 +140,18 @@ func (a *AuthDependencies) operations(action string) func(http.ResponseWriter, *
 // Admin responses deliberately use explicit projections. Operational access must
 // not expose Firebase credentials, push tokens or arbitrary Mongo document fields.
 type AdminGroupMember struct {
-	ID       string `json:"user_id" bson:"user_id"`
-	Ready    bool   `json:"readiness_confirmed" bson:"readiness_confirmed"`
-	Here     bool   `json:"is_here" bson:"is_here"`
-	Finished bool   `json:"finished" bson:"finished"`
+	Name       string  `json:"display_name" bson:"-"`
+	Email      string  `json:"email" bson:"-"`
+	Photo      *string `json:"photo_url" bson:"-"`
+	Occupation string  `json:"occupation" bson:"-"`
+	Phone      *string `json:"phone" bson:"-"`
+	Gender     *string `json:"gender" bson:"-"`
+	Status     string  `json:"status" bson:"-"`
+	Role       string  `json:"role" bson:"role"`
+	ID         string  `json:"user_id" bson:"user_id"`
+	Ready      bool    `json:"readiness_confirmed" bson:"readiness_confirmed"`
+	Here       bool    `json:"is_here" bson:"is_here"`
+	Finished   bool    `json:"finished" bson:"finished"`
 }
 
 type AdminGroupSummary struct {
@@ -204,6 +212,9 @@ func (m mongoUsers) AdminGroup(ctx context.Context, id string) (AdminGroupSummar
 	})).Decode(&group)
 	if group.Members == nil {
 		group.Members = []AdminGroupMember{}
+	}
+	if err == nil {
+		err = m.enrichMembers(ctx, group.Members)
 	}
 	return group, err
 }

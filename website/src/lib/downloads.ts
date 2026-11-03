@@ -3,6 +3,7 @@ export { adminRequest } from "./admin";
 import { apiOrigin, firebaseAuth } from "./session";
 import { onAuthStateChanged } from "firebase/auth";
 import { PublicError } from "./errors";
+import { fetchWithRetry } from "./retry";
 export interface DownloadSettings {
   android_prompt: boolean;
   play_store_url: string;
@@ -14,7 +15,7 @@ export interface DownloadSettings {
 export async function downloadSettings(
   signal?: AbortSignal,
 ): Promise<DownloadSettings> {
-  const response = await fetch(`${apiOrigin()}/api/v1/public/settings`, {
+  const response = await fetchWithRetry(`${apiOrigin()}/api/v1/public/settings`, {
     signal,
     credentials: "omit",
   });

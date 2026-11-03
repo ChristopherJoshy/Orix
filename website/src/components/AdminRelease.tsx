@@ -40,6 +40,7 @@ export function AdminRelease() {
         database.
       </p>
       {message && <p role="status">{message}</p>}
+      {settings && <p>Currently published: {settings.apk_version ? `version ${settings.apk_version}` : "No APK published"}</p>}
       <Button
         type="button"
         variant="secondary"

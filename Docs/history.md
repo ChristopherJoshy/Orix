@@ -1270,3 +1270,13 @@ production build passed. Authenticated production flows were not exercised.
 records and show them in the admin log. Website build and Go build passed; the
 backend service was updated and reported active. Authenticated activity-log
 verification was not performed.
+
+2026-11-03 — Added paginated administrator people and journey-group directories,
+profile photos and member details, plus audited administrator access to group
+conversations and idempotent admin messages. Improved the Android release prompt
+and retries. Go and website builds passed; authenticated group/chat and Android
+browser verification were not performed. The live public settings reported no
+published APK metadata at the time of the change.
+The production HTTPS proxy rejected APK uploads larger than 2 MB. Increased its
+limit to 256 MB only for the authenticated APK upload route, checked the nginx
+configuration and reloaded the service. No APK was published by this change.
