@@ -190,5 +190,7 @@ export function canEditJourney(status: MatchingStatus | null) {
   );
 }
 export function journeyTime(ride: Journey) {
-  return `${new Date(ride.departure_start).toLocaleString()} – ${new Date(ride.departure_end).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+  const start = new Date(ride.departure_start);
+  const time = { hour: "numeric", minute: "2-digit" } as const;
+  return `${start.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })} · ${start.toLocaleTimeString([], time)}–${new Date(ride.departure_end).toLocaleTimeString([], time)}`;
 }

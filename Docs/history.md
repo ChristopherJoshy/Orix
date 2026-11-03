@@ -1367,3 +1367,17 @@ composition, not authenticated screen/API verification. No production personas,
 backend integration, device map/permissions or broader regression checks ran.
 The broader verification hold remains. Other in-progress website edits are outside
 this mobile commit; no release artifact or version bump is part of this change.
+
+## 2026-11-03 — Compact web route and card typography
+
+Replaced large combined address headings with shared From/To rows and recoverable
+full-address disclosure across journey, group and lift views. Made card/section
+headings smaller, tightened mobile workspace spacing and date/time copy, and
+reduced journey-detail illustration size. Original pixel headings/logo/art and
+all full address values retained. Website only; unrelated Flutter work untouched.
+Executed website build and agent-browser component layout checks using long labels
+from the supplied screenshots: five widths (320–1440px), collapsed and expanded,
+plus 200% text/spacing overrides, without horizontal document overflow. Actual
+component was server-rendered into an isolated local harness; its Vite HMR socket
+reported sandbox EPERM but rendering succeeded. This does not verify signed-in
+screens or service flows. No production data was created and no auth bypass used.

@@ -992,3 +992,20 @@ composition, not authenticated screen/API verification. No production personas,
 backend integration, device map/permissions or broader regression checks ran.
 The broader verification hold remains. Other in-progress website edits are outside
 this mobile commit; no release artifact or version bump is part of this change.
+
+2026-11-03 — Web-only clutter pass prompted by journey screenshots. Added shared
+JourneyRoute with separate readable From/To names and an expandable full-address
+section, replacing giant address headings on dashboard/explore/history cards,
+journey details, group list/pickup plans and saved lift routes. All provider labels
+remain in semantic text; primary names use the first comma-separated segment.
+Reduced workspace panel heading scale/mobile heading, tabs and footer spacing;
+shortened journey date/time formatting and used the small route-art variant on
+journey detail. Map overlay labels ellipsize while full routes remain in the
+semantic route component and illustration accessible label.
+Website build passed. agent-browser isolated rendering of the actual route
+component with screenshot-length labels: collapsed/expanded at 320/390/768/1024/
+1440 widths, no horizontal overflow; 200% text sizing plus spacing overrides also
+fit. Mobile example card measured 383px; screenshots under /tmp/orix-route-*.
+This is layout verification, not authenticated page/API QA. Existing unrelated
+Flutter edits were left untouched. No app changes, production fixtures or auth
+bypass. Private screens remain unverified; not deployed by this change.

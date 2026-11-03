@@ -1,3 +1,4 @@
+import { JourneyRoute } from "../components/JourneyRoute";
 import {
   mergeMessages,
   isChatMessage,
@@ -101,13 +102,13 @@ export function Groups() {
         </section>
       ) : (
         groups?.map((group) => (
-          <section key={group.group_id} className="panel">
+          <section key={group.group_id} className="panel journey-card">
             <Badge>
               {group.members.length < 2 && group.status === "pending"
                 ? "Searching"
                 : group.status}
             </Badge>
-            <h2>{group.route_summary}</h2>
+            <JourneyRoute from={group.pickup_summary} to={group.drop_summary} />
             <p>
               {group.members.length}{" "}
               {group.members.length === 1 ? "person" : "people"} ·{" "}
@@ -445,9 +446,7 @@ export function GroupDetail() {
           />
           <h2>Pickup plan</h2>
           <p>{new Date(group.departure_start).toLocaleString()}</p>
-          <p>
-            {group.pickup_summary} → {group.drop_summary}
-          </p>
+          <JourneyRoute from={group.pickup_summary} to={group.drop_summary} />
           {waiting && group.members.length < 2 && (
             <p className="group-confirmation-note" role="status">
               Looking for your travel partners. You can confirm this group once

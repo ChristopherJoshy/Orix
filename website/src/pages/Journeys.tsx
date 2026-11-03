@@ -1,3 +1,4 @@
+import { JourneyRoute } from "../components/JourneyRoute";
 import { friendlyError } from "../lib/errors";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -36,14 +37,12 @@ import { Modal } from "../components/Modal";
 
 function JourneyCard({ ride }: { ride: Journey }) {
   return (
-    <section className="panel">
+    <section className="panel journey-card" aria-label="Journey">
       <Badge>
         {ride.status === "matched" ? "Group assigned" : ride.status}
       </Badge>
-      <h2>
-        {ride.pickup_label} → {ride.drop_label}
-      </h2>
-      <p>{journeyTime(ride)}</p>
+      <JourneyRoute from={ride.pickup_label} to={ride.drop_label} />
+      <p className="journey-time">{journeyTime(ride)}</p>
       <p>
         {ride.female_only ? "Women-only group" : "All eligible travellers"} ·{" "}
         {ride.allow_riders ? "Open to a lift" : "No lifts"}
@@ -576,13 +575,11 @@ export function RideDetail() {
         <PixelStatus state="loading" label="Opening journey" />
       ) : ride ? (
         <>
-          <RouteArt from={ride.pickup_label} to={ride.drop_label} />
-          <section className="panel">
+          <RouteArt small from={ride.pickup_label} to={ride.drop_label} />
+          <section className="panel journey-card">
             <Badge>{ride.status}</Badge>
-            <h2>
-              {ride.pickup_label} → {ride.drop_label}
-            </h2>
-            <p>{journeyTime(ride)}</p>
+            <JourneyRoute from={ride.pickup_label} to={ride.drop_label} />
+            <p className="journey-time">{journeyTime(ride)}</p>
             <p>
               {ride.female_only
                 ? "Women-only group"
