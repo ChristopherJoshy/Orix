@@ -1208,3 +1208,8 @@ fingerprints and signed-device login remain outstanding.
 and animated loading squares with a small generated grayscale Kerala sprite.
 Removed the slogan/skip action and enforced a two-second minimum independent of
 motion preferences. Website production build passed; no broader QA was run.
+
+2026-11-03 — Website onboarding now combines photo confirmation and advancing
+into one explicit button after a successful upload or existing profile photo.
+Removed the separate checkbox that blocked Continue, retained the server-required
+face confirmation, and blocked submission during upload. Website build passed.

@@ -204,6 +204,7 @@ export function Onboarding({ embedded = false }: { embedded?: boolean }) {
       <form
         onSubmit={(event) => {
           event.preventDefault();
+          if (busy) return;
           setError("");
           if (
             step === 0 &&
@@ -212,9 +213,12 @@ export function Onboarding({ embedded = false }: { embedded?: boolean }) {
             setError("Enter your phone number with country code.");
             return;
           }
-          if (step === 1 && (!hasPhoto || !photoClear)) {
-            setError("Add or confirm a clear profile photo.");
-            return;
+          if (step === 1) {
+            if (!hasPhoto) {
+              setError("Upload a clear profile photo before continuing.");
+              return;
+            }
+            setPhotoClear(true);
           }
           if (step === 3) {
             void finish();
@@ -311,15 +315,10 @@ export function Onboarding({ embedded = false }: { embedded?: boolean }) {
                 label={busy ? "Uploading photo" : "Photo uploaded"}
               />
             )}
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                disabled={!hasPhoto || busy}
-                checked={photoClear}
-                onChange={(e) => setPhotoClear(e.target.checked)}
-              />
-              <span>My profile photo clearly shows my face</span>
-            </label>
+            <p className="muted">
+              By selecting “Confirm photo and continue”, you confirm that this
+              photo clearly shows your face.
+            </p>
           </>
         )}
         {step === 2 && (
@@ -437,8 +436,22 @@ export function Onboarding({ embedded = false }: { embedded?: boolean }) {
               Back
             </Button>
           )}
-          <Button disabled={busy || (step === 3 && (!accepted || !privacy))}>
-            {busy ? "Saving…" : step === 3 ? "Finish setup" : "Continue"}
+          <Button
+            disabled={
+              busy ||
+              (step === 1 && !hasPhoto) ||
+              (step === 3 && (!accepted || !privacy))
+            }
+          >
+            {busy
+              ? step === 1
+                ? "Uploading…"
+                : "Saving…"
+              : step === 1
+                ? "Confirm photo and continue"
+                : step === 3
+                  ? "Finish setup"
+                  : "Continue"}
           </Button>
         </div>
       </form>
