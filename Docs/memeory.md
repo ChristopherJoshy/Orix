@@ -914,3 +914,10 @@ and confirm a release before expecting an APK download link.
 Production nginx permits up to 256 MB on /api/v1/admin/android-apk while keeping
 its normal 2 MB limit elsewhere. The owner needs to republish the APK because
 the live settings had no published release after the earlier upload attempt.
+
+2026-11-03 — APK upload previously reached 422 near the 15-second server
+ReadTimeout. The server now permits the bounded five-minute upload window;
+release success requires matching version/hash from the public endpoint. The
+admin panel shows visible progress and a confirmed success card. Workspace
+header/sidebar text overflow is constrained. Builds passed; owner should retry
+publishing a real signed APK and confirm the public settings/download.

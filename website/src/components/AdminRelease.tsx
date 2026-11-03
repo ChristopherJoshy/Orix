@@ -2,6 +2,7 @@ import { friendlyError } from "../lib/errors";
 import { useEffect, useState } from "react";
 import { Button, Field, Toggle } from "./ui";
 import { PixelStatus } from "./PixelStatus";
+import { apiOrigin } from "../lib/session";
 import {
   adminRequest,
   downloadSettings,
@@ -39,7 +40,7 @@ export function AdminRelease() {
         Play. A successful replacement removes the previous file from the
         database.
       </p>
-      {message && <p role="status">{message}</p>}
+      {message && <p role={published ? "status" : "alert"}>{message}</p>}
       {settings && <p>Currently published: {settings.apk_version ? `version ${settings.apk_version}` : "No APK published"}</p>}
       <Button
         type="button"
@@ -111,11 +112,10 @@ export function AdminRelease() {
           setPublished(false);
           setMessage("Preparing upload…");
           try {
-            setSettings(await uploadAPK(file, version, setPercent));
+            const confirmed = await uploadAPK(file, version, setPercent);
+            setSettings(confirmed);
             setPublished(true);
-            setMessage(
-              "Release published. Previous APK cleanup has been scheduled.",
-            );
+            setMessage(`Version ${confirmed.apk_version} is live and ready to download.`);
           } catch (error) {
             setMessage(friendlyError(error));
           } finally {
@@ -157,17 +157,11 @@ export function AdminRelease() {
         {busy && (
           <>
             <PixelStatus state="uploading" label="Uploading APK" />
-            <progress
-              max={100}
-              value={percent}
-              aria-label="APK upload progress"
-            />
-            <p>
-              {percent}% uploaded{percent === 99 ? " · Publishing…" : ""}
-            </p>
+            {percent >= 0 && <progress max={100} value={Math.max(0, percent)} aria-label="APK upload progress" />}
+            <p role="status">{percent < 0 ? "Checking APK integrity…" : percent === 0 ? "Authorizing upload…" : percent < 99 ? `${percent}% sent` : percent === 99 ? "Upload sent. Publishing and verifying…" : "Verifying published release…"}</p>
           </>
         )}
-        {published && <PixelStatus state="uploaded" label="APK published" />}
+        {published && <div className="release-success" role="status"><PixelStatus state="uploaded" label="APK published" /><strong>Published successfully</strong><p>Version {settings?.apk_version} is available to Android visitors.</p><a className="button secondary" href={`${apiOrigin()}/downloads/android.apk`}>Download published APK</a></div>}
         <Button disabled={busy || !file || !verified}>Publish APK</Button>
       </form>
     </section>

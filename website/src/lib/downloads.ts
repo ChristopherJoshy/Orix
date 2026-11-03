@@ -35,6 +35,7 @@ export async function uploadAPK(
     file.size > 256 * 1024 * 1024
   )
     throw new PublicError("Choose an APK smaller than 256 MB.");
+  progress(-1);
   const digest = await crypto.subtle.digest(
     "SHA-256",
     await file.arrayBuffer(),
@@ -44,6 +45,7 @@ export async function uploadAPK(
   ).join("");
   if (firebaseAuth.currentUser?.uid !== user.uid)
     throw new PublicError("Your account changed. Start the upload again.");
+  progress(0);
   const grant = await adminRequest<{ upload_ticket: string }>(
     "android-upload-ticket",
     "POST",
@@ -66,7 +68,7 @@ export async function uploadAPK(
       else resolve(result!);
     };
     request.open("PUT", `${apiOrigin()}/api/v1/admin/android-apk`);
-    request.timeout = 300000;
+    request.timeout = 330000;
     request.setRequestHeader("Authorization", `Bearer ${token}`);
     request.setRequestHeader("X-Upload-Ticket", grant.upload_ticket);
     request.setRequestHeader(
@@ -102,8 +104,13 @@ export async function uploadAPK(
         return;
       }
       try {
+        const result = JSON.parse(request.responseText) as DownloadSettings;
+        if (result.apk_sha256 !== sha256 || result.apk_version !== version) throw new Error();
         progress(100);
-        finish(undefined, JSON.parse(request.responseText) as DownloadSettings);
+        void downloadSettings().then(confirmed => {
+          if (confirmed.apk_sha256 !== sha256 || confirmed.apk_version !== version) throw new Error();
+          finish(undefined, confirmed);
+        }).catch(() => finish(new PublicError("The upload finished, but publication could not be confirmed. Refresh release settings before trying again.")));
       } catch {
         finish(
           new PublicError(

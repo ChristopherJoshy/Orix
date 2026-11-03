@@ -6566,3 +6566,10 @@ html[data-motion="off"] .pixel-state {
 .admin-chat-message time { display:block; font-size:.75rem; color:#666; margin-top:.25rem; }
 .admin-chat-message p { white-space:pre-wrap; margin:.6rem 0 0; }
 @media (max-width:600px) { .admin-directory-row { gap:.6rem; } .admin-group-photos { max-width:55px; } .admin-group-photos .admin-person-photo { width:25px; height:25px; } .admin-chat-messages { padding:.6rem; } }
+
+.workspace-body { min-width: 0; }
+.workspace-header > div { min-width: 0; }
+.workspace-caption { display: block; min-width: 0; white-space: normal; overflow-wrap: break-word; }
+.sidebar { overflow-x: hidden; }
+.release-success { border: 1px solid #222; padding: 1rem; margin: 1rem 0; background: #fff; }
+.release-success .button { margin-top: .5rem; }

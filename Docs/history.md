@@ -1280,3 +1280,10 @@ published APK metadata at the time of the change.
 The production HTTPS proxy rejected APK uploads larger than 2 MB. Increased its
 limit to 256 MB only for the authenticated APK upload route, checked the nginx
 configuration and reloaded the service. No APK was published by this change.
+
+2026-11-03 — Fixed signed APK publication failing after about 15 seconds by
+extending the Go HTTP read/write window to match the bounded upload handler.
+The admin UI now separates integrity checking, upload, publication and verified
+success, with a download action only after a matching published hash is read
+back. Also constrained workspace header text within its flex layout. Website
+and Go builds passed. A real APK upload and responsive browser QA were not run.

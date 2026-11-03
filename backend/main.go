@@ -105,8 +105,8 @@ func run(logger *slog.Logger) error {
 	defer stop()
 	app := &http.Server{
 		Addr: address, Handler: server.New(server.Config{Places: places, DeletionWeb: deletionWeb, TrustedProxies: trustedProxies, AdminSecret: os.Getenv("ADMIN_API_SECRET"), Context: ctx, Auth: authDependencies, AllowedOrigins: server.ParseOrigins(os.Getenv("CORS_ORIGINS")), RequestsPerMinute: limit}, logger),
-		ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second,
-		WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 32 << 10,
+		ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 5 * time.Minute,
+		WriteTimeout: 5 * time.Minute, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 32 << 10,
 	}
 	failure := make(chan error, 1)
 	go func() { failure <- app.ListenAndServe() }()
