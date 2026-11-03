@@ -1524,3 +1524,12 @@ mobile Lighthouse: Performance98, SEO/Accessibility/BestPractices100; FCP0.9s,
 LCP2.1s, TBT0ms, CLS0.016. Single lab run, not compliance or ranking proof. Google
 manual indexing retry still failed; sitemap processed and live URL indexable.
 Actual Google index/canonical changes remain pending. No broader held QA resumed.
+
+2026-11-03 — Read-only goal follow-up: live homepage and six-entry XML sitemap
+return200; public hydration/canonical/noindex-header checks pass. Refreshed Google
+index view still reports unindexed duplicate with www canonical and last crawl
+22:48:14 IST, predating the applied redirect fixes. Actual Google inclusion/ranking
+remains unverified. Manual submission failure/external Google processing dependency
+has persisted through three goal turns; goal is blocked on recrawl/index update,
+not declared complete. No repeat indexing submission, code/design change or broad
+QA. Play publication remains owner-cancelled.

@@ -1158,3 +1158,17 @@ hydration. Manual Google indexing retry still failed; sitemap remains processed
 with six discovered pages. Wait for external crawl/index data rather than spam
 submissions. No broader held auth/account/backend/device QA; Play remains cancelled.
 See Docs/seo-audit.md for exact research, reports and remaining limits.
+
+2026-11-03 — Goal follow-up audit: working tree clean at pushed 2dd8d36 before
+this documentation update. Live homepage returned 200 with the public hydration
+marker, apex canonical and no noindex response header; live sitemap returned 200
+and six valid entries. Connected Chrome's Google index report still says the
+homepage is not indexed (duplicate; www selected), with last crawl 22:48:14 IST,
+before the canonical-host fixes. The latest live eligibility test remains positive,
+but manual submission has repeatedly failed. No additional unchanged-URL indexing
+submission was made during this audit. Engineering changes remain live (last mobile
+lab Performance98 / SEO100); actual index inclusion and generic-query visibility
+are not achieved. After the same Google-processing dependency persisted across
+three goal turns, mark the goal blocked pending Google's recrawl/index update.
+Play publication remains explicitly cancelled by the owner; do not revive it from
+the older saved goal text. No new design/code changes or broader held QA.
