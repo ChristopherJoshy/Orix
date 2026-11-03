@@ -1178,3 +1178,7 @@ not bind a socket; the approved retry passed. No production data was used.
 2026-11-03 — Reviewed the current local landing at 320 and 1440 pixels with an
 isolated browser; no horizontal overflow at either width. Isolated MongoDB and
 Firebase Auth emulators were not available, so multi-account tests did not run.
+2026-11-03 — Reopened the existing Android emulator, built and installed the
+current debug APK using JDK 21, and visually confirmed the Google sign-in screen.
+The default Java 25 build failed on Gradle compatibility before the successful
+JDK 21 build. No account sign-in or production-database fixture was performed.

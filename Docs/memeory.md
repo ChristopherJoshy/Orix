@@ -800,3 +800,8 @@ Firebase/FCM delivery, provider services, release publication or deployed flows.
 at both sizes. The isolated MongoDB and Firebase Auth emulator services were not
 available in this environment; no production database or authenticated account
 was used. This check does not cover authenticated or device-specific layouts.
+2026-11-03 — Reopened Pixel_10_Pro without wiping data, built the current Android
+debug APK with the existing temporary JDK 21, installed it and observed the
+Google-only sign-in screen. The first Flutter build selected Java 25 and failed
+against Gradle 8.14; direct Gradle with JDK 21 succeeded. No sign-in or production
+database operation was performed, and no API was started for the emulator.
