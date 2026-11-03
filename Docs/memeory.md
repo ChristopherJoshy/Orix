@@ -869,3 +869,13 @@ bounded by default; metadata and long headings wrap on narrow screens. Missing
 assets no longer rewrite to HTML, entry documents revalidate, and stale Vite
 chunk failures reload at most once per minute. Website build passed. A complete
 authenticated screen-by-screen responsive audit has not been performed.
+
+2026-11-03 — Owner explicitly authorized clearing production user accounts and
+activity while retaining configuration and APK releases. Paused the API, deleted
+user-data documents from the allowlisted collections, checked empty user/activity
+collections, and restarted it. Indexes were retained; Firebase identities were
+not deleted. Operational worker health records regenerate normally.
+Added permission-based current-city lookup via private Geoapify reverse geocoding
+without location-history persistence, replacing the fixed city. Header/sidebar
+now reuse the authenticated upload/Google photo loader with retry states. Website
+build and Go race suite passed.

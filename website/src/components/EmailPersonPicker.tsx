@@ -3,7 +3,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { apiOrigin, firebaseAuth, useSession } from "../lib/session";
 import { searchContacts, type TravelContact } from "../lib/safety";
 import { PixelMark } from "./PixelArt";
-function ContactPhoto({ person }: { person: TravelContact }) {
+export function ContactPhoto({ person }: { person: TravelContact }) {
   const identity = useSession((s) => s.account?.user_id);
   const [source, setSource] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);

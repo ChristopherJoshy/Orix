@@ -6498,6 +6498,11 @@ html[data-motion="off"] .pixel-state {
 .group-chat-keyboard { grid-column: 1 / -1; color: #666; font-size: .7rem; }
 .group-confirmation-note { padding: 16px; background: #f2f2f2; line-height: 1.7; }
 .notification-brand { width: 24px; height: 24px; flex: 0 0 24px; }
+.city-location { border: 0; background: transparent; font: inherit; font-size: .75rem; color: var(--muted); padding: 8px 0; max-width: 24ch; overflow-wrap: anywhere; text-align: left; }
+.account-photo { display: inline-flex; width: 40px; height: 40px; flex: 0 0 40px; overflow: hidden; align-items: center; justify-content: center; }
+.account-photo.compact { width: 32px; height: 32px; }
+.account-photo img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1); }
+.account-photo .photo-retry, .account-photo .photo-unavailable { font-size: .6rem; max-width: 100%; padding: 0; }
 .inbox-notice { min-width: 0; }
 .inbox-notice-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
 .inbox-notice-meta > time { margin-left: auto; font-size: .75rem; }

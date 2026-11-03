@@ -28,7 +28,9 @@ import {
   LogOut,
 } from "lucide-react";
 import { useStore } from "../lib/store";
-import { Avatar, PixelMark } from "./PixelArt";
+import { PixelMark } from "./PixelArt";
+import { ContactPhoto } from "./EmailPersonPicker";
+import { CurrentCity } from "./CurrentCity";
 import { Logo } from "./ui";
 const userNav = [
   { to: "/app", label: "Your space", icon: Home, end: true },
@@ -55,8 +57,10 @@ export default function Layout({ admin = false }: { admin?: boolean }) {
     "/notifications?limit=1&unread_only=true",
   );
   const profile = {
+    userId: account?.user_id ?? "",
     name: account?.display_name ?? "",
     email: account?.email ?? "",
+    photoUrl: account?.photo_url,
   };
   const signOut = () => {
     void signOutAccount().catch(() =>
@@ -206,7 +210,12 @@ export default function Layout({ admin = false }: { admin?: boolean }) {
           )}
           <div className="sidebar-profile">
             <Link to="/app/profile">
-              <Avatar name={profile.name} />
+              <span className="account-photo">
+                <ContactPhoto
+                  key={`${profile.userId}:${profile.photoUrl}`}
+                  person={profile}
+                />
+              </span>
               <span>
                 <strong>{profile.name}</strong>
                 <small>Signed in</small>
@@ -246,10 +255,7 @@ export default function Layout({ admin = false }: { admin?: boolean }) {
             </span>
           </div>
           <div>
-            <span className="city-chip">
-              <span className="tiny-pixel" />
-              Kochi
-            </span>
+            <CurrentCity />
 
             <Link
               className="icon-button notification-link"
@@ -260,7 +266,12 @@ export default function Layout({ admin = false }: { admin?: boolean }) {
               {unread > 0 && <i />}
             </Link>
             <Link to="/app/profile" aria-label="Your profile">
-              <Avatar name={profile.name} size={32} />
+              <span className="account-photo compact">
+                <ContactPhoto
+                  key={`${profile.userId}:${profile.photoUrl}`}
+                  person={profile}
+                />
+              </span>
             </Link>
           </div>
         </header>

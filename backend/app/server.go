@@ -131,6 +131,7 @@ func New(config Config, logger *slog.Logger) http.Handler {
 	mux.HandleFunc("PUT /api/v1/admin/android-apk", config.Auth.authenticated(config.Auth.uploadAPK))
 	mux.HandleFunc("POST /api/v1/groups/{group_id}/reject", config.Auth.authenticated(config.Auth.rejectGroup))
 	mux.HandleFunc("GET /api/v1/places/search", config.Auth.authenticated(config.Places.handler))
+	mux.HandleFunc("POST /api/v1/places/city", config.Auth.authenticated(config.Places.city))
 	registerDeletionWeb(mux, config.DeletionWeb)
 	mux.HandleFunc("GET /readyz", config.Auth.readiness)
 	mux.HandleFunc("GET /api/v1/admin/users/lookup", config.Auth.admin(config.AdminSecret, config.Auth.adminRead("lookup")))
