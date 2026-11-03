@@ -57,16 +57,16 @@ class OrixPage extends StatelessWidget {
             constraints: BoxConstraints(maxWidth: maxWidth),
             child: ListView(
               padding: EdgeInsets.fromLTRB(
-                constraints.maxWidth < 360 ? 16 : 24,
-                24,
-                constraints.maxWidth < 360 ? 16 : 24,
+                constraints.maxWidth < 600 ? 20 : 32,
+                16,
+                constraints.maxWidth < 600 ? 20 : 32,
                 32,
               ),
               children: [
                 Text(title, style: Theme.of(context).textTheme.headlineLarge),
                 if (description != null)
                   Padding(
-                    padding: const EdgeInsets.only(top: 12),
+                    padding: const EdgeInsets.only(top: 8),
                     child: Text(
                       description!,
                       style: const TextStyle(
@@ -75,7 +75,7 @@ class OrixPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 24),
                 ...children,
               ],
             ),
@@ -110,7 +110,7 @@ class PixelSection extends StatelessWidget {
   const PixelSection({super.key, this.title, required this.child});
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 24),
+    padding: const EdgeInsets.only(bottom: 20),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -119,7 +119,7 @@ class PixelSection extends StatelessWidget {
           const SizedBox(height: 12),
         ],
         Card(
-          child: Padding(padding: const EdgeInsets.all(20), child: child),
+          child: Padding(padding: const EdgeInsets.all(16), child: child),
         ),
       ],
     ),
@@ -324,14 +324,17 @@ class _ScenePainter extends CustomPainter {
       }
       return;
     }
-    for (var i = 0.0; i < 10; i++) rect(8 + i * 11, 61, 7, 2, pale);
+    for (var i = 0.0; i < 10; i++) {
+      rect(8 + i * 11, 61, 7, 2, pale);
+    }
     switch (scene) {
       case PixelScene.searching:
         person(12, 27, gray);
         person(94, 27, gray);
         final q = (time * 4).floor() % 4;
-        for (var i = 0.0; i < 4; i++)
+        for (var i = 0.0; i < 4; i++) {
           rect(38 + i * 11, 48, 4, 4, i == q ? ink : pale);
+        }
         rect(53, 15, 14, 2);
         rect(51, 17, 2, 12);
         rect(67, 17, 2, 12);
@@ -368,24 +371,28 @@ class _ScenePainter extends CustomPainter {
         person(10, 28, gray);
       case PixelScene.cancelled:
         person(12, 27, gray);
-        for (var i = 0.0; i < (6 * (1 - t)).ceil(); i++)
+        for (var i = 0.0; i < (6 * (1 - t)).ceil(); i++) {
           rect(34 + i * 9, 48, 5, 2, gray);
+        }
         for (var i = 0.0; i < 5; i++) {
           rect(73 + i * 4, 25 + i * 4, 4, 4);
           rect(89 - i * 4, 25 + i * 4, 4, 4);
         }
       case PixelScene.travelling:
         car(43, 32 + (time * 8).floor() % 2);
-        for (var i = 0.0; i < 5; i++)
+        for (var i = 0.0; i < 5; i++) {
           rect(((i * 27 - time * 50) % 130) - 5, 56, 12, 2, gray);
+        }
         rect(14, 37, 14, 2, pale);
         rect(8, 43, 17, 2, pale);
       case PixelScene.completed:
         person(26, 27);
         rect(85, 16, 3, 44);
-        for (var x = 0.0; x < 4; x++)
-          for (var y = 0.0; y < 3; y++)
+        for (var x = 0.0; x < 4; x++) {
+          for (var y = 0.0; y < 3; y++) {
             rect(88 + x * 4, 16 + y * 4, 4, 4, (x + y) % 2 == 0 ? ink : pale);
+          }
+        }
         if (time > .25) check(52, 26);
       case PixelScene.reportSent:
         rect(36, 30 - 10 * t, 46, 26);
@@ -573,27 +580,33 @@ class OrixNavigation extends StatelessWidget {
   final int selected;
   const OrixNavigation({super.key, required this.selected});
   @override
-  Widget build(BuildContext context) => NavigationBar(
-    selectedIndex: selected,
-    onDestinationSelected: (index) {
-      if (index != selected) navigateOrix(context, _navigationPaths[index]);
-    },
-    destinations: const [
-      NavigationDestination(
-        icon: Icon(Icons.home_outlined),
-        selectedIcon: Icon(Icons.home),
-        label: 'Home',
-      ),
-      NavigationDestination(
-        icon: Icon(Icons.route_outlined),
-        label: 'Journeys',
-      ),
-      NavigationDestination(
-        icon: Icon(Icons.chat_bubble_outline),
-        label: 'Groups',
-      ),
-      NavigationDestination(icon: Icon(Icons.person_outline), label: 'You'),
-    ],
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: const BoxDecoration(
+      border: Border(top: BorderSide(color: AppColors.outline)),
+    ),
+    child: NavigationBar(
+      height: 72,
+      selectedIndex: selected,
+      onDestinationSelected: (index) {
+        if (index != selected) navigateOrix(context, _navigationPaths[index]);
+      },
+      destinations: const [
+        NavigationDestination(
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home),
+          label: 'Home',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.route_outlined),
+          label: 'Journeys',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.chat_bubble_outline),
+          label: 'Groups',
+        ),
+        NavigationDestination(icon: Icon(Icons.person_outline), label: 'You'),
+      ],
+    ),
   );
 }
 

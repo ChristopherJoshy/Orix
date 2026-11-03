@@ -1,6 +1,7 @@
 /// Public travel dashboard backed by current matching/group state.
 library;
 
+import 'package:orix/core/widgets/journey_route.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -82,8 +83,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         if (includeGroups) groups.fetchActiveGroups(),
         if (includeGroups) notifications.fetchNotifications(),
       ]);
-      if (mounted && rides.matchingStatus?.canSearch == true)
+      if (mounted && rides.matchingStatus?.canSearch == true) {
         await rides.fetchSuggestions();
+      }
     } finally {
       _refreshing = false;
     }
@@ -219,18 +221,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               constraints: const BoxConstraints(maxWidth: 920),
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                 children: [
                   Text(
                     name == null || name.isEmpty ? 'Where to?' : 'Hey, $name.',
                     style: Theme.of(context).textTheme.headlineLarge,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   const Text(
                     'Your route. Your people.',
                     style: TextStyle(color: AppColors.textSecondary),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 24),
                   if (!online)
                     const Padding(
                       padding: EdgeInsets.only(bottom: 24),
@@ -266,7 +268,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         ],
                       ),
                     ),
-                  if (rides.isLoading) const PixelLoader(),
+                  if (rides.isLoading && rides.matchingStatus == null)
+                    const PixelLoader(),
                   if (rides.error != null) Text(rides.error!),
                   if (groups.activeGroups.isNotEmpty)
                     PixelSection(
@@ -274,16 +277,30 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       child: Column(
                         children: [
                           for (final group in groups.activeGroups)
-                            ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: const Icon(Icons.people_outline),
-                              title: Text(group.routeSummary),
-                              subtitle: Text(
-                                '${group.members.length} people · ${group.status.replaceAll('_', ' ')}',
-                              ),
-                              trailing: const Icon(Icons.chevron_right),
-                              onTap: () => context.push(
-                                '/groups/${Uri.encodeComponent(group.groupId)}',
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  JourneyRoute(
+                                    pickup: group.pickupSummary,
+                                    destination: group.dropSummary,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '${group.members.length} ${group.members.length == 1 ? 'person' : 'people'} · ${group.status.replaceAll('_', ' ')}',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  OutlinedButton(
+                                    onPressed: () => context.push(
+                                      '/groups/${Uri.encodeComponent(group.groupId)}',
+                                    ),
+                                    child: const Text('Open group'),
+                                  ),
+                                ],
                               ),
                             ),
                         ],

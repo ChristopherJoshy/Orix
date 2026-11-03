@@ -1,9 +1,11 @@
+import 'package:orix/core/widgets/journey_route.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:orix/core/widgets/pixel_ui.dart';
 import 'package:orix/core/providers/ride_provider.dart';
 import 'package:orix/core/theme/app_theme.dart';
+import 'package:intl/intl.dart';
 
 class RideHistoryScreen extends StatefulWidget {
   const RideHistoryScreen({super.key});
@@ -16,8 +18,9 @@ class _RideHistoryScreenState extends State<RideHistoryScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted)
+      if (mounted) {
         context.read<RideProvider>().fetchRideHistory(includeHistory: true);
+      }
     });
   }
 
@@ -67,13 +70,14 @@ class _RideHistoryScreenState extends State<RideHistoryScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Text(
-                  '${ride.pickupLabel} → ${ride.dropLabel}',
-                  style: Theme.of(context).textTheme.titleLarge,
+                JourneyRoute(
+                  pickup: ride.pickupLabel,
+                  destination: ride.dropLabel,
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  '${ride.date} · ${ride.timeWindow.start} – ${ride.timeWindow.end}',
+                  '${DateTime.tryParse(ride.date) == null ? ride.date : DateFormat('EEE, d MMM').format(DateTime.parse(ride.date))} · ${ride.timeWindow.start} – ${ride.timeWindow.end}',
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
                 if (ride.groupId != null) ...[
                   const SizedBox(height: 20),

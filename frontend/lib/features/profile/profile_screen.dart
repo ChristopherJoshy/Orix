@@ -12,8 +12,7 @@ import 'package:orix/core/widgets/custom_alert_dialog.dart';
 import 'package:orix/core/widgets/pixel_ui.dart';
 import 'help_support/blocked_users_screen.dart';
 import 'help_support/report_history_screen.dart';
-import 'help_support/email_person_picker.dart';
-import 'help_support/support_service.dart';
+import 'package:orix/core/widgets/account_photo.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -36,13 +35,29 @@ class ProfileScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              PersonIdentity(
-                person: UserSearchResult(
-                  userId: user?.userId ?? '',
-                  displayName: user?.displayName ?? '',
-                  email: user?.email ?? '',
-                  photoUrl: user?.photoUrl,
-                ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AccountPhoto(url: user?.photoUrl, size: 48),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user?.displayName ?? 'Your profile',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          user?.email ?? '',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: AppColors.textSecondary),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
               OutlinedButton(

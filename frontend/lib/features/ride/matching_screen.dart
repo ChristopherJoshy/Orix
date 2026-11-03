@@ -1,6 +1,7 @@
 /// Own-route matching and compatible-group selection for every travel mode.
 library;
 
+import 'package:orix/core/widgets/journey_route.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -145,8 +146,9 @@ class TripMatchingPanel extends StatelessWidget {
         ],
       ),
     );
-    if (accepted != true || !context.mounted || status.requestId == null)
+    if (accepted != true || !context.mounted || status.requestId == null) {
       return;
+    }
     final rides = context.read<RideProvider>();
     bool success;
     if (status.groupId != null) {
@@ -188,9 +190,10 @@ class TripMatchingPanel extends StatelessWidget {
     builder: (context, rides, _) {
       final current = rides.matchingStatus;
       final request = current?.request;
-      if (current == null && rides.isLoading)
+      if (current == null && rides.isLoading) {
         return const Center(child: PixelLoader());
-      if (current?.hasActiveRequest != true)
+      }
+      if (current?.hasActiveRequest != true) {
         return PixelSection(
           title: 'No active request',
           child: Column(
@@ -209,36 +212,41 @@ class TripMatchingPanel extends StatelessWidget {
             ],
           ),
         );
+      }
       final status = current!;
       final waiting = status.canSearch;
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           PixelSection(
-            title: waiting ? 'Finding your people.' : 'Your pool is ready.',
+            title: waiting ? 'Finding your people' : 'Your pool is ready',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                PixelAnimation(
-                  key: ValueKey(waiting),
-                  scene: waiting ? PixelScene.searching : PixelScene.found,
-                  label: waiting ? 'Finding a compatible pool' : 'Pool found',
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: PixelAnimation(
+                    size: 144,
+                    key: ValueKey(waiting),
+                    scene: waiting ? PixelScene.searching : PixelScene.found,
+                    label: waiting ? 'Finding a compatible pool' : 'Pool found',
+                  ),
                 ),
                 const SizedBox(height: 20),
-                Text(
-                  '${status.pickupLabel ?? 'Starting point'} → ${status.dropLabel ?? 'Destination'}',
-                  style: Theme.of(context).textTheme.titleLarge,
+                JourneyRoute(
+                  pickup: status.pickupLabel ?? 'Starting point',
+                  destination: status.dropLabel ?? 'Destination',
                 ),
                 const SizedBox(height: 12),
                 if (request?.departureStart != null &&
                     request?.departureEnd != null)
                   Text(
-                    '${DateFormat('EEE, d MMM · h:mm a').format(request!.departureStart!)} – ${DateFormat('h:mm a').format(request.departureEnd!)}',
+                    '${DateFormat('EEE, d MMM · h:mm a').format(request!.departureStart!.toLocal())} – ${DateFormat('h:mm a').format(request.departureEnd!.toLocal())}',
                   ),
                 const SizedBox(height: 16),
                 Text(
                   waiting
-                      ? 'No compatible pool yet. Matching continues while your request is active.'
+                      ? 'Still looking. We’ll keep matching while your request is active.'
                       : 'Open your group to confirm the pickup and coordinate your journey.',
                 ),
                 if (rides.error != null)
@@ -275,18 +283,29 @@ class TripMatchingPanel extends StatelessWidget {
             ),
           ),
           if (waiting)
-            const PixelSection(
-              title: 'A good fit means',
-              child: Text(
-                'Pickups within 300 m. The same destination. Compatible departure windows and safety preferences. Lift offers are included only when you opt in.',
+            const Padding(
+              padding: EdgeInsets.only(bottom: 20),
+              child: ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                childrenPadding: EdgeInsets.only(bottom: 12),
+                title: Text('How matching works'),
+                children: [
+                  Text(
+                    'Pickups within 300 m, the same destination, compatible departure windows and safety preferences. Lift offers are included only when you opt in.',
+                  ),
+                ],
               ),
             ),
           if (request != null)
-            TripRouteMap(
-              pickupLat: request.pickupLat,
-              pickupLng: request.pickupLng,
-              dropLat: request.dropLat,
-              dropLng: request.dropLng,
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: TripRouteMap(
+                height: 180,
+                pickupLat: request.pickupLat,
+                pickupLng: request.pickupLng,
+                dropLat: request.dropLat,
+                dropLng: request.dropLng,
+              ),
             ),
         ],
       );

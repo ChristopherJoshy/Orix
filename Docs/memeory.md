@@ -966,3 +966,29 @@ sidebar hidden/revealed/hidden, body starts at sidebar right edge (256px) when
 open at 1440px, no horizontal overflow. This is not authenticated UI verification.
 Real two-account chat, socket delivery latency, backend and device flows remain
 unverified; no production fixtures or auth bypass used. Not deployed in this turn.
+
+
+2026-11-03 — Mobile monochrome/pixel layout refinement
+
+Reduced shared heading sizes, card/list padding, doubled section margins and
+button padding while keeping 48dp minimum button targets. Bottom navigation now
+uses a black stepped selection indicator and explicit white selected icons.
+Home, matching, journeys, groups and journey detail use a shared From/To route
+component with two-line previews and expandable original full addresses; expansion
+resets when endpoints change. Journey detail has a short page heading. Account
+identity puts the name before email. Matching keeps its pixel animation at a
+smaller size, collapses explanatory copy, uses a shorter map and avoids the extra
+home loader during background refreshes. Matching timestamps render locally.
+
+Executed: scoped Flutter analysis of the nine changed library files plus the new
+layout test (no issues); flutter test --no-pub test/journey_layout_test.dart
+test/pixel_design_test.dart (5 passed); git diff --check passed. Initial analysis
+found existing brace lint infos in touched files, now resolved. Initial layout
+checks exposed test scroll timing/state setup issues, corrected before passing.
+Isolated layout checks covered 320x740, 390x844 and 740x390 at 100% and 200% text,
+full-address expansion and endpoint reset; loaded bundled fonts and inspected the
+390px rendered composition at /tmp/orix-journey-layout.png. This is a component
+composition, not authenticated screen/API verification. No production personas,
+backend integration, device map/permissions or broader regression checks ran.
+The broader verification hold remains. Other in-progress website edits are outside
+this mobile commit; no release artifact or version bump is part of this change.

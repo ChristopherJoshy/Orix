@@ -1,3 +1,4 @@
+import 'package:orix/core/widgets/journey_route.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -57,14 +58,19 @@ class _MyGroupScreenState extends State<MyGroupScreen> {
           ),
         for (final group in groups.activeGroups)
           PixelSection(
-            title: group.routeSummary,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  '${group.members.length} people · ${group.status.replaceAll('_', ' ')}',
+                  '${group.members.length} ${group.members.length == 1 ? 'person' : 'people'} · ${group.status.replaceAll('_', ' ')}',
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
+                JourneyRoute(
+                  pickup: group.pickupSummary,
+                  destination: group.dropSummary,
+                ),
+                const SizedBox(height: 16),
                 Wrap(
                   spacing: 12,
                   runSpacing: 12,

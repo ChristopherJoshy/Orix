@@ -3,6 +3,7 @@
 /// Shows group members, readiness confirmation, and navigation to chat.
 library;
 
+import 'package:orix/core/widgets/journey_route.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:orix/core/widgets/pixel_ui.dart';
@@ -41,8 +42,9 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
     // Start periodic refresh every 10 seconds to check for status changes
     _refreshTimer = Timer.periodic(const Duration(seconds: 10), (_) {
       if (GoRouter.of(context).routeInformationProvider.value.uri.path ==
-          '/groups/${widget.groupId}')
+          '/groups/${widget.groupId}') {
         _loadGroup();
+      }
     });
   }
 
@@ -122,7 +124,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
       _ => PixelScene.found,
     };
     return OrixPage(
-      title: group?.routeSummary ?? 'Your journey',
+      title: 'Your journey',
       description: group?.status.replaceAll('_', ' '),
       maxWidth: 820,
       actions: [
@@ -209,28 +211,10 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  'From',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
+                JourneyRoute(
+                  pickup: group.pickupSummary,
+                  destination: group.dropSummary,
                 ),
-                const SizedBox(height: 6),
-                Text(group.pickupSummary),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Icon(Icons.south, size: 16),
-                ),
-                const Text(
-                  'To',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(group.dropSummary),
                 if (group.roadPlan != null) ...[
                   const SizedBox(height: 20),
                   TripRouteMap(roadPlan: group.roadPlan),
@@ -338,8 +322,9 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
         ),
       ),
     );
-    if (accepted)
+    if (accepted) {
       unawaited(context.read<NotificationProvider>().fetchNotifications());
+    }
   }
 
   Future<void> _rejectGroup(RideGroup group) async {
@@ -447,7 +432,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
   }
 
   Widget? _buildActions(RideGroup group, GroupProvider provider) {
-    if (group.canConfirm)
+    if (group.canConfirm) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -470,6 +455,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
           ),
         ],
       );
+    }
     final busy = provider.isChangingGroup;
     final actions = <Widget>[
       if (group.canMarkHere)
@@ -549,8 +535,9 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
     if (accepted != true ||
         !mounted ||
         identity == null ||
-        api.authIdentity != identity)
+        api.authIdentity != identity) {
       return;
+    }
     try {
       final response = await api.put<Map<String, dynamic>>(
         '/users/${Uri.encodeComponent(member.userId)}/block',
@@ -567,7 +554,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
       );
       if (response.success) await _loadGroup();
     } catch (_) {
-      if (mounted && api.authIdentity == identity)
+      if (mounted && api.authIdentity == identity) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
@@ -575,6 +562,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
             ),
           ),
         );
+      }
     }
   }
 

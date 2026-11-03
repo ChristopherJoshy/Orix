@@ -59,25 +59,25 @@ class AppTextStyles {
   );
   static const headlineLarge = TextStyle(
     fontFamily: displayFamily,
-    fontSize: 34,
+    fontSize: 30,
     height: 1.15,
     fontWeight: FontWeight.w500,
   );
   static const headlineMedium = TextStyle(
     fontFamily: displayFamily,
-    fontSize: 30,
+    fontSize: 26,
     height: 1.18,
     fontWeight: FontWeight.w500,
   );
   static const headlineSmall = TextStyle(
     fontFamily: displayFamily,
-    fontSize: 26,
+    fontSize: 23,
     height: 1.2,
     fontWeight: FontWeight.w500,
   );
   static const titleLarge = TextStyle(
     fontFamily: displayFamily,
-    fontSize: 23,
+    fontSize: 20,
     height: 1.25,
     fontWeight: FontWeight.w500,
   );
@@ -162,11 +162,12 @@ class PixelBorder extends OutlinedBorder {
       getOuterPath(rect.deflate(side.width));
   @override
   void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
-    if (side.style == BorderStyle.solid && side.width > 0)
+    if (side.style == BorderStyle.solid && side.width > 0) {
       canvas.drawPath(
         getOuterPath(rect.deflate(side.width / 2)),
         side.toPaint(),
       );
+    }
   }
 }
 
@@ -197,7 +198,7 @@ class AppTheme {
     final buttons = ButtonStyle(
       minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
       padding: const WidgetStatePropertyAll(
-        EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+        EdgeInsets.symmetric(horizontal: 18, vertical: 12),
       ),
       shape: const WidgetStatePropertyAll(PixelBorder()),
       textStyle: const WidgetStatePropertyAll(AppTextStyles.labelLarge),
@@ -237,7 +238,7 @@ class AppTheme {
       ),
       cardTheme: const CardThemeData(
         elevation: 0,
-        margin: EdgeInsets.only(bottom: 16),
+        margin: EdgeInsets.zero,
         color: Colors.white,
         surfaceTintColor: Colors.transparent,
         shape: PixelBorder(side: BorderSide(color: AppColors.outline)),
@@ -297,7 +298,14 @@ class AppTheme {
       ),
       navigationBarTheme: const NavigationBarThemeData(
         backgroundColor: Colors.white,
-        indicatorColor: AppColors.surfaceVariant,
+        indicatorColor: ink,
+        iconTheme: WidgetStateProperty.fromMap({
+          WidgetState.selected: IconThemeData(color: Colors.white, size: 23),
+          WidgetState.any: IconThemeData(
+            color: AppColors.textSecondary,
+            size: 23,
+          ),
+        }),
         indicatorShape: PixelBorder(),
         labelTextStyle: WidgetStatePropertyAll(AppTextStyles.labelMedium),
         elevation: 0,
@@ -318,7 +326,7 @@ class AppTheme {
       dividerTheme: const DividerThemeData(
         color: AppColors.outline,
         thickness: 1,
-        space: 24,
+        space: 16,
       ),
       snackBarTheme: const SnackBarThemeData(
         backgroundColor: ink,
@@ -363,10 +371,14 @@ class AppTheme {
         linearTrackColor: AppColors.surfaceVariant,
       ),
       listTileTheme: const ListTileThemeData(
-        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+        titleTextStyle: AppTextStyles.titleSmall,
+        subtitleTextStyle: AppTextStyles.bodySmall,
+        minLeadingWidth: 24,
+        horizontalTitleGap: 12,
         iconColor: ink,
         textColor: ink,
-        minVerticalPadding: 12,
+        minVerticalPadding: 8,
       ),
       datePickerTheme: const DatePickerThemeData(
         shape: PixelBorder(),
