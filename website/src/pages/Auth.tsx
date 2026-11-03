@@ -115,7 +115,52 @@ export function Onboarding({ embedded = false }: { embedded?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [permission, setPermission] = useState("");
+  const [notificationsGranted, setNotificationsGranted] = useState(
+    () => "Notification" in window && Notification.permission === "granted",
+  );
+  const [locationGranted, setLocationGranted] = useState(false);
+  const [notificationPending, setNotificationPending] = useState(false);
+  const [locationPending, setLocationPending] = useState(false);
   const [tour, setTour] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    const statuses: PermissionStatus[] = [];
+    const syncNotifications = () => {
+      if (alive)
+        setNotificationsGranted(
+          "Notification" in window && Notification.permission === "granted",
+        );
+    };
+    syncNotifications();
+    for (const name of ["geolocation", "notifications"] as const) {
+      if (!navigator.permissions) continue;
+      void navigator.permissions
+        .query({ name })
+        .then((status) => {
+          if (!alive) return;
+          const update = () => {
+            if (!alive) return;
+            if (name === "geolocation")
+              setLocationGranted(status.state === "granted");
+            else syncNotifications();
+          };
+          status.onchange = update;
+          statuses.push(status);
+          update();
+        })
+        .catch(() => {
+          /* Some browsers expose only the native permission result. */
+        });
+    }
+    window.addEventListener("focus", syncNotifications);
+    return () => {
+      alive = false;
+      statuses.forEach((status) => {
+        status.onchange = null;
+      });
+      window.removeEventListener("focus", syncNotifications);
+    };
+  }, []);
   useEffect(
     () => () => {
       if (photo) URL.revokeObjectURL(photo);
@@ -339,6 +384,7 @@ export function Onboarding({ embedded = false }: { embedded?: boolean }) {
               <Button
                 variant="secondary"
                 type="button"
+                disabled={notificationsGranted || notificationPending}
                 onClick={async () => {
                   if (!("Notification" in window)) {
                     setPermission(
@@ -346,8 +392,10 @@ export function Onboarding({ embedded = false }: { embedded?: boolean }) {
                     );
                     return;
                   }
+                  setNotificationPending(true);
                   try {
                     const result = await Notification.requestPermission();
+                    setNotificationsGranted(result === "granted");
                     setPermission(
                       result === "granted"
                         ? "Permission enabled. After setup, enable this browser in Settings to receive alerts."
@@ -357,14 +405,21 @@ export function Onboarding({ embedded = false }: { embedded?: boolean }) {
                     setPermission(
                       "Notifications are unavailable. You can continue without them.",
                     );
+                  } finally {
+                    setNotificationPending(false);
                   }
                 }}
               >
-                Enable notifications
+                {notificationsGranted
+                  ? "Notifications enabled"
+                  : notificationPending
+                    ? "Requesting…"
+                    : "Enable notifications"}
               </Button>
               <Button
                 variant="secondary"
                 type="button"
+                disabled={locationGranted || locationPending}
                 onClick={() => {
                   if (!navigator.geolocation) {
                     setPermission(
@@ -372,17 +427,28 @@ export function Onboarding({ embedded = false }: { embedded?: boolean }) {
                     );
                     return;
                   }
+                  setLocationPending(true);
                   navigator.geolocation.getCurrentPosition(
-                    () => setPermission("Location permission enabled."),
-                    () =>
+                    () => {
+                      setLocationGranted(true);
+                      setLocationPending(false);
+                      setPermission("Location permission enabled.");
+                    },
+                    () => {
+                      setLocationPending(false);
                       setPermission(
                         "Location is off. You can select places manually.",
-                      ),
+                      );
+                    },
                     { timeout: 10000, maximumAge: 60000 },
                   );
                 }}
               >
-                Enable location
+                {locationGranted
+                  ? "Location enabled"
+                  : locationPending
+                    ? "Requesting…"
+                    : "Enable location"}
               </Button>
             </div>
             {permission && <p role="status">{permission}</p>}

@@ -846,3 +846,8 @@ motion preferences. Website production build passed; no broader QA was run.
 into one explicit button after a successful upload or existing profile photo.
 Removed the separate checkbox that blocked Continue, retained the server-required
 face confirmation, and blocked submission during upload. Website build passed.
+
+2026-11-03 — Onboarding permission buttons now show enabled labels and the
+shared disabled gray styling once granted. Existing browser permission state is
+read where supported and permission changes update the controls. Pending requests
+disable repeated clicks; denied requests stay retryable. Website build passed.
