@@ -208,3 +208,20 @@ The production HTTPS proxy must allow uploads up to 256 MB for the exact
 `/api/v1/admin/android-apk` endpoint. Keep the smaller general request limit on
 other routes and disable request buffering for this upload. Validate nginx's
 configuration before reloading it.
+
+
+## Authenticated server-operator APK publication
+
+When a normal web admin upload is unavailable, an operator already authenticated
+to the production server may run `publish-android-release` with the existing
+private server environment. It requires RELEASE_APPLY=true, RELEASE_DATABASE
+matching MONGODB_DATABASE, APP_ENV=production, no auth emulator, the existing
+admin secret, RELEASE_APK_PATH, RELEASE_VERSION and RELEASE_SHA256. It uses the
+verified existing bootstrap owner's Firebase identity and active admin record;
+it never creates a user, grants a role, mints a token or bypasses HTTP auth.
+The normal repository publication path rechecks the admin transactionally, pins
+the upload hash/size, checks the APK archive and writes publication audits. An
+additional audit identifies authenticated-server-operator publication requests.
+The command preserves the minimum app version, sets the current version and
+verifies matching published metadata. Verify the downloaded bytes and Android
+signing certificate separately. Do not record private configuration in docs.

@@ -62,8 +62,9 @@ class _NotificationPreferencesScreenState
         },
       );
     } catch (_) {
-      if (_valid(api, identity))
+      if (_valid(api, identity)) {
         setState(() => _error = 'Could not load preferences.');
+      }
     } finally {
       if (_valid(api, identity)) setState(() => _busy = false);
     }
@@ -99,8 +100,9 @@ class _NotificationPreferencesScreenState
         },
       );
     } catch (_) {
-      if (_valid(api, identity))
+      if (_valid(api, identity)) {
         setState(() => _error = 'Could not save preference.');
+      }
     } finally {
       if (_valid(api, identity)) setState(() => _busy = false);
     }
@@ -142,8 +144,8 @@ class _NotificationPreferencesScreenState
                   ),
                   (
                     'promotions',
-                    'Product updates',
-                    'Optional news and promotions',
+                    'A little nudge',
+                    'Optional Manglish reminders, up to every four hours during the day (IST)',
                   ),
                 ])
                   PixelToggle(

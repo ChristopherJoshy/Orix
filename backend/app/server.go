@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-const Version = "2.1.0"
+const Version = "2.1.2"
 
 type Config struct {
 	Places            *PlaceSearch
@@ -157,6 +157,8 @@ func New(config Config, logger *slog.Logger) http.Handler {
 	mux.HandleFunc("POST /api/v1/users/me/avatar", config.Auth.authenticated(config.Auth.uploadAvatar))
 	mux.HandleFunc("GET /api/v1/users/{user_id}/avatar", config.Auth.authenticated(config.Auth.getAvatar))
 	mux.HandleFunc("GET /api/v1/admin/jobs", config.Auth.admin(config.AdminSecret, config.Auth.operations("status")))
+	mux.HandleFunc("GET /api/v1/admin/engagement", config.Auth.admin(config.AdminSecret, config.Auth.engagementSettings))
+	mux.HandleFunc("PUT /api/v1/admin/engagement", config.Auth.admin(config.AdminSecret, config.Auth.engagementSettings))
 	mux.HandleFunc("GET /api/v1/admin/notifications/failed", config.Auth.admin(config.AdminSecret, config.Auth.operations("failed")))
 	mux.HandleFunc("POST /api/v1/admin/notifications/{event_id}/retry", config.Auth.admin(config.AdminSecret, config.Auth.operations("retry")))
 	mux.HandleFunc("DELETE /api/v1/users/me", config.Auth.deleteAccountEndpoint)

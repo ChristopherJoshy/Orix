@@ -165,6 +165,7 @@ func OpenAuth(ctx context.Context, project, credentialsPath, credentialsJSON, ur
 	}
 	collection := client.Database(database).Collection("users")
 	_, err = collection.Indexes().CreateMany(ctx, []mongo.IndexModel{
+		{Keys: bson.D{{Key: "notification_preferences.promotions", Value: 1}, {Key: "onboarding_completed", Value: 1}, {Key: "last_engagement_at", Value: 1}}, Options: options.Index().SetName("engagement_eligible_v1")},
 		{Keys: bson.D{{Key: "firebase_uid", Value: 1}}, Options: options.Index().SetUnique(true)},
 		{Keys: bson.D{{Key: "user_id", Value: 1}}, Options: options.Index().SetUnique(true)},
 	})

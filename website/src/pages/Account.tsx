@@ -1,3 +1,4 @@
+import { DonationSupport } from "../components/DonationSupport";
 import { enableWebPush, disableWebPush } from "../lib/webPush";
 import { friendlyError } from "../lib/errors";
 import { useEffect, useRef, useState } from "react";
@@ -44,7 +45,11 @@ const preferenceLabels: [keyof Preferences, string, string][] = [
     "Group activity",
     "Matching, confirmation and pickup updates.",
   ],
-  ["promotions", "ORIX news", "Optional product updates."],
+  [
+    "promotions",
+    "A little nudge",
+    "Optional Manglish reminders, up to every four hours during the day (IST).",
+  ],
 ];
 export function Profile() {
   const owner = useSession((s) => s.account?.user_id);
@@ -103,6 +108,7 @@ export function Profile() {
         title="Your profile."
         subtitle="Help your travel partners recognise you"
       />
+      <DonationSupport />
       {(error || failure) && (
         <p role="alert">
           {failure || error}{" "}

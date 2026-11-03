@@ -2,7 +2,7 @@ name: orix
 description: "Orix - Travel coordination"
 publish_to: 'none'
 
-version: 2.1.1+7
+version: 2.1.2+8
 
 environment:
   sdk: ^3.10.4

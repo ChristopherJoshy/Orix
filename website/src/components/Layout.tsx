@@ -1,3 +1,4 @@
+import { DonationSupport } from "./DonationSupport";
 import { toast } from "sonner";
 import { useResource } from "../lib/resource";
 import type { InboxPage } from "../pages/Inbox";
@@ -189,6 +190,11 @@ export default function Layout({ admin = false }: { admin?: boolean }) {
           ))}
         </nav>
         <div className="sidebar-bottom">
+          {!admin && (
+            <DonationSupport
+              autoPrompt={location.pathname === "/app" && !menu}
+            />
+          )}
           {!admin && (
             <nav aria-label="Account navigation">
               {[

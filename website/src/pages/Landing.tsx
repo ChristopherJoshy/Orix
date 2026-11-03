@@ -236,6 +236,7 @@ export default function Landing() {
         <Logo />
         <p>Less alone. More along.</p>
         <nav aria-label="Footer navigation">
+          <Link to="/download">Download Android</Link>
           <Link to="/privacy">Privacy</Link>
           <Link to="/terms">Terms</Link>
           <a href="mailto:Christopherjoshy4@gmail.com">Contact</a>

@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { getApps } from "firebase/app";
 import {
   getMessaging,
@@ -108,13 +109,29 @@ export function disableWebPush() {
 }
 export async function listenForWebPush() {
   if (!(await isSupported()) || !firebaseAuth.currentUser) return () => {};
-  return onMessage(getMessaging(getApps()[0]), () =>
+  const owner = firebaseAuth.currentUser.uid;
+  return onMessage(getMessaging(getApps()[0]), (message) => {
+    if (firebaseAuth.currentUser?.uid !== owner) return;
+    const data = message.data;
+    if (
+      data?.type === "engagement_reminder" &&
+      typeof data.title === "string" &&
+      typeof data.body === "string"
+    ) {
+      toast(data.title, {
+        description: data.body,
+        action: {
+          label: "Open ORIX",
+          onClick: () => window.location.assign("/app"),
+        },
+      });
+    }
     window.dispatchEvent(
       new CustomEvent(refreshEvent, {
         detail: { type: "notification_update" },
       }),
-    ),
-  );
+    );
+  });
 }
 
 /** Re-register only after explicit opt-in by the current account. */

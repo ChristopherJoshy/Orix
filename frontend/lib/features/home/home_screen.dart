@@ -2,6 +2,7 @@
 library;
 
 import 'package:orix/core/widgets/journey_route.dart';
+import 'package:orix/core/widgets/donation_dialog.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -50,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         unawaited(_refresh());
-        unawaited(_checkUpdates());
+        unawaited(_welcomePrompts());
       }
     });
     _startPolling();
@@ -60,10 +61,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       mounted &&
       GoRouter.of(context).routeInformationProvider.value.uri.path ==
           RoutePaths.home;
+
+  Future<void> _welcomePrompts() async {
+    await _checkUpdates();
+    if (!mounted || !_visible) return;
+    await DonationPrompt.maybeShow(context);
+  }
+
   void _startPolling() {
     _poll?.cancel();
     _poll = Timer.periodic(const Duration(seconds: 30), (_) {
       if (_visible) unawaited(_refresh());
+      if (_visible) unawaited(DonationPrompt.maybeShow(context));
     });
   }
 

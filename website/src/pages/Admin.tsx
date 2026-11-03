@@ -1,3 +1,4 @@
+import { AdminEngagement } from "../components/AdminEngagement";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { adminRequest, adminRequestPage } from "../lib/admin";
@@ -736,6 +737,7 @@ export function Operations() {
         subtitle="Real service controls and delivery jobs"
       />
       <AdminRelease key={owner ?? "signed-out"} />
+      <AdminEngagement key={`engagement-${owner ?? "signed-out"}`} />
       <VersionControls key={owner ?? "signed-out"} />
       <Failure
         error={error}

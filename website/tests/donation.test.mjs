@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import { donationDay, googlePayLink } from '/tmp/orix-donation-tests/donation.js';
+import { donationUri, donationUpiId } from '/tmp/orix-donation-tests/donation-config.js';
+const payload = new URL(donationUri);
+assert.equal(payload.searchParams.get('pa'), donationUpiId);
+assert.equal(payload.searchParams.has('am'), false);
+assert.equal(donationDay(new Date(2026, 10, 3, 23, 59)), '2026-11-3');
+assert.equal(donationDay(new Date(2026, 10, 4, 0, 0)), '2026-11-4');
+assert.match(googlePayLink('Android'), /package=com.google.android.apps.nbu.paisa.user;end$/);
+assert.equal(googlePayLink('iPhone'), donationUri.replace('upi://', 'gpay://upi/'));
+assert.match(googlePayLink('Android'), /Christopher%20Joshy/);
+console.log('Donation date, recipient, amount and Google Pay link checks passed.');

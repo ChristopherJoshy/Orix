@@ -29,8 +29,16 @@ class ConversationNotificationPayload {
     if (recipient is! String ||
         recipient.isEmpty ||
         user is! String ||
-        user.isEmpty)
+        user.isEmpty) {
       return null;
+    }
+    if (data['type'] == 'engagement_reminder') {
+      return {
+        'type': 'engagement_reminder',
+        'recipient_firebase_uid': recipient,
+        'recipient_user_id': user,
+      };
+    }
     final String field;
     final String id;
     if (report is String && report.isNotEmpty && report.length <= 100) {
@@ -151,7 +159,7 @@ Future<void> _showRideReminder(
           'Ride reminders',
           channelDescription: 'Reminders when your coordinated ride starts',
           icon: '@drawable/ic_notification',
-          color: const Color(0xFF222222),
+          color: Color(0xFF222222),
           colorized: false,
           importance: Importance.high,
           priority: Priority.high,
@@ -180,8 +188,9 @@ Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
   );
   if (!PushRecipient.matches(message.data, user?.uid)) return;
   if (defaultTargetPlatform == TargetPlatform.iOS &&
-      message.notification != null)
+      message.notification != null) {
     return;
+  }
   final plugin = FlutterLocalNotificationsPlugin();
   await plugin.initialize(_localInitialization);
   await _showRideReminder(plugin, message.data);
@@ -274,6 +283,16 @@ class NotificationService extends ChangeNotifier {
         playSound: true,
       );
 
+  static const AndroidNotificationChannel _updatesChannel =
+      AndroidNotificationChannel(
+        'orix_updates',
+        'A little nudge',
+        description: 'Optional Manglish reminders from ORIX',
+        importance: Importance.defaultImportance,
+        playSound: false,
+        enableVibration: false,
+      );
+
   /// Dismissible high-priority pickup reminders; no repeating alarm or fullscreen.
   static const AndroidNotificationChannel _alarmChannel =
       AndroidNotificationChannel(
@@ -316,6 +335,7 @@ class NotificationService extends ChangeNotifier {
     if (resolve != null) {
       await resolve.createNotificationChannel(_androidChannel);
       await resolve.createNotificationChannel(_alarmChannel);
+      await resolve.createNotificationChannel(_updatesChannel);
     }
 
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
@@ -371,8 +391,9 @@ class NotificationService extends ChangeNotifier {
     if (!PushRecipient.matches(
       message.data,
       FirebaseAuth.instance.currentUser?.uid,
-    ))
+    )) {
       return;
+    }
     final suppliedId = message.data['notification_id'];
     final dedupeId = suppliedId is String && suppliedId.isNotEmpty
         ? suppliedId
@@ -400,6 +421,8 @@ class NotificationService extends ChangeNotifier {
       return;
     }
 
+    final engagement = message.data['type'] == 'engagement_reminder';
+    final channel = engagement ? _updatesChannel : _androidChannel;
     // Show local notification using the appropriate channel
     if (notification != null && android != null) {
       _localNotifications.show(
@@ -408,16 +431,19 @@ class NotificationService extends ChangeNotifier {
         notification.body,
         NotificationDetails(
           android: AndroidNotificationDetails(
-            _androidChannel.id,
-            _androidChannel.name,
-            channelDescription: _androidChannel.description,
+            channel.id,
+            channel.name,
+            channelDescription: channel.description,
             icon: '@drawable/ic_notification',
             color: const Color(0xFF222222),
             colorized: false,
             visibility: NotificationVisibility.private,
-            priority: Priority.high,
-            importance: Importance.max,
-            playSound: true,
+            priority: engagement ? Priority.defaultPriority : Priority.high,
+            importance: engagement
+                ? Importance.defaultImportance
+                : Importance.max,
+            playSound: !engagement,
+            enableVibration: !engagement,
           ),
         ),
         payload: jsonEncode({

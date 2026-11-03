@@ -24,6 +24,7 @@ export interface InboxPage {
 }
 function noticeLink(notice: Notice) {
   const data = notice.data ?? {};
+  if (notice.type === "engagement_reminder") return "/app";
   if (notice.type === "group_rejected") return "/app/explore";
   if (data.report_id)
     return `/app/reports/${encodeURIComponent(data.report_id)}`;

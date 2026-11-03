@@ -1,4 +1,5 @@
 import 'package:orix/core/widgets/orix_tour.dart';
+import 'package:orix/core/widgets/donation_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -151,6 +152,20 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
               ],
+            ],
+          ),
+        ),
+        PixelSection(
+          title: 'Keep ORIX moving',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text('Any amount helps. Always optional.'),
+              const SizedBox(height: 12),
+              FilledButton(
+                onPressed: () => showDonationDialog(context),
+                child: const Text('Donate'),
+              ),
             ],
           ),
         ),

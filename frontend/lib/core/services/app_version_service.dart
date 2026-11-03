@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import 'api_service.dart';
+import '../config/api_config.dart';
 import '../utils/error_helper.dart';
 
 class AppVersionInfo {
@@ -19,6 +20,7 @@ class AppVersionInfo {
   final String? updateNotes;
   final String? playStoreUrl;
   final String? appStoreUrl;
+  final bool androidAPKAvailable;
 
   AppVersionInfo({
     required this.currentVersion,
@@ -28,6 +30,7 @@ class AppVersionInfo {
     this.updateNotes,
     this.playStoreUrl,
     this.appStoreUrl,
+    this.androidAPKAvailable = false,
   });
 
   factory AppVersionInfo.fromJson(Map<String, dynamic> json) {
@@ -39,6 +42,7 @@ class AppVersionInfo {
       updateNotes: json['update_notes'] as String?,
       playStoreUrl: json['play_store_url'] as String?,
       appStoreUrl: json['app_store_url'] as String?,
+      androidAPKAvailable: json['android_apk_available'] == true,
     );
   }
 
@@ -50,6 +54,9 @@ class AppVersionInfo {
         uri.userInfo.isNotEmpty ||
         uri.hasPort ||
         uri.host != (ios ? 'apps.apple.com' : 'play.google.com')) {
+      if (!ios && androidAPKAvailable) {
+        return ApiConfig.baseUri.resolve('/downloads/android.apk').toString();
+      }
       return '';
     }
     return uri.toString();

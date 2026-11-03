@@ -88,10 +88,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               !_isClearing &&
               !_isMarkingAll,
           onSelected: (action) {
-            if (action == 'read')
+            if (action == 'read') {
               _markAllRead();
-            else
+            } else {
               _clearAll();
+            }
           },
           itemBuilder: (_) => [
             if (provider.hasUnread)
@@ -144,6 +145,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (notification.type == 'group_rejected' ||
         notification.data?['type'] == 'group_rejected') {
       context.push('/ride/matching');
+      return;
+    }
+    if (notification.type == 'engagement_reminder') {
+      context.go('/home');
       return;
     }
     final group = notification.data?['group_id'];

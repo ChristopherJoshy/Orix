@@ -131,18 +131,20 @@ func (a *AuthDependencies) notificationHandler(action string) func(http.Response
 
 type NotificationWorker interface{ RunNotifications(context.Context) }
 type deliveryEvent struct {
-	ReportID  string          `bson:"report_id"`
-	RideTime  time.Time       `bson:"ride_time"`
-	TicketID  string          `bson:"ticket_id"`
-	Target    string          `bson:"target_user_id"`
-	Departure time.Time       `bson:"departure"`
-	ID        any             `bson:"_id"`
-	Type      string          `bson:"type"`
-	GroupID   string          `bson:"group_id"`
-	Actor     string          `bson:"user_id"`
-	Attempts  int             `bson:"attempts"`
-	Lease     string          `bson:"lease_token"`
-	Delivered map[string]bool `bson:"delivered"`
+	EngagementID string          `bson:"engagement_id"`
+	Expires      time.Time       `bson:"expires_at"`
+	ReportID     string          `bson:"report_id"`
+	RideTime     time.Time       `bson:"ride_time"`
+	TicketID     string          `bson:"ticket_id"`
+	Target       string          `bson:"target_user_id"`
+	Departure    time.Time       `bson:"departure"`
+	ID           any             `bson:"_id"`
+	Type         string          `bson:"type"`
+	GroupID      string          `bson:"group_id"`
+	Actor        string          `bson:"user_id"`
+	Attempts     int             `bson:"attempts"`
+	Lease        string          `bson:"lease_token"`
+	Delivered    map[string]bool `bson:"delivered"`
 }
 
 func stableID(value string) string {
@@ -155,8 +157,9 @@ func stableID(value string) string {
 // provider latency/backlog must not consume every reminder delivery slot.
 func (m mongoUsers) RunNotifications(ctx context.Context) {
 	var workers sync.WaitGroup
-	workers.Add(5)
+	workers.Add(6)
 	go func() { defer workers.Done(); m.runReminderSchedule(ctx) }()
+	go func() { defer workers.Done(); m.runEngagementSchedule(ctx) }()
 	for worker := 0; worker < 4; worker++ {
 		go func() {
 			defer workers.Done()
@@ -328,6 +331,19 @@ func (m mongoUsers) deliverRecipients(ctx context.Context, event deliveryEvent) 
 			return err
 		}
 	}
+	engagement := event.Type == "engagement_reminder"
+	var nudge EngagementMessage
+	if engagement {
+		var ok bool
+		var err error
+		nudge, ok, err = m.currentEngagement(ctx, event)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			return nil
+		}
+	}
 	reminder := event.Type == "ride_reminder_15"
 	var planned MemberReminder
 	if reminder {
@@ -339,6 +355,12 @@ func (m mongoUsers) deliverRecipients(ctx context.Context, event deliveryEvent) 
 	}
 	title, body, kind := "Ride group updated", "Open ORIX for the latest group details.", "system"
 	data := map[string]string{"type": event.Type, "group_id": group.ID}
+	if engagement {
+		title = nudge.Title
+		body = nudge.Body
+		kind = "engagement_reminder"
+		data["action"] = "open_home"
+	}
 	if event.Type == "account_restored" {
 		title = "Account access restored"
 		body = "You can return to ORIX. Cancelled trips have not been restarted."
@@ -420,7 +442,13 @@ func (m mongoUsers) deliverRecipients(ctx context.Context, event deliveryEvent) 
 		if accountRestricted(User{Status: user.Status, SuspensionExpires: user.SuspensionExpires}) {
 			continue
 		}
+		if engagement && !user.Preferences["promotions"] {
+			continue
+		}
 		preference := "group_updates"
+		if engagement {
+			preference = "promotions"
+		}
 		if reminder {
 			preference = "ride_reminders"
 		} else if kind == "chat_message" {
@@ -468,6 +496,9 @@ func (m mongoUsers) deliverRecipients(ctx context.Context, event deliveryEvent) 
 			return err
 		}
 		enabled, present := current.Preferences[preference]
+		if engagement && (!present || !enabled || !time.Now().Before(event.Expires)) {
+			continue
+		}
 		if err != nil || current.Token != user.Token || accountRestricted(User{Status: current.Status, SuspensionExpires: current.SuspensionExpires}) {
 			user.Token = ""
 		}
@@ -475,6 +506,12 @@ func (m mongoUsers) deliverRecipients(ctx context.Context, event deliveryEvent) 
 		if user.Token != "" && m.push != nil && (!present || enabled) && !event.Delivered[androidKey] {
 			android := &messaging.AndroidConfig{Priority: "high", CollapseKey: id, Notification: &messaging.AndroidNotification{Icon: "ic_notification", Color: "#222222", ChannelID: "high_importance_channel", Tag: id}}
 			message := &messaging.Message{Token: user.Token, Data: recipientData, Notification: &messaging.Notification{Title: title, Body: body}, Android: android}
+			if engagement {
+				ttl := time.Until(event.Expires)
+				android.Priority = "normal"
+				android.TTL = &ttl
+				android.Notification.ChannelID = "orix_updates"
+			}
 			if reminder {
 				message.Notification = nil
 				android.Notification = nil
@@ -545,7 +582,7 @@ func (m mongoUsers) deliverRecipients(ctx context.Context, event deliveryEvent) 
 				if accountRestricted(User{Status: latest.Status, SuspensionExpires: latest.SuspensionExpires}) {
 					break
 				}
-				if allowed, exists := latest.Preferences[preference]; exists && !allowed {
+				if allowed, exists := latest.Preferences[preference]; (exists && !allowed) || (engagement && (!exists || !time.Now().Before(event.Expires))) {
 					break
 				}
 				key := "web_" + device.ID
@@ -562,6 +599,12 @@ func (m mongoUsers) deliverRecipients(ctx context.Context, event deliveryEvent) 
 					continue
 				}
 				message := &messaging.Message{Token: device.Token, Data: map[string]string{"notification_id": id, "type": "inbox_update"}}
+				if engagement {
+					message.Data["type"] = "engagement_reminder"
+					message.Data["title"] = title
+					message.Data["body"] = body
+					message.Webpush = &messaging.WebpushConfig{Headers: map[string]string{"TTL": strconv.Itoa(max(0, int(time.Until(event.Expires).Seconds()))), "Urgency": "low"}}
+				}
 				sendCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 				_, sendErr := m.push.Send(sendCtx, message)
 				cancel()

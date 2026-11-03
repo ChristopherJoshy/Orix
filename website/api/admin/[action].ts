@@ -32,6 +32,8 @@ export default async function handler(
     lookup: { method: "GET", path: "/api/v1/admin/users/lookup" },
     logs: { method: "GET", path: "/api/v1/admin/logs" },
     maintenance: { method: "GET", path: "/api/v1/admin/maintenance" },
+    engagement: { method: "GET", path: "/api/v1/admin/engagement" },
+    "set-engagement": { method: "PUT", path: "/api/v1/admin/engagement" },
     jobs: { method: "GET", path: "/api/v1/admin/jobs" },
     failed: { method: "GET", path: "/api/v1/admin/notifications/failed" },
     "set-maintenance": { method: "POST", path: "/api/v1/admin/maintenance" },

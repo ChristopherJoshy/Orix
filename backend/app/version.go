@@ -15,13 +15,14 @@ import (
 )
 
 type AppVersion struct {
-	Current  string  `json:"current_version" bson:"current_version"`
-	Minimum  string  `json:"min_version" bson:"min_version"`
-	Required bool    `json:"update_required" bson:"-"`
-	Title    *string `json:"update_title" bson:"update_title"`
-	Notes    *string `json:"update_notes" bson:"update_notes"`
-	PlayURL  *string `json:"play_store_url" bson:"play_store_url"`
-	AppleURL *string `json:"app_store_url" bson:"app_store_url"`
+	AndroidAPKAvailable bool    `json:"android_apk_available" bson:"-"`
+	Current             string  `json:"current_version" bson:"current_version"`
+	Minimum             string  `json:"min_version" bson:"min_version"`
+	Required            bool    `json:"update_required" bson:"-"`
+	Title               *string `json:"update_title" bson:"update_title"`
+	Notes               *string `json:"update_notes" bson:"update_notes"`
+	PlayURL             *string `json:"play_store_url" bson:"play_store_url"`
+	AppleURL            *string `json:"app_store_url" bson:"app_store_url"`
 }
 type VersionRepository interface {
 	AppVersion(context.Context) (AppVersion, error)
@@ -93,6 +94,10 @@ func compareVersions(a, b string) (int, error) {
 	}
 	return 0, nil
 }
+
+// ValidAppVersionConfig shares the API validation with authenticated release operators.
+func ValidAppVersionConfig(version AppVersion) bool { return validVersionConfig(version) }
+
 func validVersionConfig(version AppVersion) bool {
 	order, err := compareVersions(version.Minimum, version.Current)
 	if err != nil || order > 0 {
@@ -138,6 +143,16 @@ func (a *AuthDependencies) appVersion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		version.Required = comparison < 0
+	}
+	if a != nil {
+		if repo, ok := a.Users.(DownloadRepository); ok {
+			settings, err := repo.PublicSettings(r.Context())
+			if err != nil {
+				writeJSON(w, 503, map[string]string{"detail": "Release information unavailable"})
+				return
+			}
+			version.AndroidAPKAvailable = settings.APKVersion == version.Current && settings.APKID != nil && settings.APKSize > 0 && len(settings.APKDigest) == 64
+		}
 	}
 	writeJSON(w, 200, version)
 }

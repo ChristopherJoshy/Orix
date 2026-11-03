@@ -426,9 +426,6 @@ async def run_worker():
 
     logger.info("Worker started. Processing queues...")
 
-    # Track last promo hour to send only once per hour
-    last_promo_hour = -1
-
     while True:
         try:
             # Check maintenance mode
@@ -452,11 +449,8 @@ async def run_worker():
             # Send funny reminders to users waiting for match
             await send_matchmaking_reminders()
 
-            # Send hourly promotional push notification
-            current_hour = utc_now().hour
-            if current_hour != last_promo_hour:
-                await send_hourly_promo()
-                last_promo_hour = current_hour
+            # Optional re-engagement is owned by the durable Go notification scheduler.
+            # Do not revive the legacy hourly topic broadcast during coexistence.
 
         except Exception as e:
             logger.error(f"Worker error: {e}")

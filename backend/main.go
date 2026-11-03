@@ -31,6 +31,8 @@ func main() {
 			err = retireLegacyData()
 		case "support-account-deletion":
 			err = supportAccountDeletion()
+		case "publish-android-release":
+			err = publishAndroid()
 		case "bootstrap-admin":
 			err = bootstrapAdmin()
 		case "migrate-data":

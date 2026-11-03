@@ -21,6 +21,7 @@ const GroupDetail = lazy(() =>
   import("./pages/Groups").then((module) => ({ default: module.GroupDetail })),
 );
 const ReportConversation = lazy(() => import("./pages/ReportConversation"));
+const DownloadAndroid = lazy(() => import("./pages/DownloadAndroid"));
 const Landing = lazy(() => import("./pages/Landing"));
 const Layout = lazy(() => import("./components/Layout"));
 const Login = lazy(() =>
@@ -217,6 +218,7 @@ export default function App() {
             <Suspense fallback={<Loading />}>
               <Routes>
                 <Route path="/" element={<Landing />} />
+                <Route path="/download" element={<DownloadAndroid />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/onboarding" element={<Onboarding />} />
                 {["about", "privacy", "terms", "account-deletion"].map(

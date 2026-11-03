@@ -288,16 +288,18 @@ class _AlarmListenerState extends State<_AlarmListener> {
       unawaited(_auth?.refreshUser() ?? Future<void>.value());
     }
     if (event['type'] != 'notification_update' &&
-        event['type'] != 'report_update')
+        event['type'] != 'report_update') {
       _syncRides = true;
+    }
     if (_syncTimer?.isActive == true) return;
     final owner = _auth?.user?.userId;
     _syncTimer = Timer(const Duration(milliseconds: 150), () {
       if (!mounted ||
           owner == null ||
           _auth?.user?.userId != owner ||
-          _notifications?.isForUser(owner) != true)
+          _notifications?.isForUser(owner) != true) {
         return;
+      }
       if (_syncRides) {
         _syncRides = false;
         unawaited(context.read<RideProvider>().fetchMatchingStatus());
@@ -338,8 +340,9 @@ class _AlarmListenerState extends State<_AlarmListener> {
     // queued until the account-scoped provider can validate the recipient.
     if (!mounted ||
         !(_auth?.isAuthenticated ?? false) ||
-        !(_auth?.isOnboarded ?? false))
+        !(_auth?.isOnboarded ?? false)) {
       return;
+    }
     if (_notifications?.isForUser(_auth?.user?.userId) != true) return;
     final pending = _service?.pendingAlarmData;
     if (pending != null) {
@@ -377,15 +380,18 @@ class _AlarmListenerState extends State<_AlarmListener> {
           !(_auth?.isAuthenticated ?? false) ||
           !(_auth?.isOnboarded ?? false) ||
           _service?.pendingConversation != pending ||
-          _showingAlarm)
+          _showingAlarm) {
         return;
+      }
       final navigatorContext =
           AppRouter.rootNavigatorKey.currentState?.overlay?.context;
       if (navigatorContext == null) return;
       _service!.clearPendingConversation();
       final report = pending['report_id'];
       final String path;
-      if (report != null) {
+      if (pending['type'] == 'engagement_reminder') {
+        path = '/home';
+      } else if (report != null) {
         path = '/profile/support/reports/${Uri.encodeComponent(report)}';
       } else if (pending['ticket_id'] != null) {
         path =

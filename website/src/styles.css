@@ -6642,3 +6642,36 @@ html[data-motion="off"] .workspace > .sidebar { transition: none; }
     width: calc(100% - 256px);
   }
 }
+
+
+/* Optional donation: square QR modules, generous quiet zone, grayscale only. */
+.donation-trigger { width: 100%; background: transparent; text-align: left; cursor: pointer; }
+.modal-content:has(.donation-support) { width: min(440px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; }
+.donation-support { display: grid; gap: 16px; margin-top: 20px; }
+.donation-qr { text-align: center; }
+.donation-qr img { display: block; width: 246px; height: auto; max-width: 100%; margin: auto; image-rendering: pixelated; background: #fff; }
+.donation-qr p, .donation-mobile p { margin: 8px 0; font-size: 14px; color: #555; }
+.donation-mobile { display: none; }
+.donation-recipient { padding-top: 16px; border-top: 1px solid #ccc; font-size: 13px; }
+.donation-recipient p { margin: 0 0 4px; }
+.donation-upi { display: block; overflow-wrap: anywhere; user-select: all; }
+.donation-recipient .button { margin-top: 8px; min-height: 48px; }
+@media (max-width: 700px), (pointer: coarse) and (max-width: 1024px) {
+  .donation-mobile { display: block; }
+  .donation-mobile > .button { width: 100%; }
+  .donation-qr { display: none; }
+}
+
+.engagement-messages { display: grid; gap: 8px; margin: 20px 0; }
+.engagement-messages details { border: 1px solid #ccc; padding: 12px 16px; }
+.engagement-messages summary { cursor: pointer; min-height: 32px; overflow-wrap: anywhere; }
+.engagement-messages details[open] summary { margin-bottom: 16px; }
+.engagement-preview { padding: 16px; background: #eee; border-left: 4px solid #222; overflow-wrap: anywhere; }
+
+.engagement-editor fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.donation-trigger { border: 0; }
+
+.android-download-page { max-width: 680px; margin: auto; padding: 32px 20px; }
+.android-download-page > .logo { margin-bottom: 40px; }
+.android-download-page .download-hash { display: block; overflow-wrap: anywhere; white-space: normal; }
+.android-download-page > .button { margin-top: 24px; }

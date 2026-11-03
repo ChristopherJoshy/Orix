@@ -155,3 +155,23 @@ preference API, preserves server values on failure, and guards account switches.
 Legacy automatic promotion-topic opt-in was removed; existing installations try
 to unsubscribe at initialization. Device permission remains separate. Source
 formatted only; no analyzer, runtime, provider or emulator checks ran.
+
+
+## Optional Manglish re-engagement (2026-11-03)
+
+The Go notification worker schedules the 20-message rotation at 08:00, 12:00,
+16:00 and 20:00 IST. Preferences > A little nudge is explicit opt-in. The
+existing promotions field is reused and remains false by default. Scheduling
+and the four-hour cooldown are transactional; stable slot/user outbox IDs
+deduplicate replicas. Late delivery work expires after thirty minutes. Delivery
+timing is still subject to FCM and platform restrictions. This is not an alarm.
+
+Admin Operations > A little nudge reads/writes GET/PUT /api/v1/admin/engagement
+through the authenticated BFF. Version conflicts preserve drafts and require an
+explicit reload; updates are audited. Title limit: 80 Unicode characters; body:
+240; maximum 200 messages. Individual messages and the entire schedule can pause.
+Only public reminder copy enters web push payloads. Other private updates retain
+generic push text. In-app copies use the existing monochrome pixel components;
+Android/browser notification chrome remains native. The legacy Python hourly
+promotion scheduler is disabled. Focused tests passed; authenticated multi-user
+queue/push/device verification remains outstanding.

@@ -3,6 +3,22 @@ import 'package:orix/core/services/notification_service.dart';
 
 void main() {
   test(
+    'engagement taps open home without a group and still require identity',
+    () {
+      final data = <String, dynamic>{
+        'type': 'engagement_reminder',
+        'recipient_user_id': 'backend-user',
+        'recipient_firebase_uid': 'firebase-user',
+      };
+      expect(
+        ConversationNotificationPayload.fromData(data)?['type'],
+        'engagement_reminder',
+      );
+      data.remove('recipient_user_id');
+      expect(ConversationNotificationPayload.fromData(data), isNull);
+    },
+  );
+  test(
     'group tap retains destination and requires both recipient identities',
     () {
       final data = <String, dynamic>{

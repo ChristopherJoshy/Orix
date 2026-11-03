@@ -9,7 +9,7 @@ export function AndroidDownload() {
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
-    if (!/Android/i.test(navigator.userAgent)) return;
+    if (!/Android/i.test(navigator.userAgent) || window.location.pathname === "/download") return;
     setFailed(false);
     const controller = new AbortController();
     void downloadSettings(controller.signal).then((value) => {

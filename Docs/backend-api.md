@@ -148,3 +148,11 @@ Place lookup: authenticated/onboarded `GET /places/search?query=...` accepts
 attribution_url}`. Results contain at most five valid points. Unconfigured or
 unavailable upstream returns 503 with manual-selection guidance; provider pacing
 returns 429/Retry-After. No autocomplete/reverse route is exposed. See configuration.md.
+
+
+2026-11-03: Admin GET/PUT /api/v1/admin/engagement manages the versioned, audited
+Manglish reminder catalog. GET returns {version, enabled, messages}; each message
+is {id, title, body, enabled}. PUT requires the loaded version; a concurrent edit
+returns 409. Existing admin auth/secret verification and transactional role checks
+apply. Scheduling uses explicit promotions opt-in and the durable outbox; see
+Docs/notifications.md. No new client-supplied identity or role is trusted.

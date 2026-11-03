@@ -1016,3 +1016,74 @@ previous typography, spacing, date formatting and journey illustration sizing.
 Removed the now-unused JourneyRoute web component. Earlier chat and desktop
 navigation fixes remain. No Flutter changes. Website build verification recorded
 in the corresponding history entry.
+
+
+## 2026-11-03 — Optional donations, Manglish reminders and preview repair
+
+Added a dismissible once-per-local-calendar-day donation prompt and permanent
+Donate entries to Flutter and the web workspace/profile. Daily prompting is per
+device/browser, stored as a preference, not a payment record. Copy asks users to
+donate to keep ORIX going; any amount is welcome. Android targets Google Pay
+through a small native channel; iOS uses its Google Pay URI. Missing-app failure
+shows authored guidance and a copyable UPI ID. Desktop displays a code-generated
+square-module monochrome QR with its four-module quiet zone intact. Its payload
+was independently decoded from the owner's supplied QR and preserved exactly.
+Both generated assets and the rendered desktop QR decoded back to that payload;
+asset verification also passed at five sizes. No payment was initiated or claimed.
+
+Go now owns optional re-engagement through the durable notification outbox.
+Twenty original Manglish title/body pairs rotate deterministically. Scheduling
+windows are 08:00, 12:00, 16:00 and 20:00 IST, with a four-hour per-user reservation
+cooldown, transactional scheduling/deduplication and 30-minute expiry. Only
+onboarded, unrestricted accounts with explicit promotions=true are eligible;
+missing/default preferences remain off. Delivery rechecks preference/account
+state and bounds retries through the existing outbox. The old Python worker's
+automatic hourly topic broadcast is disabled to avoid duplicate coexistence sends.
+Admin Operations can edit/add/pause messages and disable the schedule using
+versioned, audited API updates; drafts survive save errors. Android uses a quieter
+monochrome-logo channel, web background pushes show the same public copy, and
+foreground web uses the existing themed toast. Private push content stays generic.
+Reminder taps preserve account checks and open Home. OS notification chrome stays
+platform-controlled; no custom OS typography claim is made.
+
+Social previews reuse the generated artwork, exported as a 253,902-byte JPEG
+instead of the 1.6MB PNG. Added explicit secure image URL, MIME type, actual
+1732x908 dimensions, canonical and alt metadata; versioned URL avoids reusing an
+old image cache entry. Live pre-change HTML and PNG returned 200 to the crawler
+request, so this addresses robustness/cache issues rather than proving every
+messaging platform's preview was broken. Existing third-party caches may require
+a re-scrape. App version is bumped to 2.1.2+8; APK build/signature results follow.
+
+Executed so far: website production build; Go build and go vet ./...; focused
+GOCACHE=/tmp/orix-go-cache go test -race ./... -run
+'TestEngagement|TestNotification' passed; Flutter scoped analysis clean after
+fixing existing touched-file brace infos; donation/payload widget tests 9 passed;
+web donation-link/date tests and push-worker privacy/validation checks passed;
+Python worker py_compile passed; Android compileDebugKotlin succeeded using a
+checksum-verified temporary official JDK21. Installed JDK25 failed Gradle Kotlin
+DSL startup initially. The first unfiltered Go suite attempt hit sandbox localhost
+listener restrictions; the focused authorized rerun passed. golangci-lint is not
+installed. Isolated desktop/mobile web donation review used actual components;
+browser reload confirmed no duplicate daily prompt. No account fixtures, actual
+push deliveries, database concurrency scenarios, reboot/background device checks
+or broader integration/regression QA ran. The owner's broader hold remains.
+
+Backend deployment update: built a static Linux/amd64 binary, uploaded it to the
+existing orix-backend service and restarted it successfully (active). No fixture
+accounts or production push/test notifications were created.
+
+Release-publication follow-through: added a public /download page and landing
+footer link for all devices. Added the operator-only publish-android-release CLI,
+using authenticated SSH/server credentials, explicit production database/apply
+selection, pinned APK hash and the existing verified bootstrap-owner identity.
+It does not mint Firebase user tokens or add an HTTP auth exception. Firebase
+identity and current admin role are checked; normal single-use upload grants,
+archive/hash validation and transactional audited publication are reused. Matching
+already-published artifacts are not uploaded again. Current app version metadata
+is updated while preserving the minimum supported version and official store
+links. A computed android_apk_available flag lets new Android clients use only
+their configured API's download path when a matching APK is actually published.
+Focused operator guards/version tests and Go vet passed after correcting the
+CLI's accidental Android-specific filename. Ten focused Flutter tests passed
+after correcting a non-const test constructor. Public APK build, signature and
+full-download verification are still pending at this checkpoint.
