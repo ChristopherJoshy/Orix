@@ -5,7 +5,8 @@ import { refreshEvent } from "../lib/realtime";
 import { PixelStatus } from "./PixelStatus";
 import { Button } from "./ui";
 export function ConnectionStatus() {
-  const [lost, setLost] = useState(!navigator.onLine);
+  // Browser connectivity is unknown during server rendering and hydration.
+  const [lost, setLost] = useState(false);
   const [busy, setBusy] = useState(false);
   const pending = useRef(false);
   const alive = useRef(true);
@@ -33,6 +34,7 @@ export function ConnectionStatus() {
   }
   useEffect(() => {
     alive.current = true;
+    setLost(!navigator.onLine);
     const offline = () => setLost(true);
     const online = () => {
       void retry();

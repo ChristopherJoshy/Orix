@@ -1510,3 +1510,17 @@ reCAPTCHA service connection; no bypass or accepted-request claim. Final IndexNo
 accepted six URLs (200). Final mobile Lighthouse: SEO/accessibility/best practices
 100 each, performance72; FCP3.2s/LCP5.2s/TBT0ms/CLS0. No actual index inclusion or
 query ranking claimed. See Docs/seo-audit.md for evidence and remaining limits.
+
+2026-11-03 — Replaced public createRoot remounting with matching App-tree SSR and
+hydrateRoot, preserving visible initial markup. StaticRouter is build-only;
+private/non-rendered pages keep the usual browser startup. Connectivity detection
+moves to an effect so server/client initial trees agree without fabricating a
+service result. Font-preload trial (71 Performance, no measurable gain) was removed.
+No font/CSS/art changes. Build and focused SEO/alpha/heading checks pass. Chrome
+all-six-public-page and Home→Privacy checks showed no app hydration errors.
+Protected preview dpl_4FCmKPURbDsSBJ9fRgriUggjA9pU and live production
+ dpl_7u74h15bLnfjUv7hb6HpayVo1XvB pass focused HTTP checks and 22 assets. Post-change
+mobile Lighthouse: Performance98, SEO/Accessibility/BestPractices100; FCP0.9s,
+LCP2.1s, TBT0ms, CLS0.016. Single lab run, not compliance or ranking proof. Google
+manual indexing retry still failed; sitemap processed and live URL indexable.
+Actual Google index/canonical changes remain pending. No broader held QA resumed.

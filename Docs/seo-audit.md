@@ -144,3 +144,60 @@ light page background rather than black. Corrected hero variants are 99,150 /
 195,106 / 321,996 bytes; About variants are 48,164 / 129,082 / 310,526 bytes.
 Original dimensions/layout/CSS and composition remain. The earlier opaque exports
 were removed from the source tree; they must not be reintroduced.
+
+## Follow-through: hydration, not font substitution
+
+The mobile critical-path report identified existing Pixelify Sans 500 and Manrope
+400 fonts discovered through CSS. A two-file anonymous-CORS preload experiment
+built and passed its focused checks; Chrome confirmed the same font family,
+80px/500 desktop heading and unchanged alpha hero URL. Its mobile lab result was
+71 Performance / 100 SEO (FCP 3.3s, LCP 5.2s, TBT 10ms, CLS 0), which did not show
+an improvement over the preceding run. The experiment was removed, not promoted
+as a measured speed gain. Existing font files and CSS are unchanged.
+
+The same report's LCP breakdown showed 360ms resource load delay, 490ms resource
+load duration and 1,650ms element render delay. Public startup previously called
+createRoot after prerendering, replacing the server's visible page. It now uses
+hydrateRoot only for explicitly marked, actually prerendered public pages, with
+the same anonymous App tree and real initial public component on both sides.
+Private routes and unrendered development/error shells keep createRoot. Browser
+routing is unchanged; a StaticRouter is supplied only during build rendering.
+ConnectionStatus now reads navigator.onLine in its effect so its initial browser
+and server trees agree, while retaining real offline/online events and Retry.
+
+Verification: TypeScript/Vite build and focused SEO/alpha checks passed; artifact
+checks now also require exactly one public H1 and no initial loading fallback.
+Chrome opened all six actual public pages and navigated from Home to Privacy;
+no app hydration errors were recorded. Browser-extension warnings were distinct
+from app logs. Protected preview dpl_4FCmKPURbDsSBJ9fRgriUggjA9pU passed HTTP checks
+for six public pages, six private shells, sitemap/robots/key, genuine 404, clean
+redirect and 22 actual assets. Production dpl_7u74h15bLnfjUv7hb6HpayVo1XvB is READY
+at the main domain; live checks and the measured result follow. No CSS, image,
+font, private API/authentication permission or fixture changes were made. Offline
+end-to-end and authenticated account/regression QA were not resumed.
+
+A single manual Google indexing retry after reloading Search Console still failed
+with Google's submission error. No accepted request or index inclusion is claimed;
+the successfully processed sitemap remains available for ordinary crawling.
+
+Research: [Google's LCP guidance](https://web.dev/articles/optimize-lcp),
+[MDN preload and CORS](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/preload),
+[Google crawling/indexing limits](https://developers.google.com/search/help/crawling-index-faq).
+
+Hydration follow-through verified live: all six public routes, six private shells,
+XML/robots/key, real 404, clean redirect and 22 assets passed HTTP checks. Chrome
+shows the public hydration marker plus the real client motion-preference effect;
+the existing Pixelify heading and `-alpha` hero remain, with no document overflow
+or recorded app hydration errors. The post-change mobile Lighthouse report at
+23:24 IST scored Performance 98, SEO 100, Accessibility 100 and Best Practices 100.
+FCP 0.9s, LCP 2.1s, TBT 0ms, CLS 0.016, Speed Index 3.0s. This is one throttled
+lab run, not real-user CWV data or evidence of Google ranking. Compared with the
+pre-change run (Performance 72, LCP 5.2s), it supports retaining hydration.
+Report: https://pagespeed.web.dev/analysis/https-orixrideshare-tech/e21t2fw090?form_factor=mobile
+
+Font-blocked/slow-3G-specific typography tests, authenticated scenarios and device
+checks were not executed. No accessibility compliance claim is made from the
+Lighthouse score alone. Google index inclusion and query placement still require
+external processing; do not keep resubmitting unchanged URLs in a tight loop.
+
+Implementation reference: [React hydrateRoot requirements](https://react.dev/reference/react-dom/client/hydrateRoot).

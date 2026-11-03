@@ -24,6 +24,16 @@ for (const route of routes) {
     /<meta name="robots" content="index, follow, max-image-preview:large"/,
   );
   assert.doesNotMatch(html, /noindex/);
+  assert.equal(
+    (html.match(/<h1[\s>]/g) ?? []).length,
+    1,
+    `${route}: one public page heading`,
+  );
+  assert.doesNotMatch(
+    html,
+    /class="loading-screen"/,
+    `${route}: initial response contains the page, not a loading fallback`,
+  );
   assert.match(
     html,
     /<h1[\s>]/,
@@ -31,7 +41,7 @@ for (const route of routes) {
   );
   assert.match(
     html,
-    /<div id="root">(?:<link[^>]+>)*(?:<div|<main)/,
+    /<div id="root" data-prerendered="public">[\s\S]*<(?:div|main)/,
     `${route}: existing public component rendered`,
   );
   const title = html.match(/<title>([^<]+)<\/title>/)[1];

@@ -5,7 +5,7 @@ import { ConnectionStatus } from "./components/ConnectionStatus";
 import { RealtimeBridge } from "./lib/realtime";
 import { AndroidDownload } from "./components/AndroidDownload";
 import { Component, lazy, Suspense, useEffect } from "react";
-import type { ErrorInfo, ReactNode } from "react";
+import type { ComponentType, ErrorInfo, ReactNode } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { LazyMotion, domAnimation, MotionConfig } from "motion/react";
 import { Toaster, toast } from "sonner";
@@ -203,7 +203,12 @@ function WebPushLifecycle() {
 export default function App({
   initialPublicPage,
   initialPublicPath,
-}: { initialPublicPage?: ReactNode; initialPublicPath?: string } = {}) {
+  Router = BrowserRouter,
+}: {
+  initialPublicPage?: ReactNode;
+  initialPublicPath?: string;
+  Router?: ComponentType<{ children: ReactNode }>;
+} = {}) {
   useEffect(() => initializeSession(), []);
   const motion = useStore((s) => s.motion);
   useEffect(() => {
@@ -220,7 +225,7 @@ export default function App({
           reducedMotion={motion ? "user" : "always"}
           transition={{ duration: motion ? 0.25 : 0 }}
         >
-          <BrowserRouter>
+          <Router>
             <PageIdentity />
             <Suspense fallback={<Loading />}>
               <Routes>
@@ -300,7 +305,7 @@ export default function App({
               position="bottom-right"
               toastOptions={{ className: "orix-toast" }}
             />
-          </BrowserRouter>
+          </Router>
         </MotionConfig>
       </LazyMotion>
     </ErrorBoundary>

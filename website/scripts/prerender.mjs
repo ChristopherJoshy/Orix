@@ -97,7 +97,7 @@ try {
     );
     html = html.replace(
       '<div id="root"></div>',
-      `<div id="root">${renderPublicPage(path)}</div>`,
+      `<div id="root" data-prerendered="public">${renderPublicPage(path)}</div>`,
     );
     await writeFile(
       `dist/${path === "/" ? "index" : path.slice(1)}.html`,

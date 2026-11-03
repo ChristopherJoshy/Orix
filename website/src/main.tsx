@@ -1,5 +1,5 @@
 import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
 import "@fontsource/pixelify-sans/latin-500.css";
 import "@fontsource/pixelify-sans/latin-600.css";
 import "@fontsource/manrope/latin-400.css";
@@ -47,13 +47,16 @@ async function mount() {
     // Let the existing lazy-route error boundary show its authored recovery UI.
     // The existing preload-error listener also retries a stale deployment once.
   }
-  createRoot(document.getElementById("root")!).render(
+  const content = (
     <StrictMode>
       <App
         initialPublicPage={page}
         initialPublicPath={page ? path : undefined}
       />
-    </StrictMode>,
+    </StrictMode>
   );
+  const root = document.getElementById("root")!;
+  if (page && root.dataset.prerendered === "public") hydrateRoot(root, content);
+  else createRoot(root).render(content);
 }
 void mount();

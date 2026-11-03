@@ -1139,3 +1139,22 @@ accessibility, best practices 100 each; performance 72, FCP 3.2s, LCP 5.2s, TBT 
 CLS 0. Mobile performance remains an open optimization; do not claim maximum
 performance or generic-query rankings. Full report: Docs/seo-audit.md. Play release
 remains cancelled. No broader held account/backend/device QA was resumed.
+
+2026-11-03 — Hydration follow-through: public pages now hydrate the same real
+anonymous App tree rendered at build time, preserving the initial DOM/hero rather
+than replacing it. Non-prerendered/private shells retain createRoot and the normal
+BrowserRouter; StaticRouter is build-only. ConnectionStatus reads real browser
+connectivity in its effect to keep server/client initial structure consistent.
+No image, font or CSS changes. A two-font preload trial showed no measured gain
+and was removed. Build plus focused SEO/alpha/one-H1/no-loading checks pass; local
+Chrome opened all six public pages and navigated Home→Privacy with no app hydration
+errors. Protected preview and live HTTP checks pass for public/private shells,
+redirects/404/XML and 22 assets. Current production
+ dpl_7u74h15bLnfjUv7hb6HpayVo1XvB is READY on the main domain. Live mobile Lighthouse
+23:24 IST: Performance98, SEO100, Accessibility100, BestPractices100; FCP0.9s,
+LCP2.1s, TBT0ms, CLS0.016, SpeedIndex3.0s. This is a lab run, not ranking or real-user
+CWV proof. Existing transparent hero verified unchanged; client effect runs after
+hydration. Manual Google indexing retry still failed; sitemap remains processed
+with six discovered pages. Wait for external crawl/index data rather than spam
+submissions. No broader held auth/account/backend/device QA; Play remains cancelled.
+See Docs/seo-audit.md for exact research, reports and remaining limits.
