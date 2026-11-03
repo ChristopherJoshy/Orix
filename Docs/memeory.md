@@ -795,3 +795,8 @@ and error-copy tests passed, focused Flutter analysis passed, and 12 Flutter
 tour/notification/design/art tests passed. The new DST-gap test exposed a search
 bound error, now corrected. These checks do not verify real multi-account Mongo,
 Firebase/FCM delivery, provider services, release publication or deployed flows.
+2026-11-03 — Rechecked the public landing in an isolated local browser at widths
+320 and 1440: screenshots were reviewed and document width matched the viewport
+at both sizes. The isolated MongoDB and Firebase Auth emulator services were not
+available in this environment; no production database or authenticated account
+was used. This check does not cover authenticated or device-specific layouts.
