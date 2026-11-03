@@ -14,6 +14,7 @@ export default function AdminReports() {
     const version=++revision.current;setLoading(true);setError('');
     try{
       const data=await adminRequestPage<{reports:{report:SafetyRecord}[]}>('reports','GET',undefined,before?{before}:undefined);
+      if (!data.data || !Array.isArray(data.data.reports)) throw new Error('Invalid reports response');
       if(version===revision.current&&identity===useSession.getState().account?.user_id){const rows=data.data.reports.map(row=>row.report);setReports(previous=>before?[...new Map([...(previous??[]),...rows].map(report=>[report.report_id,report])).values()]:rows);setCursor(data.nextCursor);}
     }catch(problem){if(version===revision.current)setError(friendlyError(problem));}
     finally{if(version===revision.current)setLoading(false);}

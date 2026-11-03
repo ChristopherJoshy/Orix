@@ -432,6 +432,23 @@ interface VersionConfig {
   app_store_url: string | null;
   update_required: boolean;
 }
+async function readFailedDeliveries(path: string): Promise<Failed[]> {
+  const result = await readAdmin<{ events?: unknown }>(path);
+  if (!result || !Array.isArray(result.events) || !result.events.every((event: unknown) => {
+    if (!event || typeof event !== "object") return false;
+    const item = event as Record<string, unknown>;
+    return typeof item.event_id === "string" && typeof item.type === "string" &&
+      typeof item.attempts === "number" && typeof item.created_at === "string";
+  })) throw new Error("Invalid delivery response");
+  return result.events as Failed[];
+}
+async function readJobStatus(path: string): Promise<JobStatus> {
+  const result = await readAdmin<JobStatus>(path);
+  if (!result || !result.notification_outbox || !result.account_deletions ||
+      !Array.isArray(result.workers) || !result.workers.every((worker) =>
+        worker && typeof worker._id === "string")) throw new Error("Invalid job response");
+  return result;
+}
 function VersionControls() {
   const owner = useSession((s) => s.account?.user_id);
   const { data, error, loading, load } = useResource<VersionConfig>(
@@ -595,8 +612,8 @@ function VersionControls() {
 export function Operations() {
   const owner = useSession((s) => s.account?.user_id);
   const maintenance = useResource<Maintenance>("maintenance", 30000, readAdmin);
-  const jobs = useResource<JobStatus>("jobs", 30000, readAdmin);
-  const failed = useResource<Failed[]>("failed", 30000, readAdmin);
+  const jobs = useResource<JobStatus>("jobs", 30000, readJobStatus);
+  const failed = useResource<Failed[]>("failed", 30000, readFailedDeliveries);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -819,6 +836,7 @@ export function Audit() {
           undefined,
           before ? { before } : undefined,
         );
+        if (!Array.isArray(page.data)) throw new Error("Invalid audit response");
         if (
           request === revision.current &&
           owner === useSession.getState().account?.user_id

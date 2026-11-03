@@ -894,3 +894,8 @@ and robots file, and noindex response headers for private app/admin routes.
 Verified the requested Firebase identity and assigned its admin role using the
 guarded bootstrap command. Website build passed. Per-page server-rendered SEO
 metadata and authenticated search indexing behavior remain unverified.
+
+2026-11-03 — Admin operations now unwraps failed deliveries and rejects invalid
+list responses with a retryable error; audit and report lists also check their
+response shape. Website build passed; authenticated production verification
+remains outstanding.
