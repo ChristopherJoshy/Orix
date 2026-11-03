@@ -830,3 +830,9 @@ The existing Nginx upload limit also needs review for large APK releases.
 2026-11-03 — Added a Geoapify matrix/routing adapter using the existing private
 provider key. Existing road snap, capacity, detour and time-window checks remain
 in effect. Provider-backed end-to-end lift matching remains to be verified.
+2026-11-03 — Geoapify matrix and route translation passed a focused HTTP contract
+test, Go race suite and direct provider requests. Built signed Android APK
+2.1.1+7; Android apksigner verified its v2 signature and package/version metadata.
+Release keystore and password are stored outside the repository. The owner needs
+to add its certificate fingerprints to Firebase; signed Google login, live push,
+APK publication and complete lift matching have not yet been verified.

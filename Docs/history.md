@@ -1199,3 +1199,7 @@ Live auth, push, routing and APK publication were not verified.
 2026-11-03 — Added a Geoapify road-routing adapter to support lift itinerary
 planning using the configured provider key. Go race suite passed; live lift
 matching remains unverified.
+2026-11-03 — Verified Geoapify adapter with focused contract and live provider
+requests, and built Android 2.1.1+7 with a newly generated release key. APK v2
+signature and package metadata verified. Firebase registration of the release
+fingerprints and signed-device login remain outstanding.
