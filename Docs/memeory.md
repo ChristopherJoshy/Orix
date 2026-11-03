@@ -921,3 +921,7 @@ release success requires matching version/hash from the public endpoint. The
 admin panel shows visible progress and a confirmed success card. Workspace
 header/sidebar text overflow is constrained. Builds passed; owner should retry
 publishing a real signed APK and confirm the public settings/download.
+
+2026-11-03 — Browser socket cleanup now waits for connecting sockets to open
+before closing them. Website build passed; production proxy logs showed 101
+upgrades, but end-to-end authenticated realtime delivery remains unverified.

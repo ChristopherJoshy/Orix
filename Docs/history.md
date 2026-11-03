@@ -1287,3 +1287,8 @@ The admin UI now separates integrity checking, upload, publication and verified
 success, with a download action only after a matching published hash is read
 back. Also constrained workspace header text within its flex layout. Website
 and Go builds passed. A real APK upload and responsive browser QA were not run.
+
+2026-11-03 — Avoid closing a connecting browser WebSocket during navigation or
+visibility changes; close it after opening if the connection is no longer needed.
+Website build passed. Production nginx recorded successful WebSocket upgrades;
+no authenticated message delivery test was performed.

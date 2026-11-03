@@ -42,7 +42,10 @@ export function RealtimeBridge() {
         const next = new WebSocket(url, ["orix.v1", `firebase.${token}`]);
         socket = next;
         next.onopen = () => {
-          if (!alive || socket !== next) return;
+          if (!alive || socket !== next || document.hidden) {
+            next.close();
+            return;
+          }
           attempts = 0;
           lastMessage = Date.now();
           refresh("connection");
@@ -86,7 +89,7 @@ export function RealtimeBridge() {
     }
     const visible = () => {
       if (document.hidden) {
-        socket?.close();
+        if (socket?.readyState === WebSocket.OPEN) socket.close();
         return;
       }
       if (timer !== undefined) {
@@ -109,7 +112,7 @@ export function RealtimeBridge() {
       alive = false;
       if (timer !== undefined) window.clearTimeout(timer);
       window.clearInterval(heartbeat);
-      socket?.close();
+      if (socket?.readyState === WebSocket.OPEN) socket.close();
       document.removeEventListener("visibilitychange", visible);
       window.removeEventListener("online", visible);
     };
