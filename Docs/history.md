@@ -1182,3 +1182,8 @@ Firebase Auth emulators were not available, so multi-account tests did not run.
 current debug APK using JDK 21, and visually confirmed the Google sign-in screen.
 The default Java 25 build failed on Gradle compatibility before the successful
 JDK 21 build. No account sign-in or production-database fixture was performed.
+2026-11-03 — Ran focused concurrent recurring-offer and support retry checks
+with eight Firebase Auth Emulator personas and a temporary localhost MongoDB
+8.0.34 replica set. Both checks passed, including another account's empty schedule
+and a conflicting support replay. Temporary services were stopped; no production
+database was used. Real provider and broader multi-account scenarios remain.

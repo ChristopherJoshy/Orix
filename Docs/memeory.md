@@ -805,3 +805,10 @@ debug APK with the existing temporary JDK 21, installed it and observed the
 Google-only sign-in screen. The first Flutter build selected Java 25 and failed
 against Gradle 8.14; direct Gradle with JDK 21 succeeded. No sign-in or production
 database operation was performed, and no API was started for the emulator.
+2026-11-03 — Subsequently started a checksum-verified temporary MongoDB 8.0.34
+replica set and Firebase Auth Emulator on localhost, provisioned eight local
+personas and ran focused API checks. Concurrent recurring-offer save/pause/resume
+replays produced one departure; another account had no schedule. Concurrent
+support retries produced one ticket and changed-content replay conflicted. Stopped
+the isolated services afterward. This does not verify Google sign-in, FCM, every
+race, external providers or deployed behavior; no production data was used.

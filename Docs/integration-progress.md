@@ -58,6 +58,18 @@
    signed release publication and full responsive app/web flows. Missing provider
    config is an explicit error, never demo data or a silently changed provider.
 
+## Isolated account and transaction check — 2026-11-03
+
+An ephemeral localhost MongoDB 8.0.34 replica set and Firebase Auth Emulator
+were started for `demo-orix` and `orix_internal_test`. Eight personas were
+created using the guarded seed command and real emulator authentication. Against
+the Go API, concurrent identical recurring-offer saves, pauses and resumes
+returned the same revision and resulted in one departure; a second account saw
+no schedule. Concurrent support-ticket retries returned one ticket, while a
+replay with changed content returned a conflict. These are focused scenarios,
+not proof of all transaction races, Google sign-in, FCM or production behavior.
+The temporary API, Auth Emulator and MongoDB processes were stopped afterward.
+
 ## Executed verification — latest increment
 
 - Website TypeScript/Vite production build passed after latest connected controls.
