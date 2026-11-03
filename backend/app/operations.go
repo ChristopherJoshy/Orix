@@ -157,11 +157,12 @@ type AdminGroupSummary struct {
 	Members   []AdminGroupMember `json:"members" bson:"members"`
 }
 type AdminAuditEntry struct {
-	ID      bson.ObjectID `json:"log_id" bson:"_id"`
-	Created time.Time     `json:"timestamp" bson:"created_at"`
-	Actor   string        `json:"actor_id" bson:"actor_id"`
-	Action  string        `json:"action" bson:"action"`
-	Target  string        `json:"target_id" bson:"target_id"`
+	ID        bson.ObjectID `json:"log_id" bson:"_id"`
+	Created   time.Time     `json:"timestamp" bson:"created_at"`
+	Actor     string        `json:"actor_id" bson:"actor_id"`
+	ActorName string        `json:"actor_name" bson:"-"`
+	Action    string        `json:"action" bson:"action"`
+	Target    string        `json:"target_id" bson:"target_id"`
 }
 type AdminReadRepository interface {
 	LookupAccount(context.Context, string, string) (User, error)
@@ -230,6 +231,35 @@ func (m mongoUsers) AuditEntries(ctx context.Context, user string) ([]AdminAudit
 		return nil, err
 	}
 	rows = trimPage(ctx, rows, func(entry AdminAuditEntry) (time.Time, string) { return entry.Created, entry.ID.Hex() })
+	ids := make([]string, 0, len(rows))
+	seen := make(map[string]bool)
+	for _, row := range rows {
+		if row.Actor != "" && !seen[row.Actor] {
+			ids = append(ids, row.Actor)
+			seen[row.Actor] = true
+		}
+	}
+	if len(ids) > 0 {
+		users, err := m.collection.Find(ctx, bson.M{"user_id": bson.M{"$in": ids}}, options.Find().SetProjection(bson.M{"user_id": 1, "display_name": 1}))
+		if err != nil {
+			return nil, err
+		}
+		defer users.Close(ctx)
+		var identities []struct {
+			ID   string `bson:"user_id"`
+			Name string `bson:"display_name"`
+		}
+		if err = users.All(ctx, &identities); err != nil {
+			return nil, err
+		}
+		names := make(map[string]string, len(identities))
+		for _, identity := range identities {
+			names[identity.ID] = identity.Name
+		}
+		for i := range rows {
+			rows[i].ActorName = names[rows[i].Actor]
+		}
+	}
 	return rows, nil
 }
 func (m mongoUsers) AdminSummary(ctx context.Context) (map[string]any, error) {

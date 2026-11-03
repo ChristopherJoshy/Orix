@@ -812,6 +812,7 @@ interface AuditRow {
   log_id: string;
   timestamp: string;
   actor_id: string;
+  actor_name?: string;
   action: string;
   target_id: string;
 }
@@ -893,9 +894,8 @@ export function Audit() {
             <h2>{row.action.replaceAll("_", " ")}</h2>
             <p>{new Date(row.timestamp).toLocaleString()}</p>
             <p>
-              Actor: {row.actor_id}
-              <br />
-              Target: {row.target_id}
+              By: {row.actor_name || (row.actor_id === "system" ? "System" : "Name unavailable")}
+              {row.target_id && <><br />Reference: {row.target_id}</>}
             </p>
           </article>
         ))

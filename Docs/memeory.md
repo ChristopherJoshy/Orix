@@ -899,3 +899,8 @@ metadata and authenticated search indexing behavior remain unverified.
 list responses with a retryable error; audit and report lists also check their
 response shape. Website build passed; authenticated production verification
 remains outstanding.
+
+2026-11-03 — The admin activity API resolves account display names for audit
+actors, and the website displays the name and recorded action. Go and website
+builds passed; the backend was updated and its service is active. The live
+signed-in log still needs owner verification.

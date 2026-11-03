@@ -1265,3 +1265,8 @@ metadata and authenticated search indexing behavior remain unverified.
 2026-11-03 — Corrected the admin failed-delivery response contract and added
 response-shape checks for delivery, worker, audit and report lists. Website
 production build passed. Authenticated production flows were not exercised.
+
+2026-11-03 — Activity records now resolve actor display names from account
+records and show them in the admin log. Website build and Go build passed; the
+backend service was updated and reported active. Authenticated activity-log
+verification was not performed.
