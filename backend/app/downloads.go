@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"os"
@@ -20,6 +21,8 @@ import (
 )
 
 const maxAPKSize int64 = 256 << 20
+
+var errInvalidAPK = errors.New("invalid APK upload")
 
 type PublicSettings struct {
 	AndroidPrompt bool           `json:"android_prompt" bson:"android_prompt"`
@@ -78,13 +81,20 @@ func (m mongoUsers) CreateAPKTicket(ctx context.Context, actor, version, digest 
 
 var apkUploadSlots = make(chan struct{}, 2)
 
-func (m mongoUsers) PublishAPK(ctx context.Context, actor, ticket string, source io.Reader) (PublicSettings, error) {
+func (m mongoUsers) PublishAPK(ctx context.Context, actor, ticket string, source io.Reader) (result PublicSettings, resultErr error) {
+	stage := "acquire_upload_slot"
+	defer func() {
+		if resultErr != nil {
+			slog.Error("APK publication failed", "stage", stage)
+		}
+	}()
 	select {
 	case apkUploadSlots <- struct{}{}:
 		defer func() { <-apkUploadSlots }()
 	case <-ctx.Done():
 		return PublicSettings{}, ctx.Err()
 	}
+	stage = "validate_upload_grant"
 	var grant struct {
 		Version string `bson:"version"`
 		Digest  string `bson:"sha256"`
@@ -95,20 +105,23 @@ func (m mongoUsers) PublishAPK(ctx context.Context, actor, ticket string, source
 	if err != nil {
 		return PublicSettings{}, err
 	}
+	stage = "create_temporary_file"
 	file, err := os.CreateTemp("", "orix-apk-*")
 	if err != nil {
 		return PublicSettings{}, err
 	}
 	defer os.Remove(file.Name())
 	defer file.Close()
+	stage = "receive_and_verify_upload"
 	hash := sha256.New()
 	size, err := io.Copy(io.MultiWriter(file, hash), io.LimitReader(source, maxAPKSize+1))
 	if err != nil || size != grant.Size || size > maxAPKSize || hex.EncodeToString(hash.Sum(nil)) != grant.Digest {
-		return PublicSettings{}, errors.New("APK size or digest does not match the upload grant")
+		return PublicSettings{}, errInvalidAPK
 	}
+	stage = "validate_apk_archive"
 	archive, err := zip.NewReader(file, size)
 	if err != nil {
-		return PublicSettings{}, errors.New("invalid APK archive")
+		return PublicSettings{}, errInvalidAPK
 	}
 	manifest, dex := false, false
 	for _, entry := range archive.File {
@@ -120,22 +133,25 @@ func (m mongoUsers) PublishAPK(ctx context.Context, actor, ticket string, source
 		}
 	}
 	if !manifest || !dex {
-		return PublicSettings{}, errors.New("APK archive is missing its manifest or application code")
+		return PublicSettings{}, errInvalidAPK
 	}
 	if _, err = file.Seek(0, io.SeekStart); err != nil {
 		return PublicSettings{}, err
 	}
+	stage = "store_apk"
 	bucket := m.collection.Database().GridFSBucket(options.GridFSBucket().SetName("android_releases"))
 	id, err := bucket.UploadFromStream(ctx, "Orix.apk", file)
 	if err != nil {
 		return PublicSettings{}, err
 	}
+	stage = "start_publication_transaction"
 	session, err := m.collection.Database().Client().StartSession()
 	if err != nil {
 		_ = bucket.Delete(context.WithoutCancel(ctx), id)
 		return PublicSettings{}, err
 	}
 	defer session.EndSession(ctx)
+	stage = "commit_publication"
 	_, err = session.WithTransaction(ctx, func(tx context.Context) (any, error) {
 		if _, err := m.authorizeAdminMutation(tx, actor); err != nil {
 			return nil, err
@@ -164,6 +180,7 @@ func (m mongoUsers) PublishAPK(ctx context.Context, actor, ticket string, source
 		_ = bucket.Delete(cleanup, id)
 		return PublicSettings{}, err
 	}
+	stage = "read_published_settings"
 	m.cleanupAPK(ctx)
 	return m.PublicSettings(ctx)
 }
@@ -311,7 +328,11 @@ func (a *AuthDependencies) uploadAPK(w http.ResponseWriter, r *http.Request, use
 	defer cancel()
 	value, err := repo.PublishAPK(ctx, user.ID, ticket, r.Body)
 	if err != nil {
-		writeJSON(w, 422, map[string]string{"detail": "Upload was not published. Check the APK and request a fresh upload grant."})
+		status := http.StatusServiceUnavailable
+		if errors.Is(err, errInvalidAPK) {
+			status = http.StatusUnprocessableEntity
+		}
+		writeJSON(w, status, map[string]string{"detail": "Upload was not published. Please try again."})
 		return
 	}
 	writeJSON(w, 200, value)

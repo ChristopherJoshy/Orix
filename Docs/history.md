@@ -1292,3 +1292,8 @@ and Go builds passed. A real APK upload and responsive browser QA were not run.
 visibility changes; close it after opening if the connection is no longer needed.
 Website build passed. Production nginx recorded successful WebSocket upgrades;
 no authenticated message delivery test was performed.
+
+2026-11-03 — Added credential-free APK publication stage diagnostics and
+separated archive validation failures from service errors. Go build passed and
+the backend service was restarted. The reported upload failure requires another
+real attempt to identify its stage; no production test APK was uploaded.

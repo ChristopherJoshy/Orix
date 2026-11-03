@@ -925,3 +925,8 @@ publishing a real signed APK and confirm the public settings/download.
 2026-11-03 — Browser socket cleanup now waits for connecting sockets to open
 before closing them. Website build passed; production proxy logs showed 101
 upgrades, but end-to-end authenticated realtime delivery remains unverified.
+
+2026-11-03 — APK publication returned 422 again after the timeout change. The
+backend now logs only the failed publication stage and distinguishes invalid
+APK responses from service errors. The backend was redeployed; a fresh real
+upload attempt is needed to identify and resolve the remaining cause.
