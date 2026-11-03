@@ -1312,3 +1312,9 @@ accessible screens; authenticated/device and production speed remain unverified.
 See Docs/ux-review.md.
 
 Focused Flutter analysis rerun: no issues found.
+
+2026-11-03 — Production APK diagnostics showed failure during GridFS storage.
+The authentication middleware passed its ten-second context into the entire
+upload; the APK route now uses the original request context after authentication
+and its own bounded upload deadline. Focused Go auth/upload tests passed. The
+VPS backend was rebuilt and restarted; real APK publication remains unverified.

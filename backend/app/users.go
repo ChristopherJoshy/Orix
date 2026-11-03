@@ -165,6 +165,12 @@ func (a *AuthDependencies) identified(next func(http.ResponseWriter, *http.Reque
 		if !a.maintenanceGate(w, scoped, user) {
 			return
 		}
+		// APK uploads have their own five-minute deadline. The ten-second
+		// authentication deadline must not cancel the subsequent file transfer.
+		if r.Method == http.MethodPut && r.URL.Path == "/api/v1/admin/android-apk" {
+			next(w, r, user)
+			return
+		}
 		next(w, scoped, user)
 	}
 }

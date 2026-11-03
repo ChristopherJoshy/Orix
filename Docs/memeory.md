@@ -943,3 +943,8 @@ three existing brace infos; corrected before rerun. Private screens/device login
 remain unverified; blank-login report not reproduced. Details: Docs/ux-review.md.
 
 Focused Flutter analysis rerun: no issues found.
+
+2026-11-03 — The ten-second authentication context was cancelling APK storage.
+The authenticated APK upload now uses its five-minute handler deadline. Focused
+Go auth/upload tests passed and the VPS backend is active after deployment. A
+real APK upload is still needed to confirm the complete publication flow.
