@@ -1203,3 +1203,8 @@ matching remains unverified.
 requests, and built Android 2.1.1+7 with a newly generated release key. APK v2
 signature and package metadata verified. Firebase registration of the release
 fingerprints and signed-device login remain outstanding.
+
+2026-11-03 — Simplified the website session intro to the standard ORIX symbol
+and animated loading squares with a small generated grayscale Kerala sprite.
+Removed the slogan/skip action and enforced a two-second minimum independent of
+motion preferences. Website production build passed; no broader QA was run.

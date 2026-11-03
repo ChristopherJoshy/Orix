@@ -13,12 +13,11 @@ import {
   MotionConfig,
   m,
   AnimatePresence,
-  useReducedMotion,
 } from "motion/react";
 import { Toaster, toast } from "sonner";
 import { useStore } from "./lib/store";
 import { initializeSession, useSession } from "./lib/session";
-import { Button, Logo } from "./components/ui";
+import { Button } from "./components/ui";
 import { PixelMark } from "./components/PixelArt";
 import { PixelStatus, LifecycleFeedback } from "./components/PixelStatus";
 const Groups = lazy(() =>
@@ -109,40 +108,34 @@ function Splash() {
   const [show, setShow] = useState(
     () => !sessionStorage.getItem("orix-welcome"),
   );
-  const reduced = useReducedMotion();
-  const motion = useStore((s) => s.motion);
   useEffect(() => {
     if (!show) return;
-    const timer = setTimeout(
-      () => {
-        sessionStorage.setItem("orix-welcome", "1");
-        setShow(false);
-      },
-      reduced || !motion ? 0 : 750,
-    );
+    const timer = setTimeout(() => {
+      sessionStorage.setItem("orix-welcome", "1");
+      setShow(false);
+    }, 2000);
     return () => clearTimeout(timer);
-  }, [show, reduced, motion]);
+  }, [show]);
   return (
     <AnimatePresence>
       {show && (
         <m.div
-          className="splash"
+          className="splash splash-loader"
+          role="status"
+          aria-label="Opening ORIX"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.22 }}
         >
-          <Logo />
-          <PixelStatus state="loading" label="Loading" />
-          <span>A little company goes a long way.</span>
-          <Button
-            variant="ghost"
-            onClick={() => {
-              sessionStorage.setItem("orix-welcome", "1");
-              setShow(false);
-            }}
-          >
-            Skip intro
-          </Button>
+          <PixelMark className="loading-brand" />
+          <img
+            className="splash-art"
+            src="/art/orix-intro.png"
+            alt=""
+            width="224"
+            height="80"
+          />
+          <PixelStatus state="loading" />
         </m.div>
       )}
     </AnimatePresence>

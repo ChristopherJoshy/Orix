@@ -836,3 +836,8 @@ test, Go race suite and direct provider requests. Built signed Android APK
 Release keystore and password are stored outside the repository. The owner needs
 to add its certificate fingerprints to Firebase; signed Google login, live push,
 APK publication and complete lift matching have not yet been verified.
+
+2026-11-03 — Simplified the website session intro to the standard ORIX symbol
+and animated loading squares with a small generated grayscale Kerala sprite.
+Removed the slogan/skip action and enforced a two-second minimum independent of
+motion preferences. Website production build passed; no broader QA was run.
