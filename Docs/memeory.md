@@ -816,3 +816,17 @@ race, external providers or deployed behavior; no production data was used.
 their own checks. Stopped the temporary test services, corrected the backend
 environment-template instruction and added app and website README setup notes.
 No tests were run for this documentation change.
+2026-11-03 — Deployment: Go 1.27.3 was installed under the ORIX directory on
+the EC2 host. Typelo was stopped and disabled at the owner's request; ORIX now
+runs as a systemd service on its former loopback port behind existing Nginx.
+Atlas access required allowing the host's public IP. HTTPS health/readiness and
+the ORIX-domain CORS preflight returned success. The ORIX Vercel project is linked
+to the GitHub repository's main branch, with website as its root and Git deploys
+enabled. Production environment settings and browser push public key are set;
+the website has been deployed. Geoapify place-search credentials are configured
+and a direct provider query succeeded. Road routing is not configured yet, and
+authenticated app flows, push delivery and the Android release remain unverified.
+The existing Nginx upload limit also needs review for large APK releases.
+2026-11-03 — Added a Geoapify matrix/routing adapter using the existing private
+provider key. Existing road snap, capacity, detour and time-window checks remain
+in effect. Provider-backed end-to-end lift matching remains to be verified.

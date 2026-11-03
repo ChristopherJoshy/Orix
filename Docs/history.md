@@ -1190,3 +1190,12 @@ database was used. Real provider and broader multi-account scenarios remain.
 2026-11-03 — At the owner's request, stopped further testing, corrected the
 backend README environment-template instruction and added app/website setup
 READMEs. No tests were run for this documentation change.
+2026-11-03 — Installed Go and deployed the ORIX binary to the existing EC2
+upstream port after Atlas access was enabled; stopped and disabled Typelo. HTTPS
+health/readiness and ORIX-domain CORS checks passed. Deployed the website to
+Vercel, set its production environment and VAPID public key, and configured the
+GitHub-linked project root as website. Direct Geoapify autocomplete succeeded.
+Live auth, push, routing and APK publication were not verified.
+2026-11-03 — Added a Geoapify road-routing adapter to support lift itinerary
+planning using the configured provider key. Go race suite passed; live lift
+matching remains unverified.

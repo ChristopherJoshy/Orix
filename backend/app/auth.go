@@ -319,7 +319,12 @@ func OpenAuth(ctx context.Context, project, credentialsPath, credentialsJSON, ur
 			return nil, nil, err
 		}
 	}
-	router, err := NewRoadRouter(os.Getenv("ROUTING_BASE_URL"))
+	var router *RoadRouter
+	if os.Getenv("ROUTING_PROVIDER") == "geoapify" {
+		router, err = NewGeoapifyRouter(os.Getenv("GEOCODING_API_TOKEN"))
+	} else {
+		router, err = NewRoadRouter(os.Getenv("ROUTING_BASE_URL"))
+	}
 	if err != nil {
 		closeClient()
 		return nil, nil, err

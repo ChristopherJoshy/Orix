@@ -37,11 +37,12 @@ type roadCacheEntry struct {
 	expires time.Time
 }
 type RoadRouter struct {
-	mu         sync.Mutex
-	cache      map[string]roadCacheEntry
-	cacheBytes int
-	base       string
-	client     *http.Client
+	mu          sync.Mutex
+	cache       map[string]roadCacheEntry
+	cacheBytes  int
+	base        string
+	geoapifyKey string
+	client      *http.Client
 }
 
 var ErrNoRoadPlan = errors.New("no road itinerary fits the detour and capacity limits")
@@ -63,12 +64,30 @@ func NewRoadRouter(origin string) (*RoadRouter, error) {
 	transport.ResponseHeaderTimeout = 3 * time.Second
 	return &RoadRouter{base: strings.TrimRight(origin, "/"), client: &http.Client{Transport: transport, Timeout: 4 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}, cache: make(map[string]roadCacheEntry)}, nil
 }
+
+// NewGeoapifyRouter uses the same validated planning rules with Geoapify's
+// matrix and routing APIs. The key is never included in cache keys or logs.
+func NewGeoapifyRouter(key string) (*RoadRouter, error) {
+	if strings.TrimSpace(key) == "" {
+		return nil, errors.New("Geoapify routing key is required")
+	}
+	r, err := NewRoadRouter("https://api.geoapify.com/v1")
+	if err == nil {
+		r.geoapifyKey = key
+		r.client.Timeout = 10 * time.Second
+		r.client.Transport.(*http.Transport).ResponseHeaderTimeout = 8 * time.Second
+	}
+	return r, err
+}
 func (r *RoadRouter) get(ctx context.Context, path string, result any) error {
 	r.mu.Lock()
 	cached, found := r.cache[path]
 	r.mu.Unlock()
 	if found && cached.expires.After(time.Now()) {
 		return json.Unmarshal(cached.data, result)
+	}
+	if r.geoapifyKey != "" {
+		return r.getGeoapify(ctx, path, result)
 	}
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, r.base+path, nil)
 	if err != nil {
