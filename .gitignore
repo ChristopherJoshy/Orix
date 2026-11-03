@@ -53,6 +53,7 @@ __pycache__/
 
 # Local agent skills
 /.agents/skills/
+/skills-lock.json
 
 # Local runtime configuration and Firebase Admin credentials
 **/.env

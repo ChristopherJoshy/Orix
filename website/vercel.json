@@ -9,6 +9,18 @@
   ],
   "headers": [
     {
+      "source": "/app/:path*",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/admin/:path*",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/onboarding",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
       "source": "/((?!api(?:/|$)|assets(?:/|$)).*)",
       "headers": [
         {

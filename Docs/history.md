@@ -1254,3 +1254,10 @@ behavior. New messages follow the bottom only while the reader is near it. Mobil
 uses larger body text and tighter gutters. Website build passed. Research: Material
 Web text-field guidance and Carbon chat layout customization; no authenticated
 production chat fixtures were created for this design change.
+
+2026-11-03 — Installed the requested seo-audit skill locally. Added generated
+monochrome social preview artwork, Open Graph and Twitter metadata, a sitemap
+and robots file, and noindex response headers for private app/admin routes.
+Verified the requested Firebase identity and assigned its admin role using the
+guarded bootstrap command. Website build passed. Per-page server-rendered SEO
+metadata and authenticated search indexing behavior remain unverified.
