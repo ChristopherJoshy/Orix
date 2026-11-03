@@ -851,3 +851,8 @@ face confirmation, and blocked submission during upload. Website build passed.
 shared disabled gray styling once granted. Existing browser permission state is
 read where supported and permission changes update the controls. Pending requests
 disable repeated clicks; denied requests stay retryable. Website build passed.
+
+2026-11-03 — Spaced the final web onboarding step into a short introduction,
+tour action, consent group and separated footer actions. Replaced error-boundary
+layout with a compact centered recovery group, removing the inherited auto-margin
+that separated the illustration from its message. Website build passed.

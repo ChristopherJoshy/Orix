@@ -191,11 +191,16 @@ class ErrorBoundary extends Component<
   render() {
     if (this.state.error)
       return (
-        <main className="status-page">
-          <PixelStatus state="error" label="Page unavailable" />
-          <h1>A little bump in the road.</h1>
-          <p>Reload the page to get back on your way.</p>
-          <Button onClick={() => window.location.reload()}>Try again</Button>
+        <main className="recovery-page" aria-labelledby="recovery-title">
+          <div className="recovery-content">
+            <PixelMark className="recovery-brand" />
+            <PixelStatus state="error" />
+            <h1 id="recovery-title">A little bump in the road.</h1>
+            <p>This page couldn’t open. Reload it to get back on your way.</p>
+            <Button onClick={() => window.location.reload()}>
+              Reload page
+            </Button>
+          </div>
         </main>
       );
     return this.props.children;

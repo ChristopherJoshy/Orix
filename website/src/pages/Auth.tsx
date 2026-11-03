@@ -240,7 +240,7 @@ export function Onboarding({ embedded = false }: { embedded?: boolean }) {
   }
   return (
     <Container
-      className="standalone-form introduction"
+      className={`standalone-form introduction${step === 3 ? " introduction-ready" : ""}`}
       id={embedded ? undefined : "main"}
     >
       <Logo />
@@ -455,7 +455,15 @@ export function Onboarding({ embedded = false }: { embedded?: boolean }) {
           </>
         )}
         {step === 3 && (
-          <>
+          <div className="onboarding-ready">
+            <p className="onboarding-ready-copy">
+              Check your travel partner and pickup plan before you go. Agree on
+              costs together.
+            </p>
+            <p className="onboarding-ready-copy muted">
+              Blocking and private reports are always available if you need
+              them.
+            </p>
             <Button
               type="button"
               variant="secondary"
@@ -463,32 +471,30 @@ export function Onboarding({ embedded = false }: { embedded?: boolean }) {
             >
               Replay the tour
             </Button>
-            <p>
-              Check the person and pickup plan before travelling. Agree on costs
-              directly. You can block contacts by email or start a private
-              report conversation.
-            </p>
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={accepted}
-                onChange={(e) => setAccepted(e.target.checked)}
-              />
-              <span>
-                I agree to the <Link to="/terms">community safety rules</Link>
-              </span>
-            </label>
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={privacy}
-                onChange={(e) => setPrivacy(e.target.checked)}
-              />
-              <span>
-                I have read the <Link to="/privacy">privacy policy</Link>
-              </span>
-            </label>
-          </>
+            <fieldset className="onboarding-consents">
+              <legend>Before you join</legend>
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={accepted}
+                  onChange={(e) => setAccepted(e.target.checked)}
+                />
+                <span>
+                  I agree to the <Link to="/terms">community safety rules</Link>
+                </span>
+              </label>
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={privacy}
+                  onChange={(e) => setPrivacy(e.target.checked)}
+                />
+                <span>
+                  I have read the <Link to="/privacy">privacy policy</Link>
+                </span>
+              </label>
+            </fieldset>
+          </div>
         )}
         {error && <p role="alert">{error}</p>}
         <div className="intro-actions">

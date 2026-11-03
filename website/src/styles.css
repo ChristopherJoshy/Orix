@@ -6439,6 +6439,20 @@ html[data-motion="off"] .pixel-state {
 .introduction { width: min(100% - 32px, 600px); margin: 48px auto; }
 .intro-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0; }
 .intro-photo { width: 128px; height: 128px; object-fit: cover; filter: grayscale(1); margin: 16px 0; }
+.introduction-ready > h1 { margin-bottom: 28px; }
+.onboarding-ready-copy { margin: 0 0 16px; line-height: 1.8; max-width: 44ch; }
+.onboarding-ready > .button { margin-top: 8px; }
+.onboarding-consents { border: 0; border-top: 1px solid #d5d5d5; padding: 24px 0 0; margin: 36px 0 0; min-width: 0; }
+.onboarding-consents legend { padding: 0 12px 0 0; font-size: .8rem; color: #666; }
+.onboarding-consents .checkbox-label { margin: 0; padding: 14px 0; align-items: flex-start; gap: 14px; font-size: .875rem; }
+.onboarding-consents input { flex-shrink: 0; margin-top: 5px; }
+.introduction-ready .intro-actions { margin-top: 32px; padding-top: 24px; border-top: 1px solid #d5d5d5; gap: 20px; }
+.recovery-page { min-height: 100svh; display: grid; place-items: center; padding: 48px 24px; background: var(--paper); }
+.recovery-content { width: min(100%, 480px); display: flex; flex-direction: column; align-items: center; text-align: center; }
+.recovery-brand { width: 32px; height: 32px; margin-bottom: 36px; }
+.recovery-content .pixel-status { width: 160px; margin: 0 0 28px; }
+.recovery-content h1 { font-size: clamp(1.8rem, 4vw, 2.5rem); line-height: 1.2; margin: 0; text-wrap: balance; }
+.recovery-content p { max-width: 32ch; margin: 20px 0 28px; line-height: 1.8; color: #666; }
 .upload-arrow { animation: pixel-seat 1.2s steps(6) infinite alternate; }
 
 .download-hash { overflow-wrap: anywhere; font-size: .8rem; }
