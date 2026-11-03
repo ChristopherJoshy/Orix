@@ -23,3 +23,4 @@ and [current integration status](../Docs/integration-progress.md).
 The production API origin must use HTTPS and be reachable from browsers. The
 admin proxy uses the same API origin and a separately configured server-only
 secret. Vercel's Git integration deploys the production branch from this folder.
+The project uses `main` as its production branch.
