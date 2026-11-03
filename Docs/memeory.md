@@ -861,3 +861,11 @@ that separated the illustration from its message. Website build passed.
 journey column and explicitly spaced safety/lift sections. Tablet uses two
 support columns, mobile stacks them with consistent gaps and bounded columns.
 Website build passed; authenticated visual QA was not run.
+
+2026-11-03 — Group chat now uses bounded message bubbles, a responsive composer,
+Enter-to-send and Shift+Enter newlines with IME composition preserved. Singleton
+groups explain why confirmation is unavailable. Notification logo sizing is
+bounded by default; metadata and long headings wrap on narrow screens. Missing
+assets no longer rewrite to HTML, entry documents revalidate, and stale Vite
+chunk failures reload at most once per minute. Website build passed. A complete
+authenticated screen-by-screen responsive audit has not been performed.

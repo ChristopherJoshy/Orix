@@ -258,7 +258,10 @@ export function GroupDetail() {
       <Link className="back-link" to="/app/groups">
         Your groups
       </Link>
-      <PageHead title={group.route_summary} subtitle={group.pickup_summary}>
+      <PageHead
+        title="Your journey group."
+        subtitle="Your route, travel partners and conversation"
+      >
         <Badge>{group.status}</Badge>
       </PageHead>
       {error && <p role="alert">{error}</p>}
@@ -283,6 +286,20 @@ export function GroupDetail() {
           <p>
             {group.pickup_summary} → {group.drop_summary}
           </p>
+          {waiting && group.members.length < 2 && (
+            <p className="group-confirmation-note" role="status">
+              Looking for your travel partners. You can confirm this group once
+              someone joins.
+            </p>
+          )}
+          {waiting && group.members.length > 1 && me?.readiness_confirmed && (
+            <p className="group-confirmation-note" role="status">
+              You’ve confirmed this group.{" "}
+              {group.all_confirmed
+                ? "Everyone is ready."
+                : "Waiting for your travel partners to confirm."}
+            </p>
+          )}
           <div className="intro-actions">
             {["pending", "confirming"].includes(group.status) &&
               group.members.length > 1 &&
@@ -343,7 +360,7 @@ export function GroupDetail() {
           ))}
         </section>
       </div>
-      <section className="panel">
+      <section className="panel group-conversation">
         <h2>Group conversation</h2>
         {chatError && (
           <p role="alert">
@@ -378,7 +395,7 @@ export function GroupDetail() {
             messages.map((message) => (
               <article
                 key={message.message_id}
-                className={`report-bubble ${message.is_mine ? "mine" : ""}`}
+                className={`group-chat-bubble ${message.is_mine ? "mine" : ""}`}
               >
                 <small>
                   {message.is_mine
@@ -386,13 +403,19 @@ export function GroupDetail() {
                     : message.user_display_name || "Travel partner"}
                 </small>
                 <p>{message.content}</p>
-                <time>{new Date(message.created_at).toLocaleTimeString()}</time>
+                <time dateTime={message.created_at}>
+                  {new Date(message.created_at).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </time>
               </article>
             ))
           )}
         </div>
         {canChat && (
           <form
+            className="group-chat-composer"
             onSubmit={async (event) => {
               event.preventDefault();
               const text = draft.trim();
@@ -430,9 +453,23 @@ export function GroupDetail() {
                 disabled={busy}
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
+                onKeyDown={(event) => {
+                  if (
+                    event.key === "Enter" &&
+                    !event.shiftKey &&
+                    !event.nativeEvent.isComposing
+                  ) {
+                    event.preventDefault();
+                    if (!busy && draft.trim())
+                      event.currentTarget.form?.requestSubmit();
+                  }
+                }}
               />
             </Field>
             <Button disabled={busy || !draft.trim()}>Send message</Button>
+            <small className="group-chat-keyboard">
+              Enter to send · Shift + Enter for a new line
+            </small>
           </form>
         )}
       </section>

@@ -145,8 +145,8 @@ export function Notifications() {
         />
       ) : (
         data?.notifications.map((notice) => (
-          <article className="panel" key={notice.notification_id}>
-            <div className="section-title">
+          <article className="panel inbox-notice" key={notice.notification_id}>
+            <div className="inbox-notice-meta">
               <PixelMark className="notification-brand" />
               {!notice.read && <Badge>Unread</Badge>}
               <time className="muted">

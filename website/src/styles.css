@@ -6484,6 +6484,36 @@ html[data-motion="off"] .pixel-state {
 .group-contact { padding:16px 0; border-bottom:1px solid #d5d5d5; }
 .group-contact p { margin:8px 0; }
 .group-message-log { max-height:55dvh; overflow:auto; overscroll-behavior:contain; padding:16px 0; }
+.group-conversation { padding: 28px; }
+.group-conversation > h2 { margin-bottom: 24px; }
+.group-conversation .group-message-log { display: flex; flex-direction: column; gap: 12px; min-height: 180px; max-height: 420px; padding: 12px 4px 24px; }
+.group-chat-bubble { align-self: flex-start; max-width: min(80%, 560px); padding: 12px 16px; background: #efefef; color: #222; overflow-wrap: anywhere; }
+.group-chat-bubble.mine { align-self: flex-end; background: #252525; color: #fff; }
+.group-chat-bubble > small { display: block; font-size: .75rem; opacity: .7; }
+.group-chat-bubble > p { margin: 6px 0 8px; white-space: pre-wrap; line-height: 1.6; }
+.group-chat-bubble > time { display: block; text-align: right; font-size: .65rem; opacity: .65; font-variant-numeric: tabular-nums; }
+.group-chat-composer { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px; padding-top: 20px; border-top: 1px solid var(--line); }
+.group-chat-composer .field { margin: 0; min-width: 0; }
+.group-chat-composer textarea { min-height: 64px; max-height: 180px; resize: vertical; }
+.group-chat-keyboard { grid-column: 1 / -1; color: #666; font-size: .7rem; }
+.group-confirmation-note { padding: 16px; background: #f2f2f2; line-height: 1.7; }
+.notification-brand { width: 24px; height: 24px; flex: 0 0 24px; }
+.inbox-notice { min-width: 0; }
+.inbox-notice-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+.inbox-notice-meta > time { margin-left: auto; font-size: .75rem; }
+.inbox-notice h2, .inbox-notice p, .workspace-main .page-head h1 { overflow-wrap: anywhere; }
+.workspace-main, .workspace-main .two-column > *, .workspace-main .page-head > div { min-width: 0; }
+.inbox-notice .intro-actions { margin-bottom: 0; }
+@media (max-width: 480px) {
+  .inbox-notice-meta > time { width: 100%; margin-left: 0; }
+  .inbox-notice { padding: 20px; }
+}
+@media (max-width: 600px) {
+  .group-conversation { padding: 20px; }
+  .group-chat-composer { grid-template-columns: minmax(0, 1fr); }
+  .group-chat-composer > .button { justify-self: end; }
+  .group-chat-bubble { max-width: 92%; }
+}
 
 /* All owned overlays use the same neutral pixel treatment. */
 .modal-content { border:2px solid #242424; border-radius:0; box-shadow:6px 6px 0 #b8b8b8; background:#f8f8f8; color:#242424; }

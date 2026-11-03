@@ -59,6 +59,8 @@ export function PixelMark({ className = "" }: { className?: string }) {
     <svg
       className={className}
       viewBox="0 0 24 24"
+      width="24"
+      height="24"
       fill="currentColor"
       aria-hidden="true"
       shapeRendering="crispEdges"
