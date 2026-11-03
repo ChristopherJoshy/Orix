@@ -264,7 +264,10 @@ export default function Layout({ admin = false }: { admin?: boolean }) {
             </Link>
           </div>
         </header>
-        <main id="main" className="workspace-main">
+        <main
+          id="main"
+          className={`workspace-main${location.pathname === "/app" ? " workspace-dashboard" : ""}`}
+        >
           <m.div
             key={location.pathname}
             initial={motion ? { opacity: 0, y: 8 } : false}

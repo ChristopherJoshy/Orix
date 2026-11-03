@@ -1223,3 +1223,8 @@ disable repeated clicks; denied requests stay retryable. Website build passed.
 tour action, consent group and separated footer actions. Replaced error-boundary
 layout with a compact centered recovery group, removing the inherited auto-margin
 that separated the illustration from its message. Website build passed.
+
+2026-11-03 — Dashboard now uses the available workspace width with a larger
+journey column and explicitly spaced safety/lift sections. Tablet uses two
+support columns, mobile stacks them with consistent gaps and bounded columns.
+Website build passed; authenticated visual QA was not run.

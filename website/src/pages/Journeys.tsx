@@ -82,8 +82,8 @@ export function Dashboard() {
         </LinkButton>
       </PageHead>
       <LoadError error={error} retry={() => void load()} />
-      <div className="dashboard-grid">
-        <section>
+      <div className="dashboard-grid dashboard-home">
+        <section className="dashboard-journey">
           <div className="section-title">
             <h2>Your journey</h2>
             <Link to="/app/rides">All journeys →</Link>
@@ -103,7 +103,7 @@ export function Dashboard() {
             </Empty>
           ) : null}
         </section>
-        <section>
+        <section className="dashboard-support">
           <Link to="/app/safety" className="safety-panel">
             <ShieldCheck size={28} />
             <div>
