@@ -44,10 +44,7 @@ export default function DownloadAndroid() {
         settings.apk_size > 0 ? (
         <section className="panel">
           <h2>ORIX {settings.apk_version}</h2>
-          <p>
-            Refined pixel layouts, optional donations and a little Manglish
-            nudge.
-          </p>
+          <p>The latest published Android build, direct from ORIX.</p>
           <a
             className="button primary"
             href={`${apiOrigin()}/downloads/android.apk`}

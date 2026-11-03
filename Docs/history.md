@@ -1461,3 +1461,13 @@ Focused operator guards/version tests and Go vet passed after correcting the
 CLI's accidental Android-specific filename. Ten focused Flutter tests passed
 after correcting a non-const test constructor. Public APK build, signature and
 full-download verification are still pending at this checkpoint.
+
+2026-11-03 — Android 2.1.2+8 release artifact built and verified. APK size
+70,488,050 bytes; SHA-256 a4a1511872ed6e2e1dad397f8e034ffbd642132a7145f25f0cc35f86c9f35eb7.
+Apksigner and aapt passed; certificate matches the existing release keystore.
+Live website metadata/artwork and public download-page layout were checked.
+The final backend is active and ready; unauthenticated admin reminder access is
+rejected. Publication is pending explicit owner approval after automatic review
+rejected reading the running service environment as an unintended credential
+source. No credentials were read or copied. Public download remained 2.1.1 at
+this checkpoint. Full hashes/fingerprints and verification: Docs/release-2.1.2.md.
