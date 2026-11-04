@@ -1561,3 +1561,14 @@ not automatically replayed. Token retrieval failure no longer blocks startup.
 Focused Flutter analysis passed after two existing API brace infos were corrected.
 Recipient privacy/payload tests passed. No physical-device, production test pushes,
 background or reboot verification. Requires an updated app installation.
+
+## 2026-11-04 — Build signed Android 2.1.3+9
+
+Bumped app version and built signed release with existing private keystore and
+HTTPS release environment; test login explicitly disabled. Initial Flutter build
+selected Java25 and failed; official checksum-verified JDK21 direct Gradle build
+passed in 3m7s. Signature/package/version checks passed; signer matches existing
+release. Artifact/checksum and verification limits: Docs/release-2.1.3.md.
+No backend source delta since deployed backend; VPS service active and health/
+readiness checks passed. No backend restart, public APK publication, actual push
+delivery, device installation or payment performed.

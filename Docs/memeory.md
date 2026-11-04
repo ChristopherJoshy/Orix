@@ -1204,3 +1204,12 @@ Local test personas skip automatic push setup. Native OS approval is still requi
 where applicable. Focused Flutter analysis and recipient-payload tests passed;
 physical-device permission/background delivery remain unverified. An updated
 app build must be installed for these changes to run on an existing phone.
+
+2026-11-04 — Signed Android 2.1.3+9 APK built with current automatic push setup
+and donation fixes. Versioned artifact and standard Flutter APK output updated;
+apksigner passed and certificate matches 2.1.2. aapt confirmed package/version,
+minSdk24/targetSdk36. Initial Flutter build chose Java25 and failed; direct Gradle
+with checksum-verified official JDK21 succeeded in 3m7s. Backend source unchanged
+since deployment; VPS orix-backend active, /health healthy2.1.2 and /readyz ready.
+No backend deployment/restart needed. No real-phone push/device/payment checks
+or public APK publication performed. Details/checksum: Docs/release-2.1.3.md.
