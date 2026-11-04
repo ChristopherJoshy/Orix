@@ -1,5 +1,38 @@
 # Ride notifications
 
+## Push investigation — 2026-11-04 (release held)
+
+Owner authorized focused push verification and an Android release only after a
+real FCM push appears in the emulator's Android status bar. The emulator was signed
+out; owner subsequently could not sign in at this time. No authentication bypass,
+production test account, fabricated journey or synthetic status-bar notification
+was used. Actual Android/browser FCM delivery remains unverified. No new release
+version, signed release build or APK publication was performed.
+
+The reported HTTP429s exposed a separate registration/recovery problem: Go did
+not expose Retry-After through CORS, so browsers could retry before the cooldown.
+Go now exposes it. Android's shared HTTP client and the website retry transport
+share an origin-scoped cooldown across reads and writes; subsequent polls and
+token registration fail explicitly without network traffic during that interval.
+Numeric and HTTP-date guidance are honored; absent/invalid guidance defaults to
+one minute. Mutations rejected during cooldown are not queued or replayed.
+This reduces throttling pressure; it does not establish the original reason for
+the production quota exhaustion or prove that push delivery is repaired.
+
+Executed: Go race suite passed; web retry and existing service-worker checks and
+production build passed; ten focused Flutter cooldown/payload tests and scoped
+Dart analysis passed. Initial Dart malformed-header test failed because HttpDate
+throws HttpException; catch corrected and rerun passed. Updated debug APK built
+using checksum-verified official Corretto JDK21, installed with data preserved,
+and launched in visible emulator-5554. Existing version2.1.3 metadata is unchanged;
+this is a debug test build, not a release. No backend deployment was performed.
+
+Next: owner signs in/permits Android notifications, verify token ownership through
+the real API, send an explicitly authorized push, inspect actual Android status-bar
+and notification-shade delivery (foreground/background and reminder path), and
+verify real browser subscription/delivery. Only after that gate passes, bump the
+Android version, build/sign/verify the release and publish as requested.
+
 The server emits `type=RIDE_ALARM`, `action=show_alarm`, `group_id`, `ride_time`
 and `pickup_summary`. The client recognizes alarm types case-insensitively and
 serializes local notification payloads as JSON. Legacy pipe payloads remain

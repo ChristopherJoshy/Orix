@@ -1,5 +1,21 @@
 # Change history
 
+## 2026-11-04 — Push investigation; Android release held
+
+- Owner authorized focused push/emulator checks, requiring actual FCM delivery and
+  an Android status-bar notification before a new release. Owner later could not
+  sign in; real Android/browser delivery remains unverified. No release/version
+  bump/publication or production fixtures; authentication was not bypassed.
+- Exposed Retry-After via API CORS and added shared origin-level429 cooldowns to
+  Android/web HTTP transports so polling/registration cannot retry immediately.
+  HTTP-date/numeric guidance and malformed/missing headers covered; no mutation
+  is queued or replayed. This does not prove push delivery is fixed.
+- Passed Go race suite, web retry/worker checks and production build, ten focused
+  Flutter tests and scoped Dart analysis. Initial malformed HTTP-date test failed;
+  HttpException handling corrected and rerun passed. Debug Gradle assembly with
+  checksum-verified Corretto JDK21 passed; APK installed with data preserved and
+  launched in visible emulator-5554. No backend deployment performed.
+
 ## 2026-11-04 — Research and draft the SJCET animated-comic launch story
 
 Wrote Docs/launch-video-script.md from owner's student/mandhi/auto story, with

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -30,7 +31,7 @@ func TestCORSAndRateLimit(t *testing.T) {
 		{"OPTIONS", "https://orix.example", "/api/v1/auth/config", 204},
 		{"GET", "https://evil.example", "/api/v1/auth/config", 403},
 		{"GET", "https://orix.example", "/api/v1/auth/config", 200},
-		{"GET", "", "/api/v1/auth/config", 429},
+		{"GET", "https://orix.example", "/api/v1/auth/config", 429},
 		{"GET", "", "/health", 200},
 	}
 	for _, tt := range cases {
@@ -40,6 +41,9 @@ func TestCORSAndRateLimit(t *testing.T) {
 		h.ServeHTTP(w, r)
 		if w.Code != tt.status {
 			t.Fatalf("%s %s: %d", tt.method, tt.path, w.Code)
+		}
+		if tt.status == http.StatusTooManyRequests && (w.Header().Get("Retry-After") != "60" || !strings.Contains(w.Header().Get("Access-Control-Expose-Headers"), "Retry-After")) {
+			t.Fatal("browser clients must be able to read the rate-limit cooldown")
 		}
 	}
 }

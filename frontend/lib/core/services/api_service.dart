@@ -17,6 +17,7 @@ import '../utils/error_helper.dart';
 import 'package:go_router/go_router.dart';
 import '../router/app_router.dart';
 import 'auth_service.dart';
+import 'rate_limited_client.dart';
 import '../config/api_config.dart';
 
 // ApiConfig is imported from ../config/api_config.dart
@@ -71,7 +72,7 @@ class _CacheEntry {
 
 /// API service for backend communication
 class ApiService {
-  final http.Client _client = http.Client();
+  final http.Client _client = RateLimitedClient(http.Client());
   AuthService? _authService;
 
   String? get authIdentity => _authService?.currentUser?.uid;

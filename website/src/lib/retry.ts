@@ -1,4 +1,14 @@
 const transient = new Set([408, 425, 429, 500, 502, 503, 504]);
+// Quotas are shared by endpoints at an origin. Polls and registration must not
+// start another request while the server has told this tab to back off.
+const cooldowns = new Map<string, number>();
+function retryDelay(guidance: string | null): number {
+  if (!guidance) return 0;
+  const value = Number.isFinite(Number(guidance))
+    ? Number(guidance) * 1000
+    : Date.parse(guidance) - Date.now();
+  return Number.isFinite(value) ? Math.max(0, value) : 0;
+}
 async function wait(ms: number, signal?: AbortSignal | null) {
   signal?.throwIfAborted();
   await new Promise<void>((resolve, reject) => {
@@ -19,8 +29,16 @@ export async function fetchWithRetry(
   init: RequestInit = {},
 ): Promise<Response> {
   const attempts = (init.method ?? "GET").toUpperCase() === "GET" ? 3 : 1;
+  const origin = new URL(url, window.location.origin).origin;
   for (let attempt = 0; attempt < attempts; attempt++) {
     init.signal?.throwIfAborted();
+    const remaining = (cooldowns.get(origin) ?? 0) - Date.now();
+    if (remaining > 0)
+      return new Response(null, {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil(remaining / 1000)) },
+      });
+    cooldowns.delete(origin);
     let response: Response;
     try {
       response = await fetch(url, {
@@ -45,14 +63,14 @@ export async function fetchWithRetry(
     window.dispatchEvent(
       new CustomEvent("orix:connection", { detail: { connected: true } }),
     );
+    const parsed = retryDelay(response.headers.get("Retry-After"));
+    if (response.status === 429) {
+      // A missing/unexposed header is not permission to hammer the API.
+      cooldowns.set(origin, Date.now() + (parsed || 60000));
+      return response;
+    }
     if (!transient.has(response.status) || attempt === attempts - 1)
       return response;
-    const guidance = response.headers.get("Retry-After");
-    const parsed = guidance
-      ? Number.isFinite(Number(guidance))
-        ? Number(guidance) * 1000
-        : Date.parse(guidance) - Date.now()
-      : 0;
     // Long server cooldowns are surfaced to the user instead of shortened.
     if (parsed > 10000) return response;
     await response.body?.cancel();

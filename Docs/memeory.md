@@ -1,5 +1,18 @@
 # Working memory
 
+## Push repair / Android release gate — 2026-11-04
+
+Owner requests actual push repair on Android/web and a new Android release ONLY
+after receiving a real FCM push in the Android emulator status bar. Focused checks
+authorized. Owner cannot sign in at present; delivery and release remain blocked.
+No bypass, production fixtures or simulated notification used. Fixed CORS exposure
+of Retry-After and origin-wide429 cooldowns in Android/web transports, including
+HTTP dates and missing/invalid-header backoff; no automatic mutation replay.
+Go race suite, web retry/worker checks/build, ten Flutter tests and scoped Dart
+analysis passed after fixing a malformed-header catch. Debug APK built/installed
+with data preserved in visible emulator-5554. No version bump, signed release,
+publication or backend deployment. See Docs/notifications.md for evidence/next gate.
+
 ## Launch script draft — 2026-11-04
 
 Owner supplied SJCET student/mandhi/shared-auto story and asked for researched,

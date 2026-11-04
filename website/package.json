@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build && node scripts/prerender.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "test:seo": "node tests/seo.test.mjs",
+    "test:retry": "tsc --ignoreConfig --outDir /tmp/opencode/orix-push-tests --target ES2022 --module ES2022 --skipLibCheck src/lib/retry.ts && node tests/retry.test.mjs /tmp/opencode/orix-push-tests/retry.js",
     "seo:notify": "node scripts/notify-indexnow.mjs",
     "test:errors": "tsc --ignoreConfig --noEmit false --outDir /tmp/orix-web-tests --target ES2022 --module ES2022 --skipLibCheck src/lib/errors.ts && node tests/errors.test.mjs",
     "test:chat": "tsc --ignoreConfig --outDir /tmp/orix-chat-tests --target ES2022 --module ES2022 --skipLibCheck src/lib/chat.ts && node tests/chat.test.mjs"

@@ -252,7 +252,7 @@ func New(config Config, logger *slog.Logger) http.Handler {
 				return
 			}
 			w.Header().Set("Access-Control-Allow-Origin", origin)
-			w.Header().Set("Access-Control-Expose-Headers", "X-Next-Cursor")
+			w.Header().Set("Access-Control-Expose-Headers", "X-Next-Cursor, Retry-After")
 			if r.Method == http.MethodOptions {
 				w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 				w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Admin-Secret, X-Upload-Ticket")
