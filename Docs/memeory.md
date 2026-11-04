@@ -1172,3 +1172,21 @@ are not achieved. After the same Google-processing dependency persisted across
 three goal turns, mark the goal blocked pending Google's recrawl/index update.
 Play publication remains explicitly cancelled by the owner; do not revive it from
 the older saved goal text. No new design/code changes or broader held QA.
+
+2026-11-04 — Donation dialogs simplified in web/app with the existing pixel
+heading, one primary Google Pay action, recipient panel, copy action and quiet
+optional/dismiss text. Phone notification settings now expose permission plus
+actual authenticated token-registration retry, phone settings, and authored
+failure feedback. Inbox setup links make device opt-in discoverable in both
+clients. Web waits for active worker, reuses granted permission, and adds a
+standalone manifest/original monochrome mark PNGs for Home Screen web apps.
+VPS read-only diagnosis: orix-backend active, /health healthy, /readyz ready;
+aggregate database inspection found zero native tokens and zero web devices.
+No production notification was sent or test data created. Device registration is
+required; inbox success alone is not proof of push delivery. SSH key is outside
+repository and no credential values were printed. Android/iOS native prompt and
+notification chrome remain OS-owned. Existing Web Locks guard retained to avoid
+cross-tab token races; unsupported browsers show explicit unavailable state.
+Executed website build; web donation and push-worker checks; focused Flutter
+analysis clean; donation/payload tests 9 passed. Physical phone/background push
+and real payment not exercised. Repository security review follows this fix.

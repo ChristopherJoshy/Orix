@@ -60,8 +60,9 @@ class UserProvider extends ChangeNotifier {
     if (identity == null ||
         _authProvider?.user == null ||
         token == null ||
-        (token == _lastSyncedToken && identity == _lastSyncedIdentity))
+        (token == _lastSyncedToken && identity == _lastSyncedIdentity)) {
       return;
+    }
     _isSyncingToken = true;
     final done = Completer<void>();
     _syncDone = done;
@@ -86,6 +87,22 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
+  /// Re-register this installation after permission changes or a failed sync.
+  Future<bool> enablePhoneNotifications() async {
+    final identity = _apiService.authIdentity;
+    if (identity == null || _authProvider?.user == null) return false;
+    if (!await _notificationService.requestPermission()) return false;
+    if (_disposed || identity != _apiService.authIdentity) return false;
+    final pending = _syncDone;
+    if (pending != null) await pending.future;
+    if (_disposed || identity != _apiService.authIdentity) return false;
+    _lastSyncedToken = null;
+    await _syncFcmToken();
+    return identity == _apiService.authIdentity &&
+        _lastSyncedIdentity == identity &&
+        _lastSyncedToken != null;
+  }
+
   Future<void> _prepareSignOut() async {
     _signingOut = true;
     final pending = _syncDone;
@@ -102,8 +119,9 @@ class UserProvider extends ChangeNotifier {
   }) async {
     final identity = _apiService.authIdentity;
     final accountId = _authProvider?.user?.userId;
-    if (_disposed || _isLoading || identity == null || accountId == null)
+    if (_disposed || _isLoading || identity == null || accountId == null) {
       return false;
+    }
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -129,8 +147,9 @@ class UserProvider extends ChangeNotifier {
       await _authProvider?.refreshUser();
       return current();
     } catch (_) {
-      if (current())
+      if (current()) {
         _error = 'Could not confirm profile update. Refresh and try again.';
+      }
       return false;
     } finally {
       if (!_disposed) {
@@ -143,8 +162,9 @@ class UserProvider extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
-    if (_authProvider?.beforeSignOut == _prepareSignOut)
+    if (_authProvider?.beforeSignOut == _prepareSignOut) {
       _authProvider?.beforeSignOut = null;
+    }
     _notificationService.onTokenRefresh = null;
     super.dispose();
   }

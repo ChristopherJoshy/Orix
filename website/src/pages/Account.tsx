@@ -343,7 +343,9 @@ export function Settings() {
         <h2>Browser notifications</h2>
         <p>
           Enable notifications on this browser to receive an alert when an
-          update arrives.
+          update arrives. On iPhone or iPad, add ORIX to your Home Screen, open
+          it from there, then enable notifications. If permission was denied,
+          allow notifications in your browser or phone settings before retrying.
         </p>
         <div className="intro-actions">
           <Button

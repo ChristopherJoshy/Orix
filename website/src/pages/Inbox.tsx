@@ -129,6 +129,12 @@ export function Notifications() {
           Mark all read
         </Button>
       </PageHead>
+      <div className="inline-notice">
+        <span>Want alerts on this device?</span>{" "}
+        <Link className="button secondary" to="/app/settings">
+          Set up notifications
+        </Link>
+      </div>
       {(error || failure) && (
         <p role="alert">
           {failure || error}{" "}

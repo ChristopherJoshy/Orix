@@ -107,7 +107,10 @@ class _DonationDialogState extends State<DonationDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-    title: const Text('Keep ORIX going.'),
+    title: const Text('A little help for ORIX.'),
+    insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+    contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+    actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
     scrollable: true,
     content: SizedBox(
       width: 340,
@@ -115,11 +118,7 @@ class _DonationDialogState extends State<DonationDialog> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.favorite_border, size: 28),
-          const SizedBox(height: 16),
-          const Text(
-            'Donate to help keep ORIX going. Any amount is welcome, and donating is always optional.',
-          ),
+          const Text('Help cover the running costs. Any amount is welcome.'),
           const SizedBox(height: 16),
           if (!_mobile) ...[
             Image.asset(
@@ -135,7 +134,7 @@ class _DonationDialogState extends State<DonationDialog> {
           ] else ...[
             FilledButton(
               onPressed: _opening ? null : _donate,
-              child: Text(_opening ? 'Opening Google Pay…' : 'Donate'),
+              child: Text(_opening ? 'Opening Google Pay…' : 'Open Google Pay'),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -144,13 +143,24 @@ class _DonationDialogState extends State<DonationDialog> {
             ),
           ],
           const SizedBox(height: 16),
-          const Text(
-            'Recipient: ${DonationConfig.payee}',
-            style: AppTextStyles.bodySmall,
-          ),
-          const SelectableText(
-            DonationConfig.upiId,
-            style: AppTextStyles.bodySmall,
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border.all(color: const Color(0xFFD0D0D0)),
+            ),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Paying', style: AppTextStyles.bodySmall),
+                SizedBox(height: 6),
+                Text(DonationConfig.payee),
+                SizedBox(height: 6),
+                SelectableText(
+                  DonationConfig.upiId,
+                  style: AppTextStyles.bodySmall,
+                ),
+              ],
+            ),
           ),
           TextButton.icon(
             onPressed: () async {
@@ -174,6 +184,11 @@ class _DonationDialogState extends State<DonationDialog> {
             },
             icon: const Icon(Icons.copy, size: 16),
             label: const Text('Copy UPI ID'),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Always optional. ORIX works the same either way.',
+            style: AppTextStyles.bodySmall,
           ),
           if (_error != null)
             Padding(

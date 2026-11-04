@@ -6675,3 +6675,19 @@ html[data-motion="off"] .workspace > .sidebar { transition: none; }
 .android-download-page > .logo { margin-bottom: 40px; }
 .android-download-page .download-hash { display: block; overflow-wrap: anywhere; white-space: normal; }
 .android-download-page > .button { margin-top: 24px; }
+
+/* Donation dialog: one payment action, a readable recipient, and a quiet exit. */
+.modal-content:has(.donation-support) { padding: 28px; width: min(400px, calc(100vw - 32px)); background: #fafafa; }
+.modal-content:has(.donation-support) .dialog-title { font-size: 1.8rem; line-height: 1.15; padding-right: 28px; margin-bottom: 12px; }
+.modal-content:has(.donation-support) > p { font-size: .875rem; line-height: 1.6; margin: 0; color: #555; }
+.donation-support { gap: 16px; margin-top: 24px; }
+.donation-qr { background: #fff; border: 1px solid #ddd; padding: 16px; }
+.donation-qr img { width: 200px; }
+.donation-recipient { border: 1px solid #ddd; padding: 16px; background: #fff; display: grid; gap: 6px; }
+.donation-recipient-label { font-size: .75rem; color: #666; }
+.donation-recipient strong { font-size: .875rem; }
+.donation-upi { font-size: .8125rem; line-height: 1.6; }
+.donation-recipient .button { width: 100%; margin-top: 6px; }
+.donation-optional { font-size: .75rem; line-height: 1.6; text-align: center; margin: 0; color: #666; }
+.donation-support > .button { width: 100%; min-height: 44px; }
+@media (max-width: 420px) { .modal-content:has(.donation-support) { padding: 24px 20px; } }

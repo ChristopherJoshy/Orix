@@ -39,7 +39,10 @@ export function enableWebPush() {
       );
     if (!(await isSupported()))
       throw new PublicError("Notifications are unavailable in this browser.");
-    const permission = await Notification.requestPermission();
+    const permission =
+      Notification.permission === "granted"
+        ? "granted"
+        : await Notification.requestPermission();
     if (permission !== "granted")
       throw new PublicError(
         "Notifications are off. You can change this in browser settings.",
@@ -48,6 +51,7 @@ export function enableWebPush() {
       "/orix-push-worker.js",
       { scope: "/" },
     );
+    await navigator.serviceWorker.ready;
     const messaging = getMessaging(getApps()[0]);
     const token = await getToken(messaging, {
       vapidKey: key,

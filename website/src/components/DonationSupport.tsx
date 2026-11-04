@@ -73,8 +73,8 @@ export function DonationSupport({
         <span>Donate</span>
       </button>
       <Modal
-        title="Keep ORIX going."
-        description="Donate to help keep ORIX going. Any amount is welcome, and donating is always optional."
+        title="A little help for ORIX."
+        description="Help cover the running costs. Any amount is welcome."
         open={open}
         onOpenChange={setOpen}
       >
@@ -86,35 +86,31 @@ export function DonationSupport({
               height="246"
               alt="Scan to donate with any UPI app"
             />
-            <p>
-              Scan with any UPI app.
-              <br />
-              Choose your amount there.
-            </p>
+            <p>Scan with any UPI app</p>
           </div>
           <div className="donation-mobile">
             <a
               className="button primary"
               href={googlePayLink(navigator.userAgent)}
             >
-              Donate
+              Open Google Pay
             </a>
             <p>Opens Google Pay. Choose any amount there.</p>
-            <p>
-              If Google Pay doesn’t open, open it yourself and use the UPI ID
-              below.
-            </p>
           </div>
           <div className="donation-recipient">
-            <p>Recipient: {donationPayee}</p>
+            <span className="donation-recipient-label">Paying</span>
+            <strong>{donationPayee}</strong>
             <span className="donation-upi">{donationUpiId}</span>
             <button className="button ghost" onClick={() => void copy()}>
               <Copy size={16} />
               Copy UPI ID
             </button>
-            <p role="status">{copyMessage}</p>
+            {copyMessage && <p role="status">{copyMessage}</p>}
           </div>
-          <button className="button secondary" onClick={() => setOpen(false)}>
+          <p className="donation-optional">
+            Always optional. ORIX works the same either way.
+          </p>
+          <button className="button ghost" onClick={() => setOpen(false)}>
             Maybe later
           </button>
         </div>

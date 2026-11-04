@@ -78,15 +78,15 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        await tester.ensureVisible(find.text('Donate'));
+        await tester.ensureVisible(find.text('Open Google Pay'));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('Donate'));
+        await tester.tap(find.text('Open Google Pay'));
         await tester.pumpAndSettle();
         expect(
           find.textContaining('Google Pay could not open.'),
           findsOneWidget,
         );
-        expect(find.text('Donate'), findsOneWidget);
+        expect(find.text('Open Google Pay'), findsOneWidget);
         expect(tester.takeException(), isNull);
       }
       debugDefaultTargetPlatformOverride = null;

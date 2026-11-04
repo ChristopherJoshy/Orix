@@ -359,13 +359,19 @@ class NotificationService extends ChangeNotifier {
     final granted =
         settings.authorizationStatus == AuthorizationStatus.authorized ||
         settings.authorizationStatus == AuthorizationStatus.provisional;
-    if (granted) await _enablePush();
-    return granted;
+    if (!granted) return false;
+    return _enablePush();
   }
 
-  Future<void> _enablePush() async {
-    if (_pushEnabled) return;
+  Future<bool> _enablePush() async {
+    if (_pushEnabled && _fcmToken != null) {
+      onTokenRefresh?.call(_fcmToken!);
+      return true;
+    }
     _fcmToken = await _messaging.getToken();
+    if (_fcmToken == null || _fcmToken!.isEmpty) {
+      return false;
+    }
     _pushEnabled = true;
     _messaging.onTokenRefresh.listen((token) {
       _fcmToken = token;
@@ -382,6 +388,7 @@ class NotificationService extends ChangeNotifier {
     } catch (_) {
       /* Retry on next launch. */
     }
+    return true;
   }
 
   /// Processed message IDs to prevent duplicates

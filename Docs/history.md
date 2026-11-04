@@ -1533,3 +1533,19 @@ remains unverified. Manual submission failure/external Google processing depende
 has persisted through three goal turns; goal is blocked on recrawl/index update,
 not declared complete. No repeat indexing submission, code/design change or broad
 QA. Play publication remains owner-cancelled.
+
+## 2026-11-04 — Donation layout and device notification setup
+
+Simplified both donation dialogs, preserving original payment destination and
+optional contribution behavior. Added explicit native permission/registration
+retry and phone-settings control; linked setup from both inboxes. Null-token
+retrieval no longer marks push initialization as successful. Added web install
+manifest and monochrome mark PNGs, worker activation wait and granted-permission
+reuse. Web subscription locking and server-derived account authorization retained.
+VPS /health and /readyz passed; service is orix-backend. Read-only aggregate counts
+showed zero phone tokens and zero registered web devices, explaining inbox-only
+notifications. Outbox had seven sent records; that status alone does not prove
+system delivery. No production pushes/fixtures or actual payments used.
+Verification: website build; web donation-link/date/recipient and worker privacy/
+validation checks passed; scoped Flutter analysis clean; donation/payload tests
+9 passed. Device/background and installed-web-app delivery remain unverified.

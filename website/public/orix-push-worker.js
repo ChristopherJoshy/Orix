@@ -30,8 +30,8 @@ self.addEventListener("push", (event) => {
       body: engagement
         ? data.body
         : "You have a new update. Open ORIX to see it.",
-      icon: "/favicon.svg",
-      badge: "/favicon.svg",
+      icon: "/orix-icon-192.png",
+      badge: "/orix-icon-192.png",
       tag: `orix-${data.notification_id}`,
       data: { path: engagement ? "/app" : "/app/notifications" },
       silent: engagement,

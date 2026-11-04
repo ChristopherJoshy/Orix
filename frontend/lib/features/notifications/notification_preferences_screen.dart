@@ -2,6 +2,8 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:orix/core/providers/user_provider.dart';
 import 'package:orix/core/widgets/pixel_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:orix/core/services/api_service.dart';
@@ -19,6 +21,8 @@ class _NotificationPreferencesScreenState
   bool _busy = false;
   String? _error;
   String? _identity;
+  bool _deviceBusy = false;
+  String? _deviceStatus;
   @override
   void initState() {
     super.initState();
@@ -119,6 +123,55 @@ class _NotificationPreferencesScreenState
           'Choose what you receive. Device notification permissions also apply.',
       maxWidth: 680,
       children: [
+        PixelSection(
+          title: 'Phone alerts',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Allow notifications on this phone and register it for journey, group and chat alerts.',
+              ),
+              const SizedBox(height: 12),
+              FilledButton(
+                onPressed: _deviceBusy
+                    ? null
+                    : () async {
+                        final user = context.read<UserProvider>();
+                        setState(() {
+                          _deviceBusy = true;
+                          _deviceStatus = null;
+                        });
+                        try {
+                          final enabled = await user.enablePhoneNotifications();
+                          if (mounted) {
+                            setState(
+                              () => _deviceStatus = enabled
+                                  ? 'This phone is registered for notifications.'
+                                  : 'Notifications could not be enabled. Check phone permissions, then retry.',
+                            );
+                          }
+                        } catch (_) {
+                          if (mounted) {
+                            setState(
+                              () => _deviceStatus =
+                                  'This phone could not register. Check your connection and retry.',
+                            );
+                          }
+                        } finally {
+                          if (mounted) setState(() => _deviceBusy = false);
+                        }
+                      },
+                child: Text(_deviceBusy ? 'Enabling…' : 'Enable phone alerts'),
+              ),
+              TextButton(
+                onPressed: () => openAppSettings(),
+                child: const Text('Open phone settings'),
+              ),
+              if (_deviceStatus != null)
+                Semantics(liveRegion: true, child: Text(_deviceStatus!)),
+            ],
+          ),
+        ),
         if (_busy) const PixelLoader(),
         if (_error != null) Text(_error!),
         if (values != null)

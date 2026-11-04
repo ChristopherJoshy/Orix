@@ -103,6 +103,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ),
       ],
       children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: OutlinedButton.icon(
+            onPressed: () => context.push('/notifications/preferences'),
+            icon: const Icon(Icons.notifications_outlined),
+            label: const Text('Set up phone alerts'),
+          ),
+        ),
         if (provider.error != null)
           Padding(
             padding: const EdgeInsets.only(bottom: 20),
