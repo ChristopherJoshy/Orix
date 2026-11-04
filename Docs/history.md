@@ -1549,3 +1549,15 @@ system delivery. No production pushes/fixtures or actual payments used.
 Verification: website build; web donation-link/date/recipient and worker privacy/
 validation checks passed; scoped Flutter analysis clean; donation/payload tests
 9 passed. Device/background and installed-web-app delivery remain unverified.
+
+## 2026-11-04 — Automatically enroll native phones for notifications
+
+Made the user/token provider eager, added one-time native permission setup after
+verified sign-in/onboarding, and refreshed device registration on foreground
+resume. Existing permission denial and notification preferences remain respected.
+Idempotent token updates opt into bounded transient retries with existing server
+cooldown handling; account changes stop outgoing retries. Other mutations are
+not automatically replayed. Token retrieval failure no longer blocks startup.
+Focused Flutter analysis passed after two existing API brace infos were corrected.
+Recipient privacy/payload tests passed. No physical-device, production test pushes,
+background or reboot verification. Requires an updated app installation.

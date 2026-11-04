@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../../firebase_options.dart';
@@ -342,14 +343,35 @@ class NotificationService extends ChangeNotifier {
     final settings = await _messaging.getNotificationSettings();
     if (settings.authorizationStatus == AuthorizationStatus.authorized ||
         settings.authorizationStatus == AuthorizationStatus.provisional) {
-      await _enablePush();
+      try {
+        await _enablePush();
+      } catch (_) {
+        // Automatic sign-in/resume registration retries without blocking launch.
+      }
     }
   }
 
   bool _pushEnabled = false;
 
-  /// Called only after the user chooses notifications during setup/settings.
+  /// Ask once per installation; an OS denial is never overridden or nagged.
+  Future<bool> prepareAutomaticPush() async {
+    final settings = await _messaging.getNotificationSettings();
+    if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+        settings.authorizationStatus == AuthorizationStatus.provisional) {
+      return _enablePush();
+    }
+    final prefs = await SharedPreferences.getInstance();
+    const askedKey = 'orix.notifications.permissionRequested.v1';
+    if (prefs.getBool(askedKey) == true) return false;
+    // Record before opening the native prompt so resume cannot open it twice.
+    await prefs.setBool(askedKey, true);
+    return requestPermission();
+  }
+
+  /// Explicit settings/setup action, or the one-time automatic sign-in prompt.
   Future<bool> requestPermission() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('orix.notifications.permissionRequested.v1', true);
     final settings = await _messaging.requestPermission(
       alert: true,
       badge: true,

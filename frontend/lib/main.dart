@@ -197,6 +197,7 @@ class _OrixAppState extends State<OrixApp> with WidgetsBindingObserver {
           ),
         ),
         ChangeNotifierProxyProvider<AuthProvider, UserProvider>(
+          lazy: false,
           create: (_) =>
               UserProvider(widget.apiService, widget.notificationService),
           update: (_, auth, user) => user!..updateAuth(auth),

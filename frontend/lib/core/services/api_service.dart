@@ -331,14 +331,16 @@ class ApiService {
       // Perform request with retry logic
       final response = await _retryWithBackoff(() async {
         final headers = await _getHeaders(withAuth: withAuth);
-        if (withAuth && authIdentity != requestIdentity)
+        if (withAuth && authIdentity != requestIdentity) {
           throw StateError('Account changed');
+        }
         return await _client
             .get(uri, headers: headers)
             .timeout(ApiConfig.timeout);
       });
-      if (withAuth && authIdentity != requestIdentity)
+      if (withAuth && authIdentity != requestIdentity) {
         throw StateError('Account changed');
+      }
 
       final result = _parseResponse(response, parser);
 
@@ -456,22 +458,33 @@ class ApiService {
     }
   }
 
-  /// PUT request
+  /// PUT request. Enable retries only for server-idempotent updates.
   Future<ApiResponse<T>> put<T>(
     String endpoint, {
     Map<String, dynamic>? body,
     T Function(dynamic json)? parser,
     bool withAuth = true,
+    bool retryTransient = false,
   }) async {
     try {
       final uri = Uri.parse('$baseUrl$endpoint');
-      final response = await _client
-          .put(
-            uri,
-            headers: await _getHeaders(withAuth: withAuth),
-            body: body != null ? jsonEncode(body) : null,
-          )
-          .timeout(ApiConfig.timeout);
+      final identity = authIdentity;
+      final response = await _retryWithBackoff(() async {
+        if (withAuth && authIdentity != identity) {
+          throw StateError('Account changed');
+        }
+        final headers = await _getHeaders(withAuth: withAuth);
+        if (withAuth && authIdentity != identity) {
+          throw StateError('Account changed');
+        }
+        return _client
+            .put(
+              uri,
+              headers: headers,
+              body: body != null ? jsonEncode(body) : null,
+            )
+            .timeout(ApiConfig.timeout);
+      }, retries: retryTransient ? _maxRetries : 1);
 
       return _parseResponse(response, parser);
     } on SocketException {

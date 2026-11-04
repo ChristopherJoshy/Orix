@@ -1190,3 +1190,17 @@ cross-tab token races; unsupported browsers show explicit unavailable state.
 Executed website build; web donation and push-worker checks; focused Flutter
 analysis clean; donation/payload tests 9 passed. Physical phone/background push
 and real payment not exercised. Repository security review follows this fix.
+
+2026-11-04 — Owner requested automatic native phone notification setup.
+UserProvider is eagerly created so token synchronization no longer depends on
+visiting a profile/settings screen. After verified sign-in and onboarding, the
+app checks permission and asks once per installation when necessary; granted
+permission automatically registers the token. Foreground resume rechecks/retries
+registration. Denials stay respected and manual settings recovery remains.
+Transient token PUT failures use the existing bounded backoff/Retry-After policy,
+with identity guards before token retrieval and request dispatch; other PUTs
+remain single-attempt. Initial token retrieval failure no longer blocks app launch.
+Local test personas skip automatic push setup. Native OS approval is still required
+where applicable. Focused Flutter analysis and recipient-payload tests passed;
+physical-device permission/background delivery remain unverified. An updated
+app build must be installed for these changes to run on an existing phone.

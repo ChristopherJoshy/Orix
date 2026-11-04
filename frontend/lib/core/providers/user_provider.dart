@@ -6,13 +6,14 @@ library;
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
+import '../config/api_config.dart';
 
 import '../services/api_service.dart';
 import '../services/notification_service.dart';
 import 'auth_provider.dart';
 
 /// User provider for profile management
-class UserProvider extends ChangeNotifier {
+class UserProvider extends ChangeNotifier with WidgetsBindingObserver {
   final ApiService _apiService;
   final NotificationService _notificationService;
   AuthProvider? _authProvider;
@@ -26,8 +27,10 @@ class UserProvider extends ChangeNotifier {
   bool _isSyncingToken = false;
   bool _signingOut = false;
   Completer<void>? _syncDone;
+  bool _preparingPush = false;
 
   UserProvider(this._apiService, this._notificationService) {
+    WidgetsBinding.instance.addObserver(this);
     _notificationService.onTokenRefresh = (token) {
       if (_authProvider?.user != null) {
         _syncFcmToken();
@@ -45,11 +48,47 @@ class UserProvider extends ChangeNotifier {
     if (auth.user == null) _signingOut = false;
     if (auth.user != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _syncFcmToken();
+        unawaited(_prepareAutomaticPush());
       });
     } else {
       _lastSyncedToken = null;
       _lastSyncedIdentity = null;
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _lastSyncedToken = null;
+      unawaited(_prepareAutomaticPush());
+    }
+  }
+
+  Future<void> _prepareAutomaticPush() async {
+    if (_disposed ||
+        _preparingPush ||
+        _signingOut ||
+        InternalTestConfig.enabled ||
+        _authProvider?.isAuthenticated != true ||
+        _authProvider?.isOnboarded != true) {
+      return;
+    }
+    final identity = _apiService.authIdentity;
+    _preparingPush = true;
+    try {
+      if (!await _notificationService.prepareAutomaticPush()) return;
+      if (_disposed || identity != _apiService.authIdentity || _signingOut) {
+        return;
+      }
+      await _syncFcmToken();
+    } catch (_) {
+      // Settings exposes explicit recovery; next foreground entry retries setup.
+      if (!_disposed && identity == _apiService.authIdentity) {
+        _error =
+            'Phone alerts could not connect. Retry in notification settings.';
+      }
+    } finally {
+      _preparingPush = false;
     }
   }
 
@@ -70,6 +109,7 @@ class UserProvider extends ChangeNotifier {
       final response = await _apiService.put<Map<String, dynamic>>(
         '/users/me',
         body: {'fcm_token': token},
+        retryTransient: true,
       );
       if (response.success && identity == _apiService.authIdentity) {
         _lastSyncedIdentity = identity;
@@ -162,6 +202,7 @@ class UserProvider extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    WidgetsBinding.instance.removeObserver(this);
     if (_authProvider?.beforeSignOut == _prepareSignOut) {
       _authProvider?.beforeSignOut = null;
     }
