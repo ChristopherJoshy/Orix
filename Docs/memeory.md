@@ -1,5 +1,22 @@
 # Working memory
 
+## Launch video setup — 2026-11-04
+
+Owner wants a colorful high-energy Kerala comic film using the supplied MP3 in
+Videos/Orix-Launch, synchronized to musical vibe rather than lyric meaning.
+Film color overrides earlier monochrome direction for this deliverable only.
+App/web artwork reuse and focused captures allowed, but production then paused
+pending installed skills and owner script approval; latest scope is tooling only,
+no scripts. Do not start captures, animation or render without clear authorization.
+Official HyperFrames CLI0.9.10 verified; nine official skills current. Installed
+reverse-any-video, style-sampling and official remotion-best-practices/multimedia.
+Initial audio analysis failed for missing ffprobe; after owner installation,
+FFmpeg/ffprobe8.1.2 and Node/cached Chrome passed dependency checks. Doctor overall
+remains false for absent optional tools/Docker; no render verified.
+One already-running imagegen color study finished after the
+hold; unapproved, not wired into project. No app QA/captures/render occurred.
+Research and limits: Docs/launch-video-research.md. User's MP3 remains untouched.
+
 ## Full objective and constraints
 
 Complete the entire Python-to-Go backend rewrite; improve algorithms, matching,

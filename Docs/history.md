@@ -1,5 +1,21 @@
 # Change history
 
+## 2026-11-04 — Launch-video research and skill installation
+
+Researched current official HyperFrames/Remotion tooling, comic animation craft,
+audio-led editing and capture workflows. Verified official CLI0.9.10 and nine
+current HyperFrames skills; installed reverse-any-video, style-sampling and
+official remotion-best-practices/multimedia globally. No product stack upgrades.
+Local audio analysis failed because ffprobe was absent; doctor confirmed missing
+FFmpeg/ffprobe. After owner installation, version commands and doctor confirmed
+FFmpeg/ffprobe8.1.2, Node and cached Chrome. Doctor overall remains false for
+optional tools/Docker; no video runtime verified. Sandboxed npx probes failed DNS;
+network-authorized dependency check succeeded.
+Recorded colorful film direction, music-vibe sync, artwork reuse permission and
+production hold. No script, app tests, capture, animation or video render.
+One imagegen visual study started before the hold and finished afterwards;
+unapproved and not integrated. See Docs/launch-video-research.md.
+
 ## 2026-11-02
 
 - Added root AGENTS.md and standalone Go matching domain with race-tested route,
