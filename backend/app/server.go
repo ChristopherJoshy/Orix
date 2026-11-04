@@ -124,6 +124,9 @@ func New(config Config, logger *slog.Logger) http.Handler {
 		}
 	}
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /api/v1/donations/leaderboard", config.Auth.authenticated(config.Auth.donationLeaders))
+	mux.HandleFunc("GET /api/v1/admin/donation-leaderboard", config.Auth.admin(config.AdminSecret, config.Auth.adminDonationLeaderboard))
+	mux.HandleFunc("PUT /api/v1/admin/donation-leaderboard", config.Auth.admin(config.AdminSecret, config.Auth.adminDonationLeaderboard))
 	mux.HandleFunc("GET /api/v1/public/settings", config.Auth.publicSettings)
 	mux.HandleFunc("GET /downloads/android.apk", config.Auth.downloadAPK)
 	mux.HandleFunc("PUT /api/v1/admin/public-settings", config.Auth.admin(config.AdminSecret, config.Auth.setPublicSettings))

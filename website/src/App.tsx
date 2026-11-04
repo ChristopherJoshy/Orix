@@ -24,6 +24,8 @@ const GroupDetail = lazy(() =>
 const ReportConversation = lazy(() => import("./pages/ReportConversation"));
 const DownloadAndroid = lazy(() => import("./pages/DownloadAndroid"));
 const Landing = lazy(() => import("./pages/Landing"));
+const Leaderboard = lazy(() => import("./pages/Leaderboard"));
+const AdminLeaderboard = lazy(() => import("./pages/AdminLeaderboard"));
 const Layout = lazy(() => import("./components/Layout"));
 const Login = lazy(() =>
   import("./pages/Auth").then((m) => ({ default: m.Login })),
@@ -265,6 +267,7 @@ export default function App({
                 <Route path="/status/:kind" element={<StatusPage />} />
                 <Route path="/app" element={<Layout />}>
                   <Route index element={<Dashboard />} />
+                  <Route path="leaderboard" element={<Leaderboard />} />
                   <Route path="explore" element={<Explore />} />
                   <Route path="create" element={<CreateRide />} />
                   <Route path="rides" element={<MyRides />} />
@@ -285,6 +288,7 @@ export default function App({
                 </Route>
                 <Route path="/admin" element={<Layout admin />}>
                   <Route index element={<AdminOverview />} />
+                  <Route path="leaderboard" element={<AdminLeaderboard />} />
                   <Route path="users" element={<AdminPeople />} />
                   <Route path="rides" element={<AdminRides />} />
                   <Route path="reports" element={<AdminReports />} />

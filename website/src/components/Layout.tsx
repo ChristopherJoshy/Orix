@@ -27,6 +27,7 @@ import {
   Menu,
   X,
   LogOut,
+  Trophy,
 } from "lucide-react";
 import { PixelMark } from "./PixelArt";
 import { ContactPhoto } from "./EmailPersonPicker";
@@ -40,6 +41,7 @@ const userNav = [
   { to: "/app/groups", label: "Your groups", icon: Route },
   { to: "/app/messages", label: "Messages", icon: MessageSquare },
   { to: "/app/notifications", label: "Notifications", icon: Bell },
+  { to: "/app/leaderboard", label: "Leaderboard", icon: Trophy },
 ];
 const adminNav = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard, end: true },
@@ -49,6 +51,7 @@ const adminNav = [
   { to: "/admin/support", label: "Support desk", icon: LifeBuoy },
   { to: "/admin/operations", label: "Operations", icon: Activity },
   { to: "/admin/audit", label: "Activity log", icon: ScrollText },
+  { to: "/admin/leaderboard", label: "Leaderboard", icon: Trophy },
 ];
 export default function Layout({ admin = false }: { admin?: boolean }) {
   const { account, loading } = useSession();

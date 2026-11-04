@@ -92,6 +92,12 @@ and permission behavior must still be verified on device/staging.
 
 ## Commands and outstanding boundaries
 
+Web donation leaderboard: authenticated `GET /donations/leaderboard` returns
+published names and integer-paise totals only. Administrator/secret-protected
+`GET/PUT /admin/donation-leaderboard` manages a versioned, transactionally audited
+editorial board. Totals are manually verified, not payment-provider integration.
+See [donation-leaderboard.md](donation-leaderboard.md) for limits and verification.
+
 `seed-test-accounts` / `remove-test-accounts` manage eight local personas;
 `bootstrap-admin` selects the first real verified administrator;
 `support-account-deletion` plans/applies ownership-reviewed deletion for users

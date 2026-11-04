@@ -25,6 +25,8 @@ export default async function handler(
   const validID = (value: string | null): value is string =>
     value !== null && /^[A-Za-z0-9_-]{1,100}$/.test(value);
   const routes: Record<string, { method: string; path: string }> = {
+    "donation-leaderboard": { method: "GET", path: "/api/v1/admin/donation-leaderboard" },
+    "set-donation-leaderboard": { method: "PUT", path: "/api/v1/admin/donation-leaderboard" },
     "set-version": { method: "PUT", path: "/api/v1/admin/app/version" },
     people: { method: "GET", path: "/api/v1/admin/people" },
     groups: { method: "GET", path: "/api/v1/admin/groups" },
@@ -147,7 +149,7 @@ export default async function handler(
     let body = "";
     for await (const chunk of req) {
       body += chunk.toString();
-      if (Buffer.byteLength(body) > 16384) {
+      if (Buffer.byteLength(body) > (action === "set-donation-leaderboard" ? 32768 : 16384)) {
         res.writeHead(413);
         res.end();
         return;

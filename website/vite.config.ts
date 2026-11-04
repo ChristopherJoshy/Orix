@@ -15,6 +15,8 @@ export default defineConfig(({ mode }) => {
             if (
               ![
                 "/public-settings",
+                "/donation-leaderboard",
+                "/set-donation-leaderboard",
                 "/android-upload-ticket",
                 "/reports",
                 "/report-thread",
