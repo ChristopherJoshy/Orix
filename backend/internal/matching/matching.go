@@ -87,13 +87,12 @@ func position(a, b, p Point) (float64, float64) {
 // PickupRadiusKM is a hard constraint, independent of route scoring.
 const PickupRadiusKM = .3
 
+// DestinationRadiusKM applies pairwise to all group members.
+const DestinationRadiusKM = .1
+
 func SameDestination(a, b Request) bool {
-	if a.DestinationID != "" && b.DestinationID != "" && a.DestinationID != b.DestinationID {
-		return false
-	}
-	// A canonical ID never overrides contradictory coordinates. Coordinate-only
-	// historical requests can match only the same point (one metre tolerance).
-	return distance(a.Drop, b.Drop) <= .001
+	// Place IDs and labels may differ for nearby points; coordinates set the limit.
+	return distance(a.Drop, b.Drop) <= DestinationRadiusKM
 }
 func nearbySameDestination(a, b Request) bool {
 	return distance(a.Pickup, b.Pickup) <= PickupRadiusKM && SameDestination(a, b)

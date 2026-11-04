@@ -1605,3 +1605,7 @@ release. Artifact/checksum and verification limits: Docs/release-2.1.3.md.
 No backend source delta since deployed backend; VPS service active and health/
 readiness checks passed. No backend restart, public APK publication, actual push
 delivery, device installation or payment performed.
+
+## 2026-11-04 — Nearby destination matching
+
+Changed Go and retained Python matching to accept destinations within 100 m regardless of place ID, keeping the 300 m pickup limit and existing compatibility checks. Updated app and website matching copy. Focused Go race tests for matching and suggestions passed; website build passed. Deployed the Go binary to the VPS, restarted orix-backend, and checked active status plus local healthy/ready probes. No production matching scenarios, broader regression tests, app release, or manual Vercel deployment were performed. Expired groups are not retroactively merged.

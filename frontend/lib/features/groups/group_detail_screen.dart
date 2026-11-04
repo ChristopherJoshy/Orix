@@ -196,7 +196,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                 const SizedBox(height: 12),
                 Text(
                   group.status == 'pending'
-                      ? 'Matching is active. Pickups must be within 300 m and destinations must be the same.'
+                      ? 'Matching is active. Pickups must be within 300 m and destinations within 100 m.'
                       : group.canConfirm
                       ? 'Confirm that this pickup works for you.'
                       : group.status == 'in_progress'

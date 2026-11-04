@@ -3,7 +3,7 @@ import { Modal } from './Modal';
 import { Button } from './ui';
 import { PixelStatus, type PixelState } from './PixelStatus';
 const steps: { title: string; text: string; scene: PixelState }[] = [
-  { title: 'Set your route', text: 'Choose your start and destination from the place suggestions. Orix looks for compatible travellers starting within 300 metres and going to the same selected place.', scene: 'searching' },
+  { title: 'Set your route', text: 'Choose your start and destination from the place suggestions. Orix looks for compatible travellers starting within 300 metres and heading within 100 m of each other.', scene: 'searching' },
   { title: 'Meet your group', text: 'Check the people, pickup plan and time when a pool is ready. Use your group conversation to coordinate before leaving.', scene: 'found' },
   { title: 'Choose what works for you', text: 'Set safety preferences and whether lifts are suitable. To offer a lift, register your route, time and seats. Block contacts by email or open a private report conversation when you need help.', scene: 'lift-offered' },
 ];

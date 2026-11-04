@@ -213,7 +213,7 @@ class _PlaceAutocompleteState extends State<PlaceAutocomplete> {
           child: Text(
             widget.pickup
                 ? 'Pickup area: within 300 m of this point.'
-                : 'Destination: everyone must select this same place.',
+                : 'Destinations must be within 100 m of each other.',
             style: const TextStyle(
               fontSize: 12,
               color: AppColors.textSecondary,

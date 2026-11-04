@@ -10,7 +10,7 @@ class FAQScreen extends StatelessWidget {
       for (final item in const [
         (
           'How does pooling work?',
-          'Choose your starting point, destination and time. Pickups must be within 300 metres, the destination must be the same, and everyone’s time and safety preferences must fit.',
+          'Choose your starting point, destination and time. Pickups must be within 300 metres, destinations within 100 m, and everyone’s time and safety preferences must fit.',
         ),
         (
           'How do I offer a lift?',

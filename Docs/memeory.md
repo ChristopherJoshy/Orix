@@ -1247,3 +1247,5 @@ with checksum-verified official JDK21 succeeded in 3m7s. Backend source unchange
 since deployment; VPS orix-backend active, /health healthy2.1.2 and /readyz ready.
 No backend deployment/restart needed. No real-phone push/device/payment checks
 or public APK publication performed. Details/checksum: Docs/release-2.1.3.md.
+
+2026-11-04 — Destination matching now uses a pairwise 100 m coordinate radius; pickup remains 300 m. Different place IDs may match if coordinates qualify. Other route, time, safety and capacity checks remain. Go VPS binary redeployed; service active, local /health healthy and /readyz ready. Focused Go race matching/suggestion tests and website build passed. Expired groups are not retroactively merged; no production journey or authenticated matching test was performed. App copy changes require a new app release; website Git deployment was not manually triggered.

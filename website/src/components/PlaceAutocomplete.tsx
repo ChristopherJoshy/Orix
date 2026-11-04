@@ -143,8 +143,8 @@ export function PlaceAutocomplete({
       <small id={`${id}-hint`}>
         {value
           ? pickup
-            ? "Match pickups within 300 m. Everyone must have the same destination."
-            : "Everyone must select this same destination."
+            ? "Match pickups within 300 m and destinations within 100 m."
+            : "Destinations must be within 100 m of each other."
           : "Choose a suggestion to set the place and coordinates."}
       </small>
       {credit && /^https:\/\//.test(credit.url) && (

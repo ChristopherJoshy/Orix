@@ -20,7 +20,7 @@ func TestRankConstraints(t *testing.T) {
 		{"along route with different destination", func(r *Request) { r.Pickup.Lat += .02; r.Drop.Lat -= .02 }, 0},
 		{"nearby pickup same destination", func(r *Request) { r.Pickup.Lat += .001 }, 1},
 		{"pickup outside 300 metres", func(r *Request) { r.Pickup.Lat += .003 }, 0},
-		{"different drop nearby", func(r *Request) { r.Drop.Lat += .0001 }, 0},
+		{"different drop nearby", func(r *Request) { r.Drop.Lat += .0001 }, 1},
 		{"opposite", func(r *Request) { r.Pickup, r.Drop = r.Drop, r.Pickup }, 0},
 		{"parallel distant", func(r *Request) { r.Pickup.Lng += .05; r.Drop.Lng += .05 }, 0},
 		{"nonoverlapping time", func(r *Request) { r.Start = r.End; r.End = r.End.Add(time.Hour) }, 0},
@@ -80,17 +80,29 @@ func TestInvalidInput(t *testing.T) {
 	}
 }
 
-func TestExactDestinationAndAllPickupPairs(t *testing.T) {
+func TestDestinationRadiusAndAllPickupPairs(t *testing.T) {
 	a, b, c := ride("a"), ride("b"), ride("c")
 	a.DestinationID = "place:1"
 	b.DestinationID = "place:2"
-	if got, _ := Rank(a, []Group{{"g", []Request{b}}}, DefaultPolicy()); len(got) != 0 {
-		t.Fatal("different place IDs matched")
+	if got, _ := Rank(a, []Group{{"g", []Request{b}}}, DefaultPolicy()); len(got) != 1 {
+		t.Fatal("different place IDs at the same coordinates should match")
 	}
 	b.DestinationID = a.DestinationID
-	b.Drop.Lat += .0001
+	b.Drop.Lat += .00091
 	if got, _ := Rank(a, []Group{{"g", []Request{b}}}, DefaultPolicy()); len(got) != 0 {
-		t.Fatal("ID overrode contradictory coordinates")
+		t.Fatal("ID overrode the destination radius")
+	}
+	b.Drop.Lat = a.Drop.Lat + .00089
+	b.DestinationID = "place:2"
+	if got, _ := Rank(a, []Group{{"g", []Request{b}}}, DefaultPolicy()); len(got) != 1 {
+		t.Fatal("nearby destinations with different IDs should match")
+	}
+	b = ride("b")
+	c = ride("c")
+	b.Drop.Lat += .0006
+	c.Drop.Lat -= .0006
+	if got, _ := Rank(a, []Group{{"g", []Request{b, c}}}, DefaultPolicy()); len(got) != 0 {
+		t.Fatal("destinations over 100 m apart matched through a center point")
 	}
 	b = ride("b")
 	b.Pickup.Lat += .002

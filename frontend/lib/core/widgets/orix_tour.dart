@@ -19,7 +19,7 @@ class _TourState extends State<_Tour> {
     'Travel on your terms',
   ];
   static const _copy = [
-    'Choose a starting point and destination from place suggestions. We look for compatible travellers starting within 300 metres and going to the same place.',
+    'Choose a starting point and destination from place suggestions. We look for compatible travellers starting within 300 metres and heading within 100 m of each other.',
     'When a pool is ready, check the people, pickup plan and time. Use your group conversation to coordinate before leaving.',
     'Choose whether lifts are suitable and set your safety preferences. To offer a lift, register a separate route and time. You can block contacts by email or start a private report conversation.',
   ];

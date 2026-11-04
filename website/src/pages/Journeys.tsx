@@ -167,7 +167,7 @@ export function Explore() {
             </LinkButton>
           )}
           <p>
-            Matching considers nearby starts, the same destination, departure
+            Matching considers nearby starts and destinations, departure
             windows and everyone’s safety preferences.
           </p>
         </>
@@ -426,9 +426,9 @@ export function CreateRide({ offer = false }: { offer?: boolean }) {
           />
           <div className="panel">
             <ShieldCheck />
-            <h3>Nearby starts. Same destination.</h3>
+            <h3>Nearby starts. Nearby destinations.</h3>
             <p>
-              Pickups must align within 300 metres. Departure windows and
+              Pickups must align within 300 metres and destinations within 100 m. Departure windows and
               everyone’s safety preferences must also fit.
             </p>
             <Link className="text-link" to="/app/rider">

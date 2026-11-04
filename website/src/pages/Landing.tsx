@@ -20,7 +20,7 @@ function PixelArrow() {
 const steps = [
   [
     "Start with your route.",
-    "Choose your starting point, destination and departure time. We’ll look for people with nearby starts and the same destination.",
+    "Choose your starting point, destination and departure time. We’ll look for people with nearby starts and destinations.",
   ],
   [
     "Make it comfortable.",
@@ -38,7 +38,7 @@ const questions = [
   ],
   [
     "How close should our starting points be?",
-    "Matching considers starting points within 300 metres of your selected area. Your destination must be the same, and your departure windows and safety preferences must align.",
+    "Matching considers starting points within 300 metres and destinations within 100 m of each other. Departure windows and safety preferences must also align.",
   ],
   [
     "What if a group isn’t right for me?",
@@ -111,7 +111,7 @@ export default function Landing() {
           </span>
           <p>
             Nearby starts.
-            <br className="home-mobile-break" /> The same destination.
+            <br className="home-mobile-break" /> Nearby destinations.
           </p>
           <span>Made for going together.</span>
         </div>

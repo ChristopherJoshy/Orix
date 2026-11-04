@@ -44,6 +44,7 @@ class MatchmakingService:
         # Thresholds
         self.MIN_MATCH_SCORE = 0.5
         self.MAX_PICKUP_DISTANCE_KM = 0.3  # Starting location must be within 300 m (HARD)
+        self.MAX_DESTINATION_DISTANCE_KM = 0.1
         self.MAX_BEARING_DIFF_DEGREES = 45  # Route direction threshold for path overlap
         self.MAX_GROUP_SIZE = 4
         self.MIN_GROUP_SIZE = 1  # Groups can start with 1 member
@@ -73,7 +74,7 @@ class MatchmakingService:
         if pickup_distance > self.MAX_PICKUP_DISTANCE_KM:
             return 0.0
         
-        if geodesic(drop1, drop2).meters > 1:
+        if geodesic(drop1, drop2).kilometers > self.MAX_DESTINATION_DISTANCE_KM:
             return 0.0
 
         # Normalize pickup distance (closer = better)
@@ -256,10 +257,8 @@ class MatchmakingService:
         pickup2 = (request2["pickup_lat"], request2["pickup_lng"])
         drop2 = (request2["drop_lat"], request2["drop_lng"])
         
-        first_id, second_id = request1.get('drop_place_id'), request2.get('drop_place_id')
-        same_id = not first_id or not second_id or first_id == second_id
         route_score = self.calculate_route_overlap(pickup1, drop1, pickup2, drop2)
-        if not same_id or route_score <= 0:
+        if route_score <= 0:
             return {'score': 0.0, 'reason': 'pickup_or_destination_mismatch'} if return_details else 0.0
         
         # Time compatibility score
@@ -971,4 +970,3 @@ class MatchmakingService:
         )
         
         return group_id
-

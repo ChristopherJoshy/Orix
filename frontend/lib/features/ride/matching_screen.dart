@@ -291,7 +291,7 @@ class TripMatchingPanel extends StatelessWidget {
                 title: Text('How matching works'),
                 children: [
                   Text(
-                    'Pickups within 300 m, the same destination, compatible departure windows and safety preferences. Lift offers are included only when you opt in.',
+                    'Pickups within 300 m, destinations within 100 m, compatible departure windows and safety preferences. Lift offers are included only when you opt in.',
                   ),
                 ],
               ),
