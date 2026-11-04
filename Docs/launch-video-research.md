@@ -1,6 +1,8 @@
 # ORIX launch video: research and tooling
 
-2026-11-04. Setup only; production remains paused.
+2026-11-04. Tooling setup completed. Subsequent script research is now saved in
+[launch-video-script.md](launch-video-script.md). Production remains paused
+pending the owner's script approval.
 
 ## Owner direction
 
@@ -114,5 +116,12 @@ excluded from the documentation commit. No credential/config files were staged.
 - [GSAP timelines](https://www.gsap.com/docs/v3/GSAP/gsap.timeline%28%29/)
 - [Skills directory, discovery only](https://skills.sh/)
 
-Next: await explicit owner direction before creative production. Preserve the
-prior approval gate unless the owner clearly lifts it.
+Subsequent owner direction explicitly authorized improving the SJCET/mandhi
+storyline and collecting campus references. Draft 1 now exists in
+launch-video-script.md. Only the supplied theme song is allowed; no character
+voices, voiceover or additional effects. It must be fully animated, not static.
+No claim/disclaimer overlays belong in the film. Three historical SJCET reference
+JPEGs and attribution were collected. Local soundtrack signal analysis now passed;
+duration is 240.396 seconds. This is script research, not production approval.
+
+Next: owner reviews the script before asset production, capture or animation.

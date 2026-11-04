@@ -1,5 +1,22 @@
 # Working memory
 
+## Launch script draft — 2026-11-04
+
+Owner supplied SJCET student/mandhi/shared-auto story and asked for researched,
+improved Manglish launch script. Draft1: Docs/launch-video-script.md (“Mandhi
+Mission”), proposed120s, ORIX introduced around29s. Fully animated colorful comic,
+only supplied theme song (no voices/foley/SFX), no on-screen claim/disclaimer copy.
+Characters act/dance; no slideshow. Core features plus short history/rating/support
+sequence; actual journey UI is route/time/preferences, not invented mode buttons.
+Two travellers agree to split the story's ₹100 fare, allowing the food payoff.
+Budget250→150 solo /200 shared, food180; story figures, not published tariffs.
+Correct destination: Bharananganam; institution: SJCET Palai at Choondacherry.
+Collected three historical CC BY-SA4.0 campus photos with source/credit/hash manifest
+under Videos/Orix-Launch/references/sjcet. Local audio research now passed:240.396s,
+44.1kHz stereo, signal onsets/envelope; no BPM/section/finished-sync claim.
+No new imagegen assets, app tests, captures, account writes or animation this turn.
+Script remains unapproved; do not begin production until explicit owner approval.
+
 ## Launch video setup — 2026-11-04
 
 Owner wants a colorful high-energy Kerala comic film using the supplied MP3 in

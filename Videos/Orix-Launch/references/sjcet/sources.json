@@ -1,0 +1,44 @@
+[
+  {
+    "file": "sjcet-main-front-2015.jpg",
+    "source_url": "https://upload.wikimedia.org/wikipedia/commons/b/b1/SJCET_PALAI_College_Front_View.JPG",
+    "source_page": "https://commons.wikimedia.org/wiki/File:SJCET_PALAI_College_Front_View.JPG",
+    "author": "SJCET Palai",
+    "photo_date": "2015-03-08",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "downloaded": "2026-11-04",
+    "use": "Research reference only; not selected film footage",
+    "modifications": "None",
+    "sha256": "389f46bbce8cdba08d9cebb62157e990456b9c09167c9326fec6aa11b4c0da1e",
+    "bytes": 1114013
+  },
+  {
+    "file": "sjcet-main-approach-2019.jpg",
+    "source_url": "https://upload.wikimedia.org/wikipedia/commons/b/bd/St._Joseph%27s_College_of_Engineering_and_Technology_Palai.jpg",
+    "source_page": "https://commons.wikimedia.org/wiki/File:St._Joseph%27s_College_of_Engineering_and_Technology_Palai.jpg",
+    "author": "KannanVM",
+    "photo_date": "2019-02-07",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "downloaded": "2026-11-04",
+    "use": "Research reference only; not selected film footage",
+    "modifications": "None",
+    "sha256": "98eca290c59c2b131124818012366dad1a5a9dbcc7f9c05564a1b22053033160",
+    "bytes": 3096349
+  },
+  {
+    "file": "sjcet-campus-front-2015.jpg",
+    "source_url": "https://upload.wikimedia.org/wikipedia/commons/7/74/SJCET_Campus_Front.jpg",
+    "source_page": "https://commons.wikimedia.org/wiki/File:SJCET_Campus_Front.jpg",
+    "author": "SJCET Palai",
+    "photo_date": "2015-10-14",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "downloaded": "2026-11-04",
+    "use": "Research reference only; not selected film footage",
+    "modifications": "None",
+    "sha256": "a3349c44bf9054d4f551cbd7ee06ee5e70f8fd2a368fa5563e9740dc641d8275",
+    "bytes": 126575
+  }
+]

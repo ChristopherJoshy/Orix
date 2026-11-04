@@ -1,5 +1,22 @@
 # Change history
 
+## 2026-11-04 — Research and draft the SJCET animated-comic launch story
+
+Wrote Docs/launch-video-script.md from owner's student/mandhi/auto story, with
+Manglish dialogue, budget continuity, early ORIX reveal, source-backed feature
+coverage and explicit character/food acting. Owner requires fully animated color
+comic; supplied theme song only, no voices/SFX or immersion-breaking caveats.
+Verified SJCET identity/location and Bharananganam spelling through official pages;
+collected three historical Commons reference JPEGs with CC BY-SA4.0 attribution
+and checksum manifest. Visually inspected two main-building views.
+ffprobe measured240.396s/44.1kHz/stereo; HyperFrames local fast signal analysis
+passed with1,388 onsets, no error/warnings. Not a verified beat grid or synced edit.
+Inspected current UI/matching source: no passenger mode selector should be invented;
+successful runtime feature captures remain future work with actual test personas.
+No application tests, account writes, captures, imagegen production assets,
+animation, preview or render. Script approval gate remains. Documentation and
+reference integrity checks only; original soundtrack untouched and excluded.
+
 ## 2026-11-04 — Launch-video research and skill installation
 
 Researched current official HyperFrames/Remotion tooling, comic animation craft,
